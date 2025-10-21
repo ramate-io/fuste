@@ -1,7 +1,7 @@
 {
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/a7abebc31a8f60011277437e000eebcc01702b9f";
-    rust-overlay.url = "github:oxalica/rust-overlay/47beae969336c05e892e1e4a9dbaac9593de34ab";
+    rust-overlay.url = "github:oxalica/rust-overlay/02227ca8c229c968dbb5de95584cfb12b4313104";
     flake-utils.url = "github:numtide/flake-utils";
     crane.url = "github:ipetkov/crane";
   };
@@ -13,16 +13,21 @@
           inherit system;
           overlays = [ (import rust-overlay) ];
         };
+        host = pkgs.stdenv.hostPlatform.config; # e.g., aarch64-apple-darwin
 
         toolchain = p: (p.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml).override {
           extensions = [ "rustfmt" "clippy" ];
+          targets = [ host "wasm32-unknown-unknown" ];
         };
         craneLib = (crane.mkLib pkgs).overrideToolchain(toolchain);
-
         frameworks = pkgs.darwin.apple_sdk.frameworks;
 
         # An LLVM build environment
         dependencies = with pkgs; [
+          cargo-machete
+          protobuf
+          grpcurl
+          grpcui
           ltex-ls-plus
           lychee
           chafa
@@ -104,10 +109,13 @@
           bzip2
           elfutils
           jemalloc
+          alsa-lib
         ];
 
         # Specific version of toolchain
-        rust = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
+        rust = (pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml).override {
+          targets = [ host "wasm32-unknown-unknown" ];
+        };
 
         rustPlatform = pkgs.makeRustPlatform {
           cargo = rust;
@@ -152,11 +160,11 @@
               cp $(pwd)/.githooks/pre-commit $(pwd)/.git/hooks/pre-commit
               chmod +x $(pwd)/.git/hooks/pre-commit
 
-              chafa --size 30x30 --animate false --colors 8 --center true ./assets/ramate-inverted-transparent.png
+              # chafa --size 30x30 --animate false --colors 8 --center true ./assets/ramate-transparent.png
 
               echo ""
-              echo "Ramate"
-              echo "Ramate is the organization with many branches."
+              echo "Fuste"
+              echo "A pluggable virtual machine for constrained environments."
             '';
           };
         };
