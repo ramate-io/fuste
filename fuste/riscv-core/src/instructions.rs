@@ -29,7 +29,7 @@ pub enum ExecutableInstructionError {
 pub struct Instruction<const MEMORY_SIZE: usize>;
 
 impl<const MEMORY_SIZE: usize> Instruction<MEMORY_SIZE> {
-	pub fn execute(
+	pub fn load_and_execute(
 		word: u32,
 		machine: &mut Machine<MEMORY_SIZE>,
 	) -> Result<(), ExecutableInstructionError> {
