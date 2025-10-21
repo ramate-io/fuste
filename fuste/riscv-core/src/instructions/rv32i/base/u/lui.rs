@@ -19,7 +19,11 @@ impl<const MEMORY_SIZE: usize> ExecutableInstruction<MEMORY_SIZE> for Lui {
 	fn execute(self, machine: &mut Machine<MEMORY_SIZE>) -> Result<(), ExecutableInstructionError> {
 		let U { rd, imm } = self.0;
 
-		machine.registers_mut().set(rd, imm);
+		let registers = machine.registers_mut();
+
+		registers.set(rd, imm);
+
+		registers.program_counter_mut().increment();
 
 		Ok(())
 	}

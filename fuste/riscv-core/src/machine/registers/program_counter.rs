@@ -18,4 +18,9 @@ impl ProgramCounter {
 	pub fn set(&mut self, value: u32) {
 		self.program_counter = value;
 	}
+
+	pub fn increment(&mut self) {
+		// increment by 4 for RV32I alignment.
+		self.program_counter += 4;
+	}
 }
