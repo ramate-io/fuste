@@ -25,6 +25,11 @@ impl Lui {
 	pub fn imm(&self) -> u32 {
 		self.0.imm()
 	}
+
+	#[inline(always)]
+	pub fn to_word(&self) -> u32 {
+		self.0.to_word(Self::OPCODE)
+	}
 }
 
 impl WordInstruction for Lui {
@@ -56,18 +61,18 @@ mod tests {
 	#[test]
 	fn test_lui_inner_construction() -> Result<(), ExecutableInstructionError> {
 		let mut machine = Machine::<1024>::new();
-		let instruction = Lui::new(U::new(1, 2));
+		let instruction = Lui::new(U::new(1, 2 << 12));
 		instruction.execute(&mut machine)?;
-		assert_eq!(machine.registers().get(1), 2);
+		assert_eq!(machine.registers().get(1), 2 << 12);
 		Ok(())
 	}
 
 	#[test]
 	fn test_lui_from_word() -> Result<(), ExecutableInstructionError> {
 		let mut machine = Machine::<1024>::new();
-		let instruction = Lui::from_word(0b01101110000100000000000000000010);
+		let instruction = Lui::from_word(0b0000_0000_0000_0000_0010_0000_1011_0111);
 		instruction.execute(&mut machine)?;
-		assert_eq!(machine.registers().get(1), 2);
+		assert_eq!(machine.registers().get(1), 2 << 12);
 		Ok(())
 	}
 }
