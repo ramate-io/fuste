@@ -146,7 +146,9 @@ mod tests {
 	#[test]
 	fn test_shamt_extraction() {
 		// Test shift amount extraction for SLLI
-		let word = 0b0000_0000_0000_0000_0000_0001_1001_0011; // SLLI x1, x0, 1
+
+		//              |f7         |shamt  |rd      |rs1  |f3   |opcode
+		let word = 0b000_0000__0_0001__0_0000___000__00011__0010011; // SLLI x1, x0, 1
 		let i = I::from_word(word);
 
 		assert_eq!(i.shamt(), 1);
