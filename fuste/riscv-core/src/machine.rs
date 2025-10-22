@@ -2,12 +2,15 @@ pub mod memory;
 pub use memory::Memory;
 pub mod registers;
 use crate::instructions::ExecutableInstructionError;
+use crate::log::RingBuffer;
 pub use registers::Registers;
 
 /// The machine is the memory layout against which the plugins operate.
 pub struct Machine<const MEMORY_SIZE: usize> {
 	memory: Memory<MEMORY_SIZE>,
 	registers: Registers,
+	#[cfg(debug_assertions)]
+	log: RingBuffer<4096>,
 }
 
 /// The [MachinePlugin] trait tells the machine what to do at each tick.
@@ -18,7 +21,7 @@ pub trait MachinePlugin<const MEMORY_SIZE: usize> {
 impl<const MEMORY_SIZE: usize> Machine<MEMORY_SIZE> {
 	/// Creates a new machine instance with all memory and registers initialized to zero.
 	pub fn new() -> Self {
-		Self { memory: Memory::new(), registers: Registers::new() }
+		Self { memory: Memory::new(), registers: Registers::new(), log: RingBuffer::new() }
 	}
 
 	/// Borrows the memory of the machine.
@@ -53,6 +56,18 @@ impl<const MEMORY_SIZE: usize> Machine<MEMORY_SIZE> {
 		loop {
 			plugin.tick(self)?;
 		}
+	}
+
+	#[cfg(debug_assertions)]
+	#[inline(always)]
+	pub fn log(&self) -> &RingBuffer<4096> {
+		&self.log
+	}
+
+	#[cfg(debug_assertions)]
+	#[inline(always)]
+	pub fn log_mut(&mut self) -> &mut RingBuffer<4096> {
+		&mut self.log
 	}
 }
 

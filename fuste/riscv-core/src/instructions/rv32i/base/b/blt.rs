@@ -13,6 +13,11 @@ impl Blt {
 	pub const FUNCT3: u8 = 0b100;
 
 	#[inline(always)]
+	pub fn of(rs1: u8, rs2: u8, imm: i32) -> Self {
+		Self(B::new(Self::FUNCT3, rs1, rs2, imm))
+	}
+
+	#[inline(always)]
 	pub fn new(b: B) -> Self {
 		Self(b)
 	}

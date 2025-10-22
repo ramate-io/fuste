@@ -22,8 +22,15 @@ pub trait ExecutableInstruction<const MEMORY_SIZE: usize>: Sized + WordInstructi
 }
 
 #[derive(Debug, PartialEq)]
+pub struct EbreakExit {
+	address: u32,
+	word: u32,
+}
+
+#[derive(Debug, PartialEq)]
 pub enum ExecutableInstructionError {
-	InvalidInstruction,
+	EbreakExit(EbreakExit),
+	InvalidInstruction(u32),
 	MemoryError(MemoryError),
 }
 

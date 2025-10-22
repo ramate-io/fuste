@@ -13,6 +13,11 @@ impl Addi {
 	pub const FUNCT3: u8 = 0b000;
 
 	#[inline(always)]
+	pub fn of(rd: u8, rs1: u8, imm: i32) -> Self {
+		Self(I::new(rd, Self::FUNCT3, rs1, imm))
+	}
+
+	#[inline(always)]
 	pub fn new(i: I) -> Self {
 		Self(i)
 	}

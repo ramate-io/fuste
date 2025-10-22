@@ -1,5 +1,7 @@
 use super::I;
-use crate::instructions::{ExecutableInstruction, ExecutableInstructionError, WordInstruction};
+use crate::instructions::{
+	EbreakExit, ExecutableInstruction, ExecutableInstructionError, WordInstruction,
+};
 use crate::machine::Machine;
 
 /// EBREAK: Environment Break.
@@ -11,6 +13,13 @@ pub struct Ebreak(I);
 impl Ebreak {
 	pub const OPCODE: u32 = 0b1110011;
 	pub const IMM: i32 = 0;
+	pub const FUNCT3: u8 = 0b111;
+	pub const RS1: u8 = 0;
+
+	#[inline(always)]
+	pub fn of(rd: u8, imm: i32) -> Self {
+		Self(I::new(rd, Self::FUNCT3, Self::RS1, imm))
+	}
 
 	#[inline(always)]
 	pub fn new(i: I) -> Self {
@@ -56,14 +65,12 @@ impl WordInstruction for Ebreak {
 }
 
 impl<const MEMORY_SIZE: usize> ExecutableInstruction<MEMORY_SIZE> for Ebreak {
-	/// Ebreak instructions are used for privileged operations.
-	///
-	/// [Machine] does not have a privileged mode, so this instruction is a no-op.
+	/// Ebreak simply exits the program with the current address and word.
 	#[inline(always)]
-	fn execute(
-		self,
-		_machine: &mut Machine<MEMORY_SIZE>,
-	) -> Result<(), ExecutableInstructionError> {
-		Ok(())
+	fn execute(self, machine: &mut Machine<MEMORY_SIZE>) -> Result<(), ExecutableInstructionError> {
+		Err(ExecutableInstructionError::EbreakExit(EbreakExit {
+			address: machine.registers().program_counter(),
+			word: self.to_word(),
+		}))
 	}
 }

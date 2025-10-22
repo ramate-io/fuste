@@ -12,6 +12,11 @@ impl Jal {
 	pub const OPCODE: u32 = 0b1101111;
 
 	#[inline(always)]
+	pub fn of(rd: u8, imm: i32) -> Self {
+		Self(J::new(rd, imm))
+	}
+
+	#[inline(always)]
 	pub fn new(j: J) -> Self {
 		Self(j)
 	}
