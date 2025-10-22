@@ -1,7 +1,7 @@
 pub mod memory;
 pub use memory::Memory;
 pub mod registers;
-use crate::instructions::{ExecutableInstructionError, Instruction};
+use crate::instructions::{ExecutableInstructionError, Rv32iInstruction};
 pub use registers::Registers;
 
 /// The machine is the memory layout against which the plugins operate.
@@ -60,14 +60,14 @@ impl<const MEMORY_SIZE: usize> Machine<MEMORY_SIZE> {
 /// On each tick, it reads the instruction at the program counter and executes it.
 ///
 /// Updates of the program counter are internal to [Instruction]s.
-pub struct ControlFlowComputer;
+pub struct Rv32iComputer;
 
-impl<const MEMORY_SIZE: usize> MachinePlugin<MEMORY_SIZE> for ControlFlowComputer {
+impl<const MEMORY_SIZE: usize> MachinePlugin<MEMORY_SIZE> for Rv32iComputer {
 	fn tick(&mut self, machine: &mut Machine<MEMORY_SIZE>) -> Result<(), MachineError> {
 		let program_counter = machine.registers().program_counter();
 		let instruction =
 			machine.memory().read_word(program_counter).map_err(MachineError::MemoryError)?;
-		Instruction::load_and_execute(instruction, machine)
+		Rv32iInstruction::load_and_execute(instruction, machine)
 			.map_err(MachineError::InstructionError)?;
 
 		Ok(())
