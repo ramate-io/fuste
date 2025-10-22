@@ -1,5 +1,9 @@
 use crate::instructions::{ExecutableInstruction, ExecutableInstructionError};
 use crate::machine::Machine;
+use base::i::{
+	addi::Addi, andi::Andi, ori::Ori, slli::Slli, slti::Slti, sltiu::Sltiu, srai::Srai, srli::Srli,
+	xori::Xori, I,
+};
 use base::j::jal::Jal;
 use base::r::{
 	add::Add, and::And, or::Or, sll::Sll, slt::Slt, sltu::Sltu, sra::Sra, srl::Srl, sub::Sub,
@@ -35,6 +39,32 @@ impl<const MEMORY_SIZE: usize> Rv32iInstruction<MEMORY_SIZE> {
 			Auipc::OPCODE => Auipc::load_and_execute(word, machine),
 			// J format is just JAL
 			Jal::OPCODE => Jal::load_and_execute(word, machine),
+			// I format shares an opcode
+			I::OPCODE => {
+				// For I-type instructions, we need to check funct3
+				let i = base::i::I::from_word(word);
+				match i.funct3() {
+					Addi::FUNCT3 => Addi::new(i).execute(machine),
+					Slti::FUNCT3 => Slti::new(i).execute(machine),
+					Sltiu::FUNCT3 => Sltiu::new(i).execute(machine),
+					Xori::FUNCT3 => Xori::new(i).execute(machine),
+					Ori::FUNCT3 => Ori::new(i).execute(machine),
+					Andi::FUNCT3 => Andi::new(i).execute(machine),
+					Slli::FUNCT3 => Slli::new(i).execute(machine),
+					// For SRLI and SRAI, both have funct3=101, distinguished by funct7
+					Srli::FUNCT3 => {
+						// Check if it's SRAI (funct7=0100000) or SRLI (funct7=0000000)
+						// For I format, funct7 is in bits [31:25] of the immediate field
+						let funct7 = (i.imm() >> 5) & 0b1111111;
+						if funct7 == Srai::FUNCT7 as i32 {
+							Srai::new(i).execute(machine)
+						} else {
+							Srli::new(i).execute(machine)
+						}
+					}
+					_ => Err(ExecutableInstructionError::InvalidInstruction),
+				}
+			}
 			// R format shares an opcode
 			R::OPCODE => {
 				// For R-type instructions, we need to check funct3 and funct7
