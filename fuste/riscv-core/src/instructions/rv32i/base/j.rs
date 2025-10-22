@@ -117,9 +117,14 @@ mod tests {
 	#[test]
 	fn test_immediate_extraction_positive() {
 		// Test immediate extraction with a known pattern
-		let word = 0b0000_0000_0000_0000_0000_0000_1011_0111; // imm=0
-		let j = J::from_word(word);
-		assert_eq!(j.imm(), 0);
+		let word_with_imm =
+			0b0000_0000_0000_0000_0000_0000_1011_0111
+				| (0 << 20) | (1 << 21)
+				| (1 << 20) | (1 << 12); // imm[20] = 0, imm[10:1] = 1, imm[11] = 1, imm[19:12] = 1
+
+		let expected_imm = 0b0000_0000_0000_0000_0001_1000_0000_0010i32;
+		let j = J::from_word(word_with_imm);
+		assert_eq!(j.imm(), expected_imm);
 	}
 
 	#[test]
