@@ -19,7 +19,7 @@ pub struct R {
 }
 
 impl R {
-	pub const OPCODE: u32 = 0110011;
+	pub const OPCODE: u32 = 0b0110011;
 
 	#[inline(always)]
 	pub fn new(rd: u8, funct3: u8, rs1: u8, rs2: u8, funct7: u8) -> Self {
@@ -36,7 +36,7 @@ impl R {
 			// bits [19:15]
 			rs1: ((word & 0b0000_0000_0000_1111_1000_0000_0000_0000) >> 15) as u8,
 			// bits [24:20]
-			rs2: ((word & 0b0000_0000_0001_1111_0000_0000_0000_0000) >> 20) as u8,
+			rs2: ((word & 0b0000_0000_1111_1000_0000_0000_0000_0000) >> 20) as u8,
 			// bits [31:25]
 			funct7: ((word & 0b1111_1110_0000_0000_0000_0000_0000_0000) >> 25) as u8,
 		}
@@ -131,6 +131,20 @@ mod tests {
 	}
 
 	#[test]
+	fn test_add_x3_x1_x2_roundtrip() {
+		// Test ADD x3, x1, x2 round-trip encoding/decoding
+		let r = R::new(3, 0, 1, 2, 0);
+		let word = r.to_word(0b0110011);
+		let decoded = R::from_word(word);
+
+		assert_eq!(decoded.rd(), 3);
+		assert_eq!(decoded.funct3(), 0);
+		assert_eq!(decoded.rs1(), 1);
+		assert_eq!(decoded.rs2(), 2);
+		assert_eq!(decoded.funct7(), 0);
+	}
+
+	#[test]
 	fn test_field_extraction() {
 		// Test field extraction with known values
 		let word = 0b0000_0000_0000_0000_0000_0000_0011_0011; // ADD x0, x0, x0
@@ -139,6 +153,19 @@ mod tests {
 		assert_eq!(r.rd(), 0);
 		assert_eq!(r.funct3(), 0);
 		assert_eq!(r.rs1(), 0);
+		assert_eq!(r.rs2(), 0);
+		assert_eq!(r.funct7(), 0);
+	}
+
+	#[test]
+	fn test_field_extraction_add() {
+		//              |f7      |rs2  |rs1  |f3 |rd   |opcode |
+		let word = 0b0000000_00000_00100_000_00011_0110011;
+		let r = R::from_word(word);
+
+		assert_eq!(r.rd(), 3);
+		assert_eq!(r.funct3(), 0);
+		assert_eq!(r.rs1(), 4);
 		assert_eq!(r.rs2(), 0);
 		assert_eq!(r.funct7(), 0);
 	}

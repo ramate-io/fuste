@@ -98,8 +98,8 @@ mod tests {
 		// Check result
 		assert_eq!(machine.registers().get(3), 0b0110); // 1010 ^ 1100 = 0110
 		
-		// Check PC was incremented
-		assert_eq!(machine.registers().program_counter(), 1);
+		// Check PC was incremented by 4 (word size)
+		assert_eq!(machine.registers().program_counter(), 4);
 
 		Ok(())
 	}

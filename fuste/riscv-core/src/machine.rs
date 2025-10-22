@@ -10,7 +10,7 @@ pub struct Machine<const MEMORY_SIZE: usize> {
 	registers: Registers,
 }
 
-/// The MachinePlugin trait tells the machine what to do at each tick.
+/// The [MachinePlugin] trait tells the machine what to do at each tick.
 pub trait MachinePlugin<const MEMORY_SIZE: usize> {
 	fn tick(&mut self, machine: &mut Machine<MEMORY_SIZE>) -> Result<(), MachineError>;
 }

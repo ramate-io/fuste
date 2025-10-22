@@ -98,8 +98,8 @@ mod tests {
 		// Check result
 		assert_eq!(machine.registers().get(3), 30); // 10 + 20 = 30
 
-		// Check PC was incremented
-		assert_eq!(machine.registers().program_counter(), 1);
+		// Check PC was incremented by 4 (word size)
+		assert_eq!(machine.registers().program_counter(), 4);
 
 		Ok(())
 	}
@@ -130,9 +130,16 @@ mod tests {
 		machine.registers_mut().set(2, 7);
 
 		// Create ADD instruction word: ADD x3, x1, x2
-		// rd=3, funct3=0, rs1=1, rs2=2, funct7=0, opcode=0110011
-		let word = 0b0000_0000_0000_0001_0000_0001_1011_0011;
+		// Use the R format's to_word method to construct it properly
+		let r = R::new(3, 0, 1, 2, 0);
+		let word = r.to_word(0b0110011);
 		let instruction = Add::from_word(word);
+
+		// Debug: check what the instruction decoded to
+		assert_eq!(instruction.rd(), 3);
+		assert_eq!(instruction.rs1(), 1);
+		assert_eq!(instruction.rs2(), 2);
+
 		instruction.execute(&mut machine)?;
 
 		// Check result
