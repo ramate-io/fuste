@@ -3,6 +3,14 @@ use crate::machine::Machine;
 use crate::machine::MachineError;
 use crate::machine::MachinePlugin;
 
+/// A macro which takes a list of [WordInsructions] and returns a [u32; n] array of words.
+#[macro_export]
+macro_rules! program {
+	( $( $x:expr ),* ) => {
+		[ $( WordInstruction::to_word($x) ),* ]
+	};
+}
+
 /// The ControlFlowComputer that use the machine to implement a control flow computer.
 /// On each tick, it reads the instruction at the program counter and executes it.
 ///
