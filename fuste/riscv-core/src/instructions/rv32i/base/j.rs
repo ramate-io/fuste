@@ -26,16 +26,16 @@ impl J {
 		// imm[19:12] = word[19:12]
 
 		//                       |i20  |i[10:1]    |i11|i[19:12]   |rd   |opcode |
-		let imm_20 = (word & 0b1__00_0000_0000__0__0000_0000__0000_0__0000000) >> 11; // bit 31 -> bit 20
+		let imm_20 = (word & 0b1__00_0000_0000__0__0000_0000__0000_0__000_0000) >> 11; // bit 31 -> bit 20
 
 		//                         |i20  |i[10:1]    |i11|i[19:12]   |rd   |opcode |
-		let imm_10_1 = (word & 0b0__11_1111_1111__0__0000_0000__0000_0__0000000) >> 20; // bits 30:21 -> bits 10:1
+		let imm_10_1 = (word & 0b0__11_1111_1111__0__0000_0000__0000_0__000_0000) >> 20; // bits 30:21 -> bits 10:1
 
 		//                       |i20  |i[10:1]    |i11|i[19:12]   |rd   |opcode |
-		let imm_11 = (word & 0b0__00_0000_0000__1__0000_0000__0000_0__0000000) >> 9; // bit 20 -> bit 11
+		let imm_11 = (word & 0b0__00_0000_0000__1__0000_0000__0000_0__000_0000) >> 9; // bit 20 -> bit 11
 
 		//                         |i20  |i[10:1]    |i11|i[19:12]   |rd   |opcode |
-		let imm_19_12 = word & 0b0__00_0000_0000__0__1111_1111__0000_0__0000000; // bits 19:12 -> bits 19:12
+		let imm_19_12 = word & 0b0__00_0000_0000__0__1111_1111__0000_0__000_0000; // bits 19:12 -> bits 19:12
 
 		let imm_u32 = imm_20 | imm_10_1 | imm_11 | imm_19_12;
 
@@ -64,12 +64,6 @@ impl J {
 	#[inline(always)]
 	pub fn imm(&self) -> i32 {
 		self.imm
-	}
-
-	#[inline(always)]
-	pub fn offset(&self) -> i32 {
-		// J-type instructions use the immediate shifted left by 1 bit
-		self.imm << 1
 	}
 
 	#[inline(always)]
@@ -107,30 +101,46 @@ mod tests {
 		assert_eq!(j.word_imm(), 0b0000_0000_0000_0000_0000_0000_0000_0000); // imm=0
 
 		// Test the to_word method step by step
-		let opcode = 111; // 0b1101111
-		let word_opcode = opcode & 0b0000_0000_0000_0000_0000_0000_0111_1111;
-		let word_rd = j.word_rd();
-		let word_imm = j.word_imm();
-		let word = word_opcode | word_rd | word_imm;
+		let word = j.to_word(0b0110111);
 
-		// Expected: opcode=1101111 (bits 6:0), rd=1 (bits 11:7), imm=0 (bits 31:12)
-		// 0b0000_0000_0000_0000_0000_0000_1011_0111
-		let expected = 0b0000_0000_0000_0000_0000_0000_1011_0111;
-		assert_eq!(word, expected);
+		assert_eq!(word, 0b0000_0000_0000_0000_0000_0000_1011_0111);
 	}
 
 	#[test]
-	fn test_immediate_extraction() {
+	fn test_immediate_extraction_zero() {
 		// Test immediate extraction with a known pattern
 		let word = 0b0000_0000_0000_0000_0000_0000_1011_0111; // imm=0
 		let j = J::from_word(word);
 		assert_eq!(j.imm(), 0);
-		assert_eq!(j.offset(), 0);
+	}
 
+	#[test]
+	fn test_immediate_extraction_positive() {
+		// Test immediate extraction with a known pattern
+		let word = 0b0000_0000_0000_0000_0000_0000_1011_0111; // imm=0
+		let j = J::from_word(word);
+		assert_eq!(j.imm(), 0);
+	}
+
+	#[test]
+	fn test_immediate_extraction_negative_simple() {
 		// Test with non-zero immediate
 		let word_with_imm = 0b0000_0000_0000_0000_0000_0000_1011_0111 | (1 << 31); // imm[20] = 1
 		let j_with_imm = J::from_word(word_with_imm);
 		assert_eq!(j_with_imm.imm(), -1048576); // sign-extended 21-bit immediate
-		assert_eq!(j_with_imm.offset(), -2097152); // offset = imm << 1
+	}
+
+	#[test]
+	fn test_immediate_extraction_negative_complex() {
+		// Test with non-zero immediate
+		let word_with_imm =
+			0b0000_0000_0000_0000_0000_0000_1011_0111
+				| (1 << 31) | (1 << 21)
+				| (1 << 20) | (1 << 12); // imm[20] = 1, imm[10:1] = 1, imm[11] = 1, imm[19:12] = 1
+
+		// let expected_imm: i32 = 0b1111_1111_1111_0000_0001_1000_0000_0010;
+		let expected_imm = -1042430i32;
+		let j_with_imm = J::from_word(word_with_imm);
+		assert_eq!(j_with_imm.imm(), expected_imm); // sign-extended 21-bit immediate
 	}
 }

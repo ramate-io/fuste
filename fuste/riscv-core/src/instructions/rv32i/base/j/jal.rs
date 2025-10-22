@@ -27,11 +27,6 @@ impl Jal {
 	}
 
 	#[inline(always)]
-	pub fn offset(&self) -> i32 {
-		self.0.offset()
-	}
-
-	#[inline(always)]
 	pub fn to_word(&self) -> u32 {
 		self.0.to_word(Self::OPCODE)
 	}
@@ -56,7 +51,7 @@ impl<const MEMORY_SIZE: usize> ExecutableInstruction<MEMORY_SIZE> for Jal {
 		registers.set(rd, current_pc + 4);
 
 		// Calculate jump target: PC + offset
-		let target_pc = (current_pc as i32 + self.offset()) as u32;
+		let target_pc = (current_pc as i32 + self.imm()) as u32;
 
 		// Update program counter to jump target
 		registers.program_counter_mut().set(target_pc);
