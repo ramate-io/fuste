@@ -40,6 +40,9 @@ impl<const MEMORY_SIZE: usize> Instruction<MEMORY_SIZE> {
 		// The opcode is the least significant 7 bits of the word.
 		let opcode = word & 0b0000_0000_0000_0000_0000_0000_0111_1111;
 
+		// The main reason for not parsing into structs containing all the information
+		// is the overhead on construction of the structs.
+		// For semantic clarity, we may change this in the short run, however.
 		match opcode {
 			Lui::OPCODE => Lui::load_and_execute(word, machine),
 			Jal::OPCODE => Jal::load_and_execute(word, machine),
