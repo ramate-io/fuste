@@ -1,5 +1,6 @@
 use crate::instructions::{ExecutableInstruction, ExecutableInstructionError};
 use crate::machine::Machine;
+use base::b::{beq::Beq, bge::Bge, bgeu::Bgeu, blt::Blt, bltu::Bltu, bne::Bne, B};
 use base::i::{
 	addi::Addi, andi::Andi, jalr::Jalr, lb::Lb, lbu::Lbu, lh::Lh, lhu::Lhu, lw::Lw, ori::Ori,
 	slli::Slli, slti::Slti, sltiu::Sltiu, srai::Srai, srli::Srli, xori::Xori, I,
@@ -41,6 +42,20 @@ impl<const MEMORY_SIZE: usize> Rv32iInstruction<MEMORY_SIZE> {
 			Jal::OPCODE => Jal::load_and_execute(word, machine),
 			// JALR has its own opcode
 			Jalr::OPCODE => Jalr::load_and_execute(word, machine),
+			// B format shares an opcode
+			B::OPCODE => {
+				// For B-type instructions, we need to check funct3
+				let b = base::b::B::from_word(word);
+				match b.funct3() {
+					Beq::FUNCT3 => Beq::new(b).execute(machine),
+					Bne::FUNCT3 => Bne::new(b).execute(machine),
+					Blt::FUNCT3 => Blt::new(b).execute(machine),
+					Bge::FUNCT3 => Bge::new(b).execute(machine),
+					Bltu::FUNCT3 => Bltu::new(b).execute(machine),
+					Bgeu::FUNCT3 => Bgeu::new(b).execute(machine),
+					_ => Err(ExecutableInstructionError::InvalidInstruction),
+				}
+			}
 			// Load instructions share an opcode
 			Lw::OPCODE => {
 				// For load instructions, we need to check funct3
