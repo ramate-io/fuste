@@ -1,3 +1,4 @@
+use crate::machine::memory::MemoryError;
 use crate::machine::Machine;
 pub mod rv32i;
 pub use rv32i::Rv32iInstruction;
@@ -24,4 +25,11 @@ pub trait ExecutableInstruction<const MEMORY_SIZE: usize>: Sized + WordInstructi
 #[derive(Debug, PartialEq)]
 pub enum ExecutableInstructionError {
 	InvalidInstruction,
+	MemoryError(MemoryError),
+}
+
+impl From<MemoryError> for ExecutableInstructionError {
+	fn from(error: MemoryError) -> Self {
+		ExecutableInstructionError::MemoryError(error)
+	}
 }

@@ -1,8 +1,8 @@
 use crate::instructions::{ExecutableInstruction, ExecutableInstructionError};
 use crate::machine::Machine;
 use base::i::{
-	addi::Addi, andi::Andi, ori::Ori, slli::Slli, slti::Slti, sltiu::Sltiu, srai::Srai, srli::Srli,
-	xori::Xori, I,
+	addi::Addi, andi::Andi, jalr::Jalr, lb::Lb, lbu::Lbu, lh::Lh, lhu::Lhu, lw::Lw, ori::Ori,
+	slli::Slli, slti::Slti, sltiu::Sltiu, srai::Srai, srli::Srli, xori::Xori, I,
 };
 use base::j::jal::Jal;
 use base::r::{
@@ -39,6 +39,21 @@ impl<const MEMORY_SIZE: usize> Rv32iInstruction<MEMORY_SIZE> {
 			Auipc::OPCODE => Auipc::load_and_execute(word, machine),
 			// J format is just JAL
 			Jal::OPCODE => Jal::load_and_execute(word, machine),
+			// JALR has its own opcode
+			Jalr::OPCODE => Jalr::load_and_execute(word, machine),
+			// Load instructions share an opcode
+			Lw::OPCODE => {
+				// For load instructions, we need to check funct3
+				let i = base::i::I::from_word(word);
+				match i.funct3() {
+					Lb::FUNCT3 => Lb::new(i).execute(machine),
+					Lh::FUNCT3 => Lh::new(i).execute(machine),
+					Lw::FUNCT3 => Lw::new(i).execute(machine),
+					Lbu::FUNCT3 => Lbu::new(i).execute(machine),
+					Lhu::FUNCT3 => Lhu::new(i).execute(machine),
+					_ => Err(ExecutableInstructionError::InvalidInstruction),
+				}
+			}
 			// I format shares an opcode
 			I::OPCODE => {
 				// For I-type instructions, we need to check funct3
