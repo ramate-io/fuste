@@ -59,6 +59,26 @@ impl<const SIZE: usize> Memory<SIZE> {
 	pub const fn size() -> u32 {
 		SIZE as u32
 	}
+
+	/// Loads a segment into memory starting at the given address
+	pub fn load_segment(&mut self, address: u32, segment: &[u8]) -> Result<(), MemoryError> {
+		if address as usize + segment.len() > SIZE {
+			return Err(MemoryError::AddressOutOfBounds);
+		}
+		self.memory[address as usize..address as usize + segment.len()].copy_from_slice(segment);
+		Ok(())
+	}
+
+	/// Loads a word segment into memory starting at the given address
+	pub fn load_word_segment(&mut self, address: u32, segment: &[u32]) -> Result<(), MemoryError> {
+		if address as usize + segment.len() * 4 > SIZE {
+			return Err(MemoryError::AddressOutOfBounds);
+		}
+		for (i, word) in segment.iter().enumerate() {
+			self.write_word(address + i as u32 * 4, *word)?;
+		}
+		Ok(())
+	}
 }
 
 #[derive(Debug, PartialEq)]
