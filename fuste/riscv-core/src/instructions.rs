@@ -6,9 +6,11 @@ pub trait ParseableInstruction {
 	fn from_word(word: u32) -> Self;
 }
 
-pub trait ExecutableInstruction<const MEMORY_SIZE: usize>: Sized {
+pub trait WordInstruction {
 	fn from_word(word: u32) -> Self;
+}
 
+pub trait ExecutableInstruction<const MEMORY_SIZE: usize>: Sized + WordInstruction {
 	fn execute(self, machine: &mut Machine<MEMORY_SIZE>) -> Result<(), ExecutableInstructionError>;
 
 	fn load_and_execute(
