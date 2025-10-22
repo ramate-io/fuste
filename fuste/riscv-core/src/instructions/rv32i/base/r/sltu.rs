@@ -37,19 +37,14 @@ impl Sltu {
 	pub fn funct3(&self) -> u8 {
 		self.0.funct3()
 	}
-
-	#[inline(always)]
-	pub fn funct7(&self) -> u8 {
-		self.0.funct7()
-	}
-
-	#[inline(always)]
-	pub fn to_word(&self) -> u32 {
-		self.0.to_word(Self::OPCODE)
-	}
 }
 
 impl WordInstruction for Sltu {
+	#[inline(always)]
+	fn to_word(self) -> u32 {
+		self.0.to_word(Self::OPCODE)
+	}
+
 	#[inline(always)]
 	fn from_word(word: u32) -> Self {
 		Self(R::from_word(word))
@@ -87,17 +82,17 @@ mod tests {
 	#[test]
 	fn test_sltu_inner_construction() -> Result<(), ExecutableInstructionError> {
 		let mut machine = Machine::<1024>::new();
-		
+
 		// Set up source registers
 		machine.registers_mut().set(1, 5);
 		machine.registers_mut().set(2, 10);
-		
+
 		let instruction = Sltu::new(R::new(3, 0b011, 1, 2, 0));
 		instruction.execute(&mut machine)?;
 
 		// Check result
 		assert_eq!(machine.registers().get(3), 1); // 5 < 10 = true
-		
+
 		// Check PC was incremented by 4 (word size)
 		assert_eq!(machine.registers().program_counter(), 4);
 
@@ -107,11 +102,11 @@ mod tests {
 	#[test]
 	fn test_sltu_with_negative_numbers() -> Result<(), ExecutableInstructionError> {
 		let mut machine = Machine::<1024>::new();
-		
+
 		// Set up source registers with negative numbers (unsigned comparison)
 		machine.registers_mut().set(1, 0xFFFFFFFF); // 0xFFFFFFFF (large unsigned)
 		machine.registers_mut().set(2, 0);
-		
+
 		let instruction = Sltu::new(R::new(3, 0b011, 1, 2, 0));
 		instruction.execute(&mut machine)?;
 
@@ -124,11 +119,11 @@ mod tests {
 	#[test]
 	fn test_sltu_equal_values() -> Result<(), ExecutableInstructionError> {
 		let mut machine = Machine::<1024>::new();
-		
+
 		// Set up source registers with equal values
 		machine.registers_mut().set(1, 5);
 		machine.registers_mut().set(2, 5);
-		
+
 		let instruction = Sltu::new(R::new(3, 0b011, 1, 2, 0));
 		instruction.execute(&mut machine)?;
 

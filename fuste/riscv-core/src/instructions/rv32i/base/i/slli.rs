@@ -36,14 +36,14 @@ impl Slli {
 	pub fn funct3(&self) -> u8 {
 		self.0.funct3()
 	}
-
-	#[inline(always)]
-	pub fn to_word(&self) -> u32 {
-		self.0.to_word(Self::OPCODE)
-	}
 }
 
 impl WordInstruction for Slli {
+	#[inline(always)]
+	fn to_word(self) -> u32 {
+		self.0.to_word(Self::OPCODE)
+	}
+
 	#[inline(always)]
 	fn from_word(word: u32) -> Self {
 		Self(I::from_word(word))

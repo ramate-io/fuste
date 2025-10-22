@@ -42,14 +42,14 @@ impl Sra {
 	pub fn funct7(&self) -> u8 {
 		self.0.funct7()
 	}
-
-	#[inline(always)]
-	pub fn to_word(&self) -> u32 {
-		self.0.to_word(Self::OPCODE)
-	}
 }
 
 impl WordInstruction for Sra {
+	#[inline(always)]
+	fn to_word(self) -> u32 {
+		self.0.to_word(Self::OPCODE)
+	}
+
 	#[inline(always)]
 	fn from_word(word: u32) -> Self {
 		Self(R::from_word(word))
@@ -88,17 +88,17 @@ mod tests {
 	#[test]
 	fn test_sra_inner_construction() -> Result<(), ExecutableInstructionError> {
 		let mut machine = Machine::<1024>::new();
-		
+
 		// Set up source registers
 		machine.registers_mut().set(1, 0b0000_0000_0000_0000_0000_0000_0000_1000); // 8
 		machine.registers_mut().set(2, 2); // shift by 2
-		
+
 		let instruction = Sra::new(R::new(3, 0b101, 1, 2, 0b0100000));
 		instruction.execute(&mut machine)?;
 
 		// Check result
 		assert_eq!(machine.registers().get(3), 0b0000_0000_0000_0000_0000_0000_0000_0010); // 8 >> 2 = 2
-		
+
 		// Check PC was incremented by 4 (word size)
 		assert_eq!(machine.registers().program_counter(), 4);
 
@@ -108,11 +108,11 @@ mod tests {
 	#[test]
 	fn test_sra_with_negative_number() -> Result<(), ExecutableInstructionError> {
 		let mut machine = Machine::<1024>::new();
-		
+
 		// Set up source registers with negative number
 		machine.registers_mut().set(1, 0x80000000); // Negative number
 		machine.registers_mut().set(2, 1); // shift by 1
-		
+
 		let instruction = Sra::new(R::new(3, 0b101, 1, 2, 0b0100000));
 		instruction.execute(&mut machine)?;
 

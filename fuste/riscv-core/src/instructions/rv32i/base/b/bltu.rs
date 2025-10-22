@@ -36,14 +36,14 @@ impl Bltu {
 	pub fn funct3(&self) -> u8 {
 		self.0.funct3()
 	}
-
-	#[inline(always)]
-	pub fn to_word(&self) -> u32 {
-		self.0.to_word(Self::OPCODE)
-	}
 }
 
 impl WordInstruction for Bltu {
+	#[inline(always)]
+	fn to_word(self) -> u32 {
+		self.0.to_word(Self::OPCODE)
+	}
+
 	#[inline(always)]
 	fn from_word(word: u32) -> Self {
 		Self(B::from_word(word))
@@ -83,11 +83,11 @@ mod tests {
 	#[test]
 	fn test_bltu_inner_construction() -> Result<(), ExecutableInstructionError> {
 		let mut machine = Machine::<1024>::new();
-		
+
 		// Set up registers: rs1 < rs2 (unsigned)
 		machine.registers_mut().set(1, 5);
 		machine.registers_mut().set(2, 10);
-		
+
 		let instruction = Bltu::new(B::new(0b110, 1, 2, 8)); // branch offset 8
 		instruction.execute(&mut machine)?;
 
@@ -100,11 +100,11 @@ mod tests {
 	#[test]
 	fn test_bltu_branch_not_taken() -> Result<(), ExecutableInstructionError> {
 		let mut machine = Machine::<1024>::new();
-		
+
 		// Set up registers: rs1 >= rs2 (unsigned)
 		machine.registers_mut().set(1, 15);
 		machine.registers_mut().set(2, 10);
-		
+
 		let instruction = Bltu::new(B::new(0b110, 1, 2, 8)); // branch offset 8
 		instruction.execute(&mut machine)?;
 
@@ -117,11 +117,11 @@ mod tests {
 	#[test]
 	fn test_bltu_with_large_values() -> Result<(), ExecutableInstructionError> {
 		let mut machine = Machine::<1024>::new();
-		
+
 		// Set up registers with large unsigned values
 		machine.registers_mut().set(1, 0x80000000); // Large unsigned value
 		machine.registers_mut().set(2, 0xFFFFFFFF); // Even larger unsigned value
-		
+
 		let instruction = Bltu::new(B::new(0b110, 1, 2, 8)); // branch offset 8
 		instruction.execute(&mut machine)?;
 

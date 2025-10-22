@@ -42,14 +42,14 @@ impl Slt {
 	pub fn funct7(&self) -> u8 {
 		self.0.funct7()
 	}
-
-	#[inline(always)]
-	pub fn to_word(&self) -> u32 {
-		self.0.to_word(Self::OPCODE)
-	}
 }
 
 impl WordInstruction for Slt {
+	#[inline(always)]
+	fn to_word(self) -> u32 {
+		self.0.to_word(Self::OPCODE)
+	}
+
 	#[inline(always)]
 	fn from_word(word: u32) -> Self {
 		Self(R::from_word(word))
@@ -87,17 +87,17 @@ mod tests {
 	#[test]
 	fn test_slt_inner_construction() -> Result<(), ExecutableInstructionError> {
 		let mut machine = Machine::<1024>::new();
-		
+
 		// Set up source registers
 		machine.registers_mut().set(1, 5);
 		machine.registers_mut().set(2, 10);
-		
+
 		let instruction = Slt::new(R::new(3, 0b010, 1, 2, 0));
 		instruction.execute(&mut machine)?;
 
 		// Check result
 		assert_eq!(machine.registers().get(3), 1); // 5 < 10 = true
-		
+
 		// Check PC was incremented by 4 (word size)
 		assert_eq!(machine.registers().program_counter(), 4);
 
@@ -107,11 +107,11 @@ mod tests {
 	#[test]
 	fn test_slt_false() -> Result<(), ExecutableInstructionError> {
 		let mut machine = Machine::<1024>::new();
-		
+
 		// Set up source registers
 		machine.registers_mut().set(1, 10);
 		machine.registers_mut().set(2, 5);
-		
+
 		let instruction = Slt::new(R::new(3, 0b010, 1, 2, 0));
 		instruction.execute(&mut machine)?;
 
@@ -124,11 +124,11 @@ mod tests {
 	#[test]
 	fn test_slt_with_negative_numbers() -> Result<(), ExecutableInstructionError> {
 		let mut machine = Machine::<1024>::new();
-		
+
 		// Set up source registers with negative numbers
 		machine.registers_mut().set(1, 0xFFFFFFFF); // -1 in two's complement
 		machine.registers_mut().set(2, 0);
-		
+
 		let instruction = Slt::new(R::new(3, 0b010, 1, 2, 0));
 		instruction.execute(&mut machine)?;
 
@@ -141,11 +141,11 @@ mod tests {
 	#[test]
 	fn test_slt_equal_values() -> Result<(), ExecutableInstructionError> {
 		let mut machine = Machine::<1024>::new();
-		
+
 		// Set up source registers with equal values
 		machine.registers_mut().set(1, 5);
 		machine.registers_mut().set(2, 5);
-		
+
 		let instruction = Slt::new(R::new(3, 0b010, 1, 2, 0));
 		instruction.execute(&mut machine)?;
 

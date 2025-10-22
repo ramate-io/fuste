@@ -2,11 +2,10 @@ use crate::machine::memory::MemoryError;
 use crate::machine::Machine;
 pub mod rv32i;
 pub use rv32i::Rv32iInstruction;
-pub trait ParseableInstruction {
-	fn from_word(word: u32) -> Self;
-}
 
 pub trait WordInstruction {
+	fn to_word(self) -> u32;
+
 	fn from_word(word: u32) -> Self;
 }
 

@@ -36,14 +36,14 @@ impl Ori {
 	pub fn funct3(&self) -> u8 {
 		self.0.funct3()
 	}
-
-	#[inline(always)]
-	pub fn to_word(&self) -> u32 {
-		self.0.to_word(Self::OPCODE)
-	}
 }
 
 impl WordInstruction for Ori {
+	#[inline(always)]
+	fn to_word(self) -> u32 {
+		self.0.to_word(Self::OPCODE)
+	}
+
 	#[inline(always)]
 	fn from_word(word: u32) -> Self {
 		Self(I::from_word(word))
@@ -80,16 +80,16 @@ mod tests {
 	#[test]
 	fn test_ori_inner_construction() -> Result<(), ExecutableInstructionError> {
 		let mut machine = Machine::<1024>::new();
-		
+
 		// Set up source register
 		machine.registers_mut().set(1, 0b1010);
-		
+
 		let instruction = Ori::new(I::new(2, 0b110, 1, 0b1100));
 		instruction.execute(&mut machine)?;
 
 		// Check result
 		assert_eq!(machine.registers().get(2), 0b1110); // 1010 | 1100 = 1110
-		
+
 		// Check PC was incremented by 4
 		assert_eq!(machine.registers().program_counter(), 4);
 
@@ -99,10 +99,10 @@ mod tests {
 	#[test]
 	fn test_ori_with_zero() -> Result<(), ExecutableInstructionError> {
 		let mut machine = Machine::<1024>::new();
-		
+
 		// Set up source register
 		machine.registers_mut().set(1, 0b1010);
-		
+
 		let instruction = Ori::new(I::new(2, 0b110, 1, 0));
 		instruction.execute(&mut machine)?;
 
@@ -115,10 +115,10 @@ mod tests {
 	#[test]
 	fn test_ori_with_ones() -> Result<(), ExecutableInstructionError> {
 		let mut machine = Machine::<1024>::new();
-		
+
 		// Set up source register
 		machine.registers_mut().set(1, 0xFFFFFFFF);
-		
+
 		let instruction = Ori::new(I::new(2, 0b110, 1, -1)); // -1 = 0xFFFFFFFF
 		instruction.execute(&mut machine)?;
 

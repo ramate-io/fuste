@@ -36,14 +36,14 @@ impl Bgeu {
 	pub fn funct3(&self) -> u8 {
 		self.0.funct3()
 	}
-
-	#[inline(always)]
-	pub fn to_word(&self) -> u32 {
-		self.0.to_word(Self::OPCODE)
-	}
 }
 
 impl WordInstruction for Bgeu {
+	#[inline(always)]
+	fn to_word(self) -> u32 {
+		self.0.to_word(Self::OPCODE)
+	}
+
 	#[inline(always)]
 	fn from_word(word: u32) -> Self {
 		Self(B::from_word(word))
@@ -83,11 +83,11 @@ mod tests {
 	#[test]
 	fn test_bgeu_inner_construction() -> Result<(), ExecutableInstructionError> {
 		let mut machine = Machine::<1024>::new();
-		
+
 		// Set up registers: rs1 >= rs2 (unsigned)
 		machine.registers_mut().set(1, 15);
 		machine.registers_mut().set(2, 10);
-		
+
 		let instruction = Bgeu::new(B::new(0b111, 1, 2, 8)); // branch offset 8
 		instruction.execute(&mut machine)?;
 
@@ -100,11 +100,11 @@ mod tests {
 	#[test]
 	fn test_bgeu_branch_not_taken() -> Result<(), ExecutableInstructionError> {
 		let mut machine = Machine::<1024>::new();
-		
+
 		// Set up registers: rs1 < rs2 (unsigned)
 		machine.registers_mut().set(1, 5);
 		machine.registers_mut().set(2, 10);
-		
+
 		let instruction = Bgeu::new(B::new(0b111, 1, 2, 8)); // branch offset 8
 		instruction.execute(&mut machine)?;
 
@@ -117,11 +117,11 @@ mod tests {
 	#[test]
 	fn test_bgeu_with_equal_values() -> Result<(), ExecutableInstructionError> {
 		let mut machine = Machine::<1024>::new();
-		
+
 		// Set up registers with equal values
 		machine.registers_mut().set(1, 10);
 		machine.registers_mut().set(2, 10);
-		
+
 		let instruction = Bgeu::new(B::new(0b111, 1, 2, 8)); // branch offset 8
 		instruction.execute(&mut machine)?;
 

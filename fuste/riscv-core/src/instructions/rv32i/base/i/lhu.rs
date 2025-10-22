@@ -36,14 +36,14 @@ impl Lhu {
 	pub fn funct3(&self) -> u8 {
 		self.0.funct3()
 	}
-
-	#[inline(always)]
-	pub fn to_word(&self) -> u32 {
-		self.0.to_word(Self::OPCODE)
-	}
 }
 
 impl WordInstruction for Lhu {
+	#[inline(always)]
+	fn to_word(self) -> u32 {
+		self.0.to_word(Self::OPCODE)
+	}
+
 	#[inline(always)]
 	fn from_word(word: u32) -> Self {
 		Self(I::from_word(word))
@@ -88,20 +88,20 @@ mod tests {
 	#[test]
 	fn test_lhu_inner_construction() -> Result<(), ExecutableInstructionError> {
 		let mut machine = Machine::<1024>::new();
-		
+
 		// Set up base address register
 		machine.registers_mut().set(1, 0x100);
-		
+
 		// Set up memory at address 0x100
 		machine.memory_mut().write_byte(0x100, 0x34)?;
 		machine.memory_mut().write_byte(0x101, 0x12)?;
-		
+
 		let instruction = Lhu::new(I::new(2, 0b101, 1, 0)); // load from address 0x100
 		instruction.execute(&mut machine)?;
 
 		// Check loaded value (zero extended)
 		assert_eq!(machine.registers().get(2), 0x1234);
-		
+
 		// Check PC was incremented by 4
 		assert_eq!(machine.registers().program_counter(), 4);
 
@@ -111,14 +111,14 @@ mod tests {
 	#[test]
 	fn test_lhu_with_negative_halfword() -> Result<(), ExecutableInstructionError> {
 		let mut machine = Machine::<1024>::new();
-		
+
 		// Set up base address register
 		machine.registers_mut().set(1, 0x100);
-		
+
 		// Set up memory at address 0x100 with negative halfword
 		machine.memory_mut().write_byte(0x100, 0x00)?;
 		machine.memory_mut().write_byte(0x101, 0x80)?; // 32768 unsigned
-		
+
 		let instruction = Lhu::new(I::new(2, 0b101, 1, 0)); // load from address 0x100
 		instruction.execute(&mut machine)?;
 
@@ -131,14 +131,14 @@ mod tests {
 	#[test]
 	fn test_lhu_with_offset() -> Result<(), ExecutableInstructionError> {
 		let mut machine = Machine::<1024>::new();
-		
+
 		// Set up base address register
 		machine.registers_mut().set(1, 0x100);
-		
+
 		// Set up memory at address 0x104
 		machine.memory_mut().write_byte(0x104, 0xCD)?;
 		machine.memory_mut().write_byte(0x105, 0xAB)?;
-		
+
 		let instruction = Lhu::new(I::new(2, 0b101, 1, 4)); // load from address 0x100 + 4 = 0x104
 		instruction.execute(&mut machine)?;
 
