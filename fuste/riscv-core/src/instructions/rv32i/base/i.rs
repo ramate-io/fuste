@@ -1,5 +1,8 @@
 pub mod addi;
 pub mod andi;
+pub mod ebreak;
+pub mod ecall;
+pub mod fence;
 pub mod jalr;
 pub mod lb;
 pub mod lbu;
@@ -115,8 +118,62 @@ impl I {
 
 	#[inline(always)]
 	pub fn funct7(&self) -> u8 {
-		// For shift instructions, the shift amount is in the lower 5 bits of imm
-		(self.imm & 0b1111111) as u8
+		// For shift instructions, the funct7 is the upper 7 bits of imm which is 12 bits in total
+		(self.imm & 0b1111_111__0_0000) as u8
+	}
+
+	#[inline(always)]
+	pub fn fence_fm(&self) -> u8 {
+		// For fence instructions, the fence_fm is the upper 4 bits of imm which is 12 bits in total
+		(self.imm & 0b1111__0_0000_0000) as u8
+	}
+
+	#[inline(always)]
+	pub fn fence_pi(&self) -> bool {
+		// For fence instructions, the fence_pi is the bit[7] of imm
+		(self.imm & 0b1000_0000) != 0
+	}
+
+	#[inline(always)]
+	pub fn fence_po(&self) -> bool {
+		// For fence instructions, the fence_po is the bit[6] of imm
+		(self.imm & 0b0100_0000) != 0
+	}
+
+	#[inline(always)]
+	pub fn fence_pr(&self) -> bool {
+		// For fence instructions, the fence_lr is the bit[5] of imm
+		(self.imm & 0b0010_0000) != 0
+	}
+
+	#[inline(always)]
+	pub fn fence_pw(&self) -> bool {
+		// For fence instructions, the fence_sc is the bit[4] of imm
+		(self.imm & 0b0001_0000) != 0
+	}
+
+	#[inline(always)]
+	pub fn fence_si(&self) -> bool {
+		// For fence instructions, the fence_rw is the bit[3] of imm
+		(self.imm & 0b0000_1000) != 0
+	}
+
+	#[inline(always)]
+	pub fn fence_so(&self) -> bool {
+		// For fence instructions, the fence_rl is the bit[2] of imm
+		(self.imm & 0b0000_0100) != 0
+	}
+
+	#[inline(always)]
+	pub fn fence_sr(&self) -> bool {
+		// For fence instructions, the fence_w is the bit[1] of imm
+		(self.imm & 0b0000_0010) != 0
+	}
+
+	#[inline(always)]
+	pub fn fence_sw(&self) -> bool {
+		// For fence instructions, the fence_i is the bit[0] of imm
+		(self.imm & 0b0000_0001) != 0
 	}
 }
 

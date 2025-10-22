@@ -2,8 +2,9 @@ use crate::instructions::{ExecutableInstruction, ExecutableInstructionError};
 use crate::machine::Machine;
 use base::b::{beq::Beq, bge::Bge, bgeu::Bgeu, blt::Blt, bltu::Bltu, bne::Bne, B};
 use base::i::{
-	addi::Addi, andi::Andi, jalr::Jalr, lb::Lb, lbu::Lbu, lh::Lh, lhu::Lhu, lw::Lw, ori::Ori,
-	slli::Slli, slti::Slti, sltiu::Sltiu, srai::Srai, srli::Srli, xori::Xori, I,
+	addi::Addi, andi::Andi, ebreak::Ebreak, ecall::Ecall, fence::Fence, jalr::Jalr, lb::Lb,
+	lbu::Lbu, lh::Lh, lhu::Lhu, lw::Lw, ori::Ori, slli::Slli, slti::Slti, sltiu::Sltiu, srai::Srai,
+	srli::Srli, xori::Xori, I,
 };
 use base::j::jal::Jal;
 use base::r::{
@@ -109,6 +110,17 @@ impl<const MEMORY_SIZE: usize> Rv32iInstruction<MEMORY_SIZE> {
 					(Sra::FUNCT3, Sra::FUNCT7) => Sra::new(r).execute(machine),
 					(Or::FUNCT3, Or::FUNCT7) => Or::new(r).execute(machine),
 					(And::FUNCT3, And::FUNCT7) => And::new(r).execute(machine),
+					_ => Err(ExecutableInstructionError::InvalidInstruction),
+				}
+			}
+			// Fence has its own opcode
+			Fence::OPCODE => Fence::load_and_execute(word, machine),
+			// Environment instructions have their own structur
+			Ecall::OPCODE => {
+				let i = base::i::I::from_word(word);
+				match i.imm() {
+					Ecall::IMM => Ecall::new(i).execute(machine),
+					Ebreak::IMM => Ebreak::new(i).execute(machine),
 					_ => Err(ExecutableInstructionError::InvalidInstruction),
 				}
 			}
