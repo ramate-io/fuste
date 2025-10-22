@@ -1,5 +1,6 @@
 use crate::machine::Machine;
 pub mod rv32i;
+use rv32i::base::j::jal::Jal;
 use rv32i::base::u::lui::Lui;
 
 pub trait ParseableInstruction {
@@ -40,6 +41,7 @@ impl<const MEMORY_SIZE: usize> Instruction<MEMORY_SIZE> {
 
 		match opcode {
 			Lui::OPCODE => Lui::load_and_execute(word, machine),
+			Jal::OPCODE => Jal::load_and_execute(word, machine),
 			_ => Err(ExecutableInstructionError::InvalidInstruction),
 		}
 	}
