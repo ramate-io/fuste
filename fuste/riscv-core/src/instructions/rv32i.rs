@@ -85,11 +85,10 @@ impl<const MEMORY_SIZE: usize> Rv32iInstruction<MEMORY_SIZE> {
 					Srli::FUNCT3 => {
 						// Check if it's SRAI (funct7=0100000) or SRLI (funct7=0000000)
 						// For I format, funct7 is in bits [31:25] of the immediate field
-						let funct7 = (i.imm() >> 5) & 0b1111111;
-						if funct7 == Srai::FUNCT7 as i32 {
-							Srai::new(i).execute(machine)
-						} else {
-							Srli::new(i).execute(machine)
+						match i.funct7() {
+							Srai::FUNCT7 => Srai::new(i).execute(machine),
+							Srl::FUNCT7 => Srli::new(i).execute(machine),
+							_ => Err(ExecutableInstructionError::InvalidInstruction),
 						}
 					}
 					_ => Err(ExecutableInstructionError::InvalidInstruction),

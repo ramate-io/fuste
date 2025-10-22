@@ -112,6 +112,12 @@ impl I {
 
 		word_opcode | self.word_rd() | self.word_funct3() | self.word_rs1() | self.word_imm()
 	}
+
+	#[inline(always)]
+	pub fn funct7(&self) -> u8 {
+		// For shift instructions, the shift amount is in the lower 5 bits of imm
+		(self.imm & 0b1111111) as u8
+	}
 }
 
 #[cfg(test)]
