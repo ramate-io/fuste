@@ -32,15 +32,15 @@ impl B {
 			rs2: ((word & 0b0000_0000_1111_1000_0000_0000_0000_0000) >> 20) as u8,
 			// bits [31:25] and [11:8] and [7] - B-type immediate reconstruction
 			imm: {
-				let imm_11 = (word & 0b1000_0000_0000_0000_0000_0000_0000_0000) >> 31; // bit 31
-				let imm_4_1 = (word & 0b0000_0000_0000_0000_0000_0000_1111_0000) >> 4; // bits [11:8]
-				let imm_10_5 = (word & 0b0111_1110_0000_0000_0000_0000_0000_0000) >> 25; // bits [30:25]
-				let imm_12 = (word & 0b0000_0000_0000_0000_0000_0000_0000_1000) >> 7; // bit 7
+				let imm_12 = (word & 0b1000_0000_0000_0000_0000_0000_0000_0000) >> 19; // bit 31 -> imm[12]
+				let imm_4_1 = (word & 0b0000_0000_0000_0000_0000_1111_0000_0000) >> 7; // bits [11:8] -> imm[4:1]
+				let imm_10_5 = (word & 0b0111_1110_0000_0000_0000_0000_0000_0000) >> 20; // bits [30:25] -> imm[10:5]
+				let imm_11 = (word & 0b0000_0000_0000_0000_0000_0000_1000_0000) << 4; // bit 7 -> imm[11]
 
-				let imm_raw = (imm_12 << 12) | (imm_11 << 11) | (imm_10_5 << 5) | (imm_4_1 << 1);
+				let imm_raw = imm_12 | imm_11 | imm_10_5 | imm_4_1;
 
 				// Sign extend the 13-bit immediate
-				if (imm_raw & 0b1000_0000_0000_0000) != 0 {
+				if (imm_raw & 0b0001_0000_0000_0000) != 0 {
 					imm_raw | 0b1111_1111_1111_1111_1110_0000_0000_0000
 				} else {
 					imm_raw
@@ -130,5 +130,41 @@ mod tests {
 		assert_eq!(b.rs1(), 1);
 		assert_eq!(b.rs2(), 2);
 		assert_eq!(b.offset(), 8);
+		assert_eq!(b.imm(), 8);
+	}
+
+	#[test]
+	fn test_immediate_extraction_zero() {
+		// Test immediate extraction with a known pattern
+		let word = 0b0000_0000_0000_0000_0000_0000_0011_0111; // imm=0
+		let b = B::from_word(word);
+		assert_eq!(b.imm(), 0);
+	}
+
+	#[test]
+	fn test_immediate_extraction_positive() {
+		// Test immediate extraction with a known pattern
+		let word =
+			0b0000_0000_0000_0000_0000_0000_0011_0111
+				| (0 << 31) | (1 << 30)
+				| (1 << 11) | (1 << 7); // bit[31] -> imm[12] = 0, bit[30] -> imm[10] = 1, bit[11] -> imm[4] = 1, bit[7] -> imm[11] = 1
+
+		let expected_imm = 0b0000_0000_0000_0000_0000_1100_0001_0000i32;
+		let b = B::from_word(word);
+		assert_eq!(b.imm(), expected_imm);
+	}
+
+	#[test]
+	fn test_immediate_extraction_negative() {
+		// Test immediate extraction with a known pattern
+		let word =
+			0b0000_0000_0000_0000_0000_0000_0011_0111
+				| (1 << 31) | (1 << 30)
+				| (1 << 11) | (1 << 7); // bit[31] -> imm[12] = 1, bit[30] -> imm[10] = 1, bit[11] -> imm[4] = 1, bit[7] -> imm[11] = 1
+
+		// let expected_imm = 0b1111_1111_1111_1111_1111_1100_0001_0000i32;
+		let expected_imm = -1008i32;
+		let b = B::from_word(word);
+		assert_eq!(b.imm(), expected_imm);
 	}
 }
