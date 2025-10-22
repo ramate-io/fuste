@@ -95,7 +95,7 @@ mod tests {
 		assert_eq!(machine.registers().get(1), 104); // PC + 4
 
 		// PC should be updated to PC + offset
-		assert_eq!(machine.registers().program_counter(), 120); // PC + (10 << 1)
+		assert_eq!(machine.registers().program_counter(), 110); // PC + 10
 
 		Ok(())
 	}
@@ -106,7 +106,7 @@ mod tests {
 		machine.registers_mut().program_counter_set(100);
 
 		// Create a negative immediate
-		let imm = -2;
+		let imm = -4;
 		let instruction = Jal::new(J::new(1, imm));
 		instruction.execute(&mut machine)?;
 
@@ -114,7 +114,7 @@ mod tests {
 		assert_eq!(machine.registers().get(1), 104); // PC + 4
 
 		// PC should be updated to PC + offset
-		assert_eq!(machine.registers().program_counter(), 96); // PC + (-2 << 1) = PC - 4
+		assert_eq!(machine.registers().program_counter(), 96); // PC + (-4) = PC - 4
 
 		Ok(())
 	}
@@ -122,18 +122,21 @@ mod tests {
 	#[test]
 	fn test_jal_from_word() -> Result<(), ExecutableInstructionError> {
 		let mut machine = Machine::<1024>::new();
-		machine.registers_mut().program_counter_set(100);
+		machine.registers_mut().program_counter_set(160_000_000);
 
-		// Create a JAL instruction word: rd=1, imm=0, opcode=1101111
-		let word = 0b0000_0000_0000_0000_0000_0000_1011_0111;
-		let instruction = Jal::from_word(word);
+		// Create a JAL instruction word: rd=1, imm=-1042430, opcode=1101111
+		let word_with_imm =
+			0b0000_0000_0000_0000_0000_0000_1110_0111
+				| (1 << 31) | (1 << 21)
+				| (1 << 20) | (1 << 12); // imm[20] = 1, imm[10:1] = 1, imm[11] = 1, imm[19:12] = 1
+		let instruction = Jal::from_word(word_with_imm);
 		instruction.execute(&mut machine)?;
 
 		// Return address should be stored in register 1
-		assert_eq!(machine.registers().get(1), 104); // PC + 4
+		assert_eq!(machine.registers().get(1), 160_000_000 + 4); // PC + 4
 
 		// PC should remain the same (imm=0, offset=0)
-		assert_eq!(machine.registers().program_counter(), 100);
+		assert_eq!(machine.registers().program_counter(), 160_000_000 - 1042430);
 
 		Ok(())
 	}
