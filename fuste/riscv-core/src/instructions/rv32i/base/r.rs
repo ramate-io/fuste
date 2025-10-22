@@ -10,6 +10,8 @@ pub struct R {
 }
 
 impl R {
+	pub const OPCODE: u32 = 0110011;
+
 	#[inline(always)]
 	pub fn new(rd: u8, funct3: u8, rs1: u8, rs2: u8, funct7: u8) -> Self {
 		Self { rd, funct3, rs1, rs2, funct7 }

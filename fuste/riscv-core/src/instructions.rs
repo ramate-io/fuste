@@ -1,8 +1,8 @@
 use crate::machine::Machine;
 pub mod rv32i;
 use rv32i::base::j::jal::Jal;
-use rv32i::base::r::add::Add;
-use rv32i::base::u::lui::Lui;
+use rv32i::base::r::{add::Add, R};
+use rv32i::base::u::{auipc::Auipc, lui::Lui};
 
 pub trait ParseableInstruction {
 	fn from_word(word: u32) -> Self;
@@ -44,13 +44,17 @@ impl<const MEMORY_SIZE: usize> Instruction<MEMORY_SIZE> {
 		// is the overhead on construction of the structs.
 		// For semantic clarity, we may change this in the short run, however.
 		match opcode {
+			// U format is one that doesn't share an opcode throughout its members
 			Lui::OPCODE => Lui::load_and_execute(word, machine),
+			Auipc::OPCODE => Auipc::load_and_execute(word, machine),
+			// J format is just JAL
 			Jal::OPCODE => Jal::load_and_execute(word, machine),
-			Add::OPCODE => {
+			// R format shares an opcode
+			R::OPCODE => {
 				// For R-type instructions, we need to check funct3 and funct7
 				let r = rv32i::base::r::R::from_word(word);
 				match (r.funct3(), r.funct7()) {
-					(Add::FUNCT3, Add::FUNCT7) => Add::load_and_execute(word, machine),
+					(Add::FUNCT3, Add::FUNCT7) => Add::new(r).execute(machine),
 					_ => Err(ExecutableInstructionError::InvalidInstruction),
 				}
 			}
