@@ -1,6 +1,7 @@
 use crate::machine::Machine;
 pub mod rv32i;
 use rv32i::base::j::jal::Jal;
+use rv32i::base::r::add::Add;
 use rv32i::base::u::lui::Lui;
 
 pub trait ParseableInstruction {
@@ -36,12 +37,20 @@ impl<const MEMORY_SIZE: usize> Instruction<MEMORY_SIZE> {
 		word: u32,
 		machine: &mut Machine<MEMORY_SIZE>,
 	) -> Result<(), ExecutableInstructionError> {
-		// The opcode is the most significant 7 bits of the word.
-		let opcode = (word & 0b11111110000000000000000000000000) >> 27;
+		// The opcode is the least significant 7 bits of the word.
+		let opcode = word & 0b0000_0000_0000_0000_0000_0000_0111_1111;
 
 		match opcode {
 			Lui::OPCODE => Lui::load_and_execute(word, machine),
 			Jal::OPCODE => Jal::load_and_execute(word, machine),
+			Add::OPCODE => {
+				// For R-type instructions, we need to check funct3 and funct7
+				let r = rv32i::base::r::R::from_word(word);
+				match (r.funct3(), r.funct7()) {
+					(Add::FUNCT3, Add::FUNCT7) => Add::load_and_execute(word, machine),
+					_ => Err(ExecutableInstructionError::InvalidInstruction),
+				}
+			}
 			_ => Err(ExecutableInstructionError::InvalidInstruction),
 		}
 	}
