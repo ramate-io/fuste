@@ -1,17 +1,17 @@
 use crate::instructions::{ExecutableInstruction, ExecutableInstructionError};
 use crate::machine::Machine;
 use base::b::{beq::Beq, bge::Bge, bgeu::Bgeu, blt::Blt, bltu::Bltu, bne::Bne, B};
-use base::i::{
+pub use base::i::{
 	addi::Addi, andi::Andi, ebreak::Ebreak, ecall::Ecall, fence::Fence, jalr::Jalr, lb::Lb,
 	lbu::Lbu, lh::Lh, lhu::Lhu, lw::Lw, ori::Ori, slli::Slli, slti::Slti, sltiu::Sltiu, srai::Srai,
 	srli::Srli, xori::Xori, I,
 };
-use base::j::jal::Jal;
-use base::r::{
+pub use base::j::jal::Jal;
+pub use base::r::{
 	add::Add, and::And, or::Or, sll::Sll, slt::Slt, sltu::Sltu, sra::Sra, srl::Srl, sub::Sub,
 	xor::Xor, R,
 };
-use base::u::{auipc::Auipc, lui::Lui};
+pub use base::u::{auipc::Auipc, lui::Lui};
 pub mod base;
 
 /// The reason for instruction not being an enum of different instruction types can be thought of as twofold:
