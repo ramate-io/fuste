@@ -131,8 +131,9 @@ mod tests {
 		machine.registers_mut().set(2, 2); // shift by 2
 
 		// Create SLL instruction word: SLL x3, x1, x2
-		// rd=3, funct3=001, rs1=1, rs2=2, funct7=0000000, opcode=0110011
-		let word = 0b0000_0000_0000_0001_0000_0001_1011_0011;
+		// Use the R format's to_word method to construct it properly
+		let r = R::new(3, 0b001, 1, 2, 0);
+		let word = r.to_word(0b0110011);
 		let instruction = Sll::from_word(word);
 		instruction.execute(&mut machine)?;
 

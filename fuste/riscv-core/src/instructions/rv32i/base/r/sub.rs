@@ -130,8 +130,9 @@ mod tests {
 		machine.registers_mut().set(2, 5);
 
 		// Create SUB instruction word: SUB x3, x1, x2
-		// rd=3, funct3=0, rs1=1, rs2=2, funct7=0100000, opcode=0110011
-		let word = 0b0100_0000_0000_0001_0000_0001_1011_0011;
+		// Use the R format's to_word method to construct it properly
+		let r = R::new(3, 0, 1, 2, 0b0100000);
+		let word = r.to_word(0b0110011);
 		let instruction = Sub::from_word(word);
 		instruction.execute(&mut machine)?;
 

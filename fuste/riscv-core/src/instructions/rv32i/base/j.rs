@@ -92,18 +92,18 @@ mod tests {
 	fn test_simple_jal_encoding() {
 		// Test with rd=1, imm=0, opcode=1101111
 		let j = J::new(1, 0);
-		
+
 		// Check individual components
 		assert_eq!(j.word_rd(), 0b0000_0000_0000_0000_0000_0000_1000_0000); // rd=1 << 7
 		assert_eq!(j.word_imm(), 0b0000_0000_0000_0000_0000_0000_0000_0000); // imm=0
-		
+
 		// Test the to_word method step by step
 		let opcode = 111; // 0b1101111
 		let word_opcode = opcode & 0b0000_0000_0000_0000_0000_0000_0111_1111;
 		let word_rd = j.word_rd();
 		let word_imm = j.word_imm();
 		let word = word_opcode | word_rd | word_imm;
-		
+
 		// Expected: opcode=1101111 (bits 6:0), rd=1 (bits 11:7), imm=0 (bits 31:12)
 		// 0b0000_0000_0000_0000_0000_0000_1011_0111
 		let expected = 0b0000_0000_0000_0000_0000_0000_1011_0111;
