@@ -115,7 +115,7 @@ impl<const MEMORY_SIZE: usize> Rv32iInstruction<MEMORY_SIZE> {
 			}
 			// Fence has its own opcode
 			Fence::OPCODE => Fence::load_and_execute(word, machine),
-			// Environment instructions have their own structur
+			// Environment instructions have their own structure
 			Ecall::OPCODE => {
 				let i = base::i::I::from_word(word);
 				match i.imm() {
