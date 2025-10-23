@@ -4,7 +4,9 @@ resolver = "2"
 
 members = [
   
-  "fuste/riscv-core"
+  "fuste/riscv-core",
+
+  "fuste/tests/toolchain"
 ]
 
 [workspace.package]

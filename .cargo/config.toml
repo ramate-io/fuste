@@ -1,0 +1,10 @@
+[target.riscv32i-ramate-fuste-elf]
+linker = "rust-lld"
+rustflags = [
+  "-C", "link-arg=-nostartfiles",
+  "-C", "link-arg=-static",
+]
+
+
+[unstable]
+build-std = ["core", "compiler_builtins"]
