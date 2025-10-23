@@ -3,5 +3,5 @@
 version = 4
 
 [[package]]
-name = "toolchain_test"
+name = "my_program"
 version = "0.1.0"

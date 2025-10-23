@@ -99,12 +99,6 @@
               # Add ./target/release/* to PATH
               export PATH="$PATH:$(pwd)/target/release"
 
-              # Copy over ./githooks/pre-commit to .git/hooks/pre-commit
-              cp $(pwd)/.githooks/pre-commit $(pwd)/.git/hooks/pre-commit
-              chmod +x $(pwd)/.git/hooks/pre-commit
-
-              # chafa --size 30x30 --animate false --colors 8 --center true ./assets/ramate-transparent.png
-
               echo ""
               echo "Fuste"
               echo "A pluggable virtual machine for constrained environments."
