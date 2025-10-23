@@ -19,6 +19,10 @@ pub enum ElfLoaderError {
 pub struct Elf32Loader;
 
 impl Elf32Loader {
+	pub fn new() -> Self {
+		Self
+	}
+
 	pub fn load_elf<const MEMORY_SIZE: usize>(
 		&self,
 		machine: &mut Machine<MEMORY_SIZE>,

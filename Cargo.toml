@@ -5,8 +5,9 @@ resolver = "2"
 members = [
   
   "fuste/riscv-core",
-  "fuste/riscv-elf"
-  
+  "fuste/riscv-elf",
+  "fuste/riscv-box"
+
 ]
 
 [workspace.package]
@@ -31,7 +32,13 @@ thiserror = "1.0.50"
 goblin = { version = "0.10.3" }
 clap = { version = "4.4.10", features = ["derive"] }
 
+orfile = { git = "https://github.com/movementlabsxyz/orfile.git", rev = "d02299214e5aa202130cd1eb9593ce8064d1ec69" }
+orfile-util = { git = "https://github.com/movementlabsxyz/orfile.git", rev = "d02299214e5aa202130cd1eb9593ce8064d1ec69" }
+orfile-macro = { git = "https://github.com/movementlabsxyz/orfile.git", rev = "d02299214e5aa202130cd1eb9593ce8064d1ec69" }
+clap-markdown-ext = { git = "https://github.com/movementlabsxyz/clap-markdown-ext.git", rev = "8f54fe424504bf37fb01dc69aaed8166e429fe6a"}
+
 fuste-riscv-core = { path = "fuste/riscv-core" }
+fuste-riscv-elf = { path = "fuste/riscv-elf" }
 
 [workspace.lints.clippy]
 debug_assert_with_mut_call = "deny"

@@ -1,0 +1,22 @@
+[package]
+name = "fubox"
+version = { workspace = true }
+edition = "2021"
+license = { workspace = true }
+authors = { workspace = true }
+repository = { workspace = true }
+homepage = { workspace = true }
+publish = { workspace = true }
+rust-version = { workspace = true }
+
+[dependencies]
+fuste-riscv-core = { workspace = true }
+fuste-riscv-elf = { workspace = true }
+anyhow = { workspace = true }
+thiserror = { workspace = true }
+clap = { workspace = true }
+# orfile = { workspace = true }
+clap-markdown-ext = { workspace = true }
+
+[lints]
+workspace = true
