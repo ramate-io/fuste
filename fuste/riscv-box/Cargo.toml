@@ -17,6 +17,7 @@ thiserror = { workspace = true }
 clap = { workspace = true }
 # orfile = { workspace = true }
 clap-markdown-ext = { workspace = true }
+tokio = { workspace = true }
 
 [lints]
 workspace = true
