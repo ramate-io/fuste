@@ -5,8 +5,6 @@ resolver = "2"
 members = [
   
   "fuste/riscv-core",
-
-  "fuste/tests/toolchain"
 ]
 
 [workspace.package]
@@ -22,6 +20,14 @@ rust-version = "1.85.0"
 
 
 [workspace.dependencies]
+anyhow = "1.0"
+futures = "0.3.17"
+serde = "1.0"
+serde_json = "1.0"
+serde_derive = "1.0"
+thiserror = "1.0.50"
+goblin = { version = "0.10.3" }
+clap = { version = "4.4.10", features = ["derive"] }
 
 [workspace.lints.clippy]
 debug_assert_with_mut_call = "deny"

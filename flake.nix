@@ -16,8 +16,8 @@
         host = pkgs.stdenv.hostPlatform.config; # e.g., aarch64-apple-darwin
 
         toolchain = p: (p.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml).override {
-          extensions = [ "rustfmt" "clippy" ];
-          targets = [ host "wasm32-unknown-unknown" ];
+          extensions = [ "rustfmt" "clippy" "rust-src" ];
+          targets = [ host "riscv32i-unknown-none-elf"];
         };
         craneLib = (crane.mkLib pkgs).overrideToolchain(toolchain);
         frameworks = pkgs.darwin.apple_sdk.frameworks;

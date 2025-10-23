@@ -1,0 +1,5 @@
+[target.riscv32i-ramate-fuste-elf]
+rustflags = []
+
+[unstable]
+build-std = ["core", "compiler_builtins"]
