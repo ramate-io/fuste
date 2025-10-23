@@ -16,24 +16,36 @@ pub enum ElfLoaderError {
 	MemoryError(#[from] MemoryError),
 }
 
-pub struct ElfLoader;
+pub struct Elf32Loader;
 
-impl ElfLoader {
+impl Elf32Loader {
 	pub fn load_elf<const MEMORY_SIZE: usize>(
 		&self,
 		machine: &mut Machine<MEMORY_SIZE>,
 		path: impl AsRef<Path>,
 	) -> Result<(), ElfLoaderError> {
-		// Read the ELF file
+		// Read the ELF file into memory
 		let buffer = fs::read(path.as_ref())?;
 		let elf = Elf::parse(buffer.as_slice())?;
 
 		for ph in &elf.program_headers {
-			if ph.p_type == goblin::elf::program_header::PT_LOAD {
-				let start = ph.p_paddr as usize;
-				let data = &buffer[ph.file_range()];
-				machine.memory_mut().write_bytes(start as u32, data)?;
-				// zero-fill padding up to ph.p_memsz
+			if ph.p_type != goblin::elf::program_header::PT_LOAD {
+				continue;
+			}
+
+			let start = ph.p_paddr as usize;
+			let file_size = ph.p_filesz as usize;
+			let mem_size = ph.p_memsz as usize;
+
+			// Write the file portion
+			let data = &buffer[ph.file_range()];
+			machine.memory_mut().write_bytes(start as u32, data)?;
+
+			// Zero-fill remaining memory if necessary
+			if mem_size > file_size {
+				let padding_size = mem_size - file_size;
+				let zero_padding = vec![0u8; padding_size];
+				machine.memory_mut().write_bytes((start + file_size) as u32, &zero_padding)?;
 			}
 		}
 
