@@ -3,6 +3,8 @@ pub use memory::Memory;
 pub mod registers;
 use crate::instructions::ExecutableInstructionError;
 use crate::log::RingBuffer;
+use core::error::Error;
+use core::fmt::{self, Display};
 pub use registers::Registers;
 
 /// The machine is the memory layout against which the plugins operate.
@@ -76,3 +78,11 @@ pub enum MachineError {
 	MemoryError(memory::MemoryError),
 	InstructionError(ExecutableInstructionError),
 }
+
+impl Display for MachineError {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		write!(f, "{:?}", self)
+	}
+}
+
+impl Error for MachineError {}

@@ -1,3 +1,6 @@
+use core::error::Error;
+use core::fmt::{self, Display};
+
 /// TODO: worry about privileged memory later.
 /// Size is the number of bytes in the memory. It is a u32 since we are implement RVI32 for now.
 pub struct Memory<const SIZE: usize> {
@@ -24,6 +27,15 @@ impl<const SIZE: usize> Memory<SIZE> {
 			return Err(MemoryError::AddressOutOfBounds);
 		}
 		self.memory[address as usize] = value;
+		Ok(())
+	}
+
+	/// Writes multiple bytes to memory at the given address
+	pub fn write_bytes(&mut self, address: u32, bytes: &[u8]) -> Result<(), MemoryError> {
+		if address as usize + bytes.len() > SIZE {
+			return Err(MemoryError::AddressOutOfBounds);
+		}
+		self.memory[address as usize..address as usize + bytes.len()].copy_from_slice(bytes);
 		Ok(())
 	}
 
@@ -85,3 +97,11 @@ impl<const SIZE: usize> Memory<SIZE> {
 pub enum MemoryError {
 	AddressOutOfBounds,
 }
+
+impl Display for MemoryError {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		write!(f, "{:?}", self)
+	}
+}
+
+impl Error for MemoryError {}
