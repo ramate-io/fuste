@@ -1,4 +1,6 @@
-use crate::instructions::{ExecutableInstruction, ExecutableInstructionError, InvalidInstruction};
+use crate::instructions::{
+	ExecutableInstruction, ExecutableInstructionError, InvalidInstruction, WordInstruction,
+};
 use crate::machine::Machine;
 pub use base::b::{beq::Beq, bge::Bge, bgeu::Bgeu, blt::Blt, bltu::Bltu, bne::Bne, B};
 pub use base::i::{
@@ -14,6 +16,7 @@ pub use base::r::{
 pub use base::s::{sb::Sb, sh::Sh, sw::Sw, S};
 pub use base::u::{auipc::Auipc, lui::Lui};
 pub mod base;
+use core::fmt::{self, Display};
 
 /// The reason for instruction not being an enum of different instruction types can be thought of as twofold:
 ///
@@ -160,6 +163,181 @@ impl<const MEMORY_SIZE: usize> Rv32iInstruction<MEMORY_SIZE> {
 				word,
 				address,
 			})),
+		}
+	}
+}
+
+#[derive(Debug)]
+pub enum DecodedInstruction {
+	Lui(Lui),
+	Auipc(Auipc),
+	Jal(Jal),
+	Jalr(Jalr),
+	Beq(Beq),
+	Bne(Bne),
+	Blt(Blt),
+	Bge(Bge),
+	Bltu(Bltu),
+	Bgeu(Bgeu),
+	Lb(Lb),
+	Lh(Lh),
+	Lw(Lw),
+	Lbu(Lbu),
+	Lhu(Lhu),
+	Sb(Sb),
+	Sh(Sh),
+	Sw(Sw),
+	Addi(Addi),
+	Slti(Slti),
+	Sltiu(Sltiu),
+	Xori(Xori),
+	Ori(Ori),
+	Andi(Andi),
+	Slli(Slli),
+	Srli(Srli),
+	Srai(Srai),
+	Add(Add),
+	Sub(Sub),
+	Sll(Sll),
+	Slt(Slt),
+	Sltu(Sltu),
+	Xor(Xor),
+	Srl(Srl),
+	Sra(Sra),
+	Or(Or),
+	And(And),
+	Fence(Fence),
+	Ecall(Ecall),
+	Ebreak(Ebreak),
+}
+
+#[derive(Debug)]
+pub enum DecodedInstructionError {
+	InvalidInstruction(u32),
+	WordInstructionError(u32),
+}
+
+impl Display for DecodedInstructionError {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		match self {
+			DecodedInstructionError::InvalidInstruction(i) => {
+				write!(f, "InvalidInstruction: 0b{:b}", i)
+			}
+			DecodedInstructionError::WordInstructionError(word) => {
+				write!(f, "WordInstructionError: 0b{:b}", word)
+			}
+		}
+	}
+}
+
+impl DecodedInstruction {
+	pub fn from_word(word: u32) -> Result<Self, DecodedInstructionError> {
+		// The opcode is the least significant 7 bits of the word.
+		let opcode = word & 0b0000_0000_0000_0000_0000_0000_0111_1111;
+
+		// The main reason for not parsing into structs containing all the information
+		// is the overhead on construction of the structs.
+		// For semantic clarity, we may change this in the short run, however.
+		match opcode {
+			// U format is one that doesn't share an opcode throughout its members
+			Lui::OPCODE => Ok(DecodedInstruction::Lui(Lui::from_word(word))),
+			Auipc::OPCODE => Ok(DecodedInstruction::Auipc(Auipc::from_word(word))),
+			// J format is just JAL
+			Jal::OPCODE => Ok(DecodedInstruction::Jal(Jal::from_word(word))),
+			// JALR has its own opcode
+			Jalr::OPCODE => Ok(DecodedInstruction::Jalr(Jalr::from_word(word))),
+			// B format shares an opcode
+			B::OPCODE => {
+				// For B-type instructions, we need to check funct3
+				let b = base::b::B::from_word(word);
+				match b.funct3() {
+					Beq::FUNCT3 => Ok(DecodedInstruction::Beq(Beq::new(b))),
+					Bne::FUNCT3 => Ok(DecodedInstruction::Bne(Bne::new(b))),
+					Blt::FUNCT3 => Ok(DecodedInstruction::Blt(Blt::new(b))),
+					Bge::FUNCT3 => Ok(DecodedInstruction::Bge(Bge::new(b))),
+					Bltu::FUNCT3 => Ok(DecodedInstruction::Bltu(Bltu::new(b))),
+					Bgeu::FUNCT3 => Ok(DecodedInstruction::Bgeu(Bgeu::new(b))),
+					_ => Err(DecodedInstructionError::InvalidInstruction(word)),
+				}
+			}
+			// Load instructions share an opcode
+			Lw::OPCODE => {
+				// For load instructions, we need to check funct3
+				let i = base::i::I::from_word(word);
+				match i.funct3() {
+					Lb::FUNCT3 => Ok(DecodedInstruction::Lb(Lb::new(i))),
+					Lh::FUNCT3 => Ok(DecodedInstruction::Lh(Lh::new(i))),
+					Lw::FUNCT3 => Ok(DecodedInstruction::Lw(Lw::new(i))),
+					Lbu::FUNCT3 => Ok(DecodedInstruction::Lbu(Lbu::new(i))),
+					Lhu::FUNCT3 => Ok(DecodedInstruction::Lhu(Lhu::new(i))),
+					_ => Err(DecodedInstructionError::InvalidInstruction(word)),
+				}
+			}
+			// Store instructions share an opcode
+			S::OPCODE => {
+				let s = base::s::S::from_word(word);
+				match s.funct3() {
+					Sb::FUNCT3 => Ok(DecodedInstruction::Sb(Sb::new(s))),
+					Sh::FUNCT3 => Ok(DecodedInstruction::Sh(Sh::new(s))),
+					Sw::FUNCT3 => Ok(DecodedInstruction::Sw(Sw::new(s))),
+					_ => Err(DecodedInstructionError::InvalidInstruction(word)),
+				}
+			}
+			// I format shares an opcode
+			I::OPCODE => {
+				// For I-type instructions, we need to check funct3
+				let i = base::i::I::from_word(word);
+				match i.funct3() {
+					Addi::FUNCT3 => Ok(DecodedInstruction::Addi(Addi::new(i))),
+					Slti::FUNCT3 => Ok(DecodedInstruction::Slti(Slti::new(i))),
+					Sltiu::FUNCT3 => Ok(DecodedInstruction::Sltiu(Sltiu::new(i))),
+					Xori::FUNCT3 => Ok(DecodedInstruction::Xori(Xori::new(i))),
+					Ori::FUNCT3 => Ok(DecodedInstruction::Ori(Ori::new(i))),
+					Andi::FUNCT3 => Ok(DecodedInstruction::Andi(Andi::new(i))),
+					Slli::FUNCT3 => Ok(DecodedInstruction::Slli(Slli::new(i))),
+					// For SRLI and SRAI, both have funct3=101, distinguished by funct7
+					Srli::FUNCT3 => {
+						// Check if it's SRAI (funct7=0100000) or SRLI (funct7=0000000)
+						// For I format, funct7 is in bits [31:25] of the immediate field
+						match i.funct7() {
+							Srai::FUNCT7 => Ok(DecodedInstruction::Srai(Srai::new(i))),
+							Srl::FUNCT7 => Ok(DecodedInstruction::Srli(Srli::new(i))),
+							_ => Err(DecodedInstructionError::InvalidInstruction(word)),
+						}
+					}
+					_ => Err(DecodedInstructionError::InvalidInstruction(word)),
+				}
+			}
+			// R format shares an opcode
+			R::OPCODE => {
+				// For R-type instructions, we need to check funct3 and funct7
+				let r = base::r::R::from_word(word);
+				match (r.funct3(), r.funct7()) {
+					(Add::FUNCT3, Add::FUNCT7) => Ok(DecodedInstruction::Add(Add::new(r))),
+					(Sub::FUNCT3, Sub::FUNCT7) => Ok(DecodedInstruction::Sub(Sub::new(r))),
+					(Sll::FUNCT3, Sll::FUNCT7) => Ok(DecodedInstruction::Sll(Sll::new(r))),
+					(Slt::FUNCT3, Slt::FUNCT7) => Ok(DecodedInstruction::Slt(Slt::new(r))),
+					(Sltu::FUNCT3, Sltu::FUNCT7) => Ok(DecodedInstruction::Sltu(Sltu::new(r))),
+					(Xor::FUNCT3, Xor::FUNCT7) => Ok(DecodedInstruction::Xor(Xor::new(r))),
+					(Srl::FUNCT3, Srl::FUNCT7) => Ok(DecodedInstruction::Srl(Srl::new(r))),
+					(Sra::FUNCT3, Sra::FUNCT7) => Ok(DecodedInstruction::Sra(Sra::new(r))),
+					(Or::FUNCT3, Or::FUNCT7) => Ok(DecodedInstruction::Or(Or::new(r))),
+					(And::FUNCT3, And::FUNCT7) => Ok(DecodedInstruction::And(And::new(r))),
+					_ => Err(DecodedInstructionError::InvalidInstruction(word)),
+				}
+			}
+			// Fence has its own opcode
+			Fence::OPCODE => Ok(DecodedInstruction::Fence(Fence::from_word(word))),
+			// Environment instructions have their own structure
+			Ecall::OPCODE => {
+				let i = base::i::I::from_word(word);
+				match i.imm() {
+					Ecall::IMM => Ok(DecodedInstruction::Ecall(Ecall::new(i))),
+					Ebreak::IMM => Ok(DecodedInstruction::Ebreak(Ebreak::new(i))),
+					_ => Err(DecodedInstructionError::InvalidInstruction(word)),
+				}
+			}
+			_ => Err(DecodedInstructionError::InvalidInstruction(word)),
 		}
 	}
 }
