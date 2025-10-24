@@ -11,6 +11,7 @@ pub use base::r::{
 	add::Add, and::And, or::Or, sll::Sll, slt::Slt, sltu::Sltu, sra::Sra, srl::Srl, sub::Sub,
 	xor::Xor, R,
 };
+pub use base::s::{sb::Sb, sh::Sh, sw::Sw, S};
 pub use base::u::{auipc::Auipc, lui::Lui};
 pub mod base;
 
@@ -71,6 +72,19 @@ impl<const MEMORY_SIZE: usize> Rv32iInstruction<MEMORY_SIZE> {
 					Lw::FUNCT3 => Lw::new(i).execute(machine),
 					Lbu::FUNCT3 => Lbu::new(i).execute(machine),
 					Lhu::FUNCT3 => Lhu::new(i).execute(machine),
+					_ => Err(ExecutableInstructionError::InvalidInstruction(InvalidInstruction {
+						word,
+						address,
+					})),
+				}
+			}
+			// Store instructions share an opcode
+			S::OPCODE => {
+				let s = base::s::S::from_word(word);
+				match s.funct3() {
+					Sb::FUNCT3 => Sb::new(s).execute(machine),
+					Sh::FUNCT3 => Sh::new(s).execute(machine),
+					Sw::FUNCT3 => Sw::new(s).execute(machine),
 					_ => Err(ExecutableInstructionError::InvalidInstruction(InvalidInstruction {
 						word,
 						address,

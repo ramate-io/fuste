@@ -6,6 +6,10 @@ pub struct S {
 	imm: i32,
 }
 
+pub mod sb;
+pub mod sh;
+pub mod sw;
+
 impl S {
 	pub const OPCODE: u32 = 0b0100011;
 
