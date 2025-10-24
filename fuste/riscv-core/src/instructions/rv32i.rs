@@ -21,7 +21,6 @@ use core::fmt::{self, Display};
 #[derive(Debug)]
 pub enum Rv32iInstructionError {
 	InvalidInstruction(u32),
-	WordInstructionError(u32),
 }
 
 impl Display for Rv32iInstructionError {
@@ -29,9 +28,6 @@ impl Display for Rv32iInstructionError {
 		match self {
 			Rv32iInstructionError::InvalidInstruction(i) => {
 				write!(f, "InvalidInstruction: 0b{:b}", i)
-			}
-			Rv32iInstructionError::WordInstructionError(word) => {
-				write!(f, "WordInstructionError: 0b{:b}", word)
 			}
 		}
 	}
@@ -89,6 +85,7 @@ pub enum Rv32iInstruction<const MEMORY_SIZE: usize> {
 }
 
 impl<const MEMORY_SIZE: usize> Rv32iInstruction<MEMORY_SIZE> {
+	/// Converts a word to an instruction.
 	pub fn from_word(word: u32) -> Result<Self, Rv32iInstructionError> {
 		// The opcode is the least significant 7 bits of the word.
 		let opcode = word & 0b0000_0000_0000_0000_0000_0000_0111_1111;
@@ -199,6 +196,7 @@ impl<const MEMORY_SIZE: usize> Rv32iInstruction<MEMORY_SIZE> {
 		}
 	}
 
+	/// Converts the instruction to a word.
 	pub fn to_word(self) -> u32 {
 		match self {
 			Rv32iInstruction::Lui(lui) => lui.to_word(),
@@ -244,9 +242,9 @@ impl<const MEMORY_SIZE: usize> Rv32iInstruction<MEMORY_SIZE> {
 		}
 	}
 
+	/// Executes the instruction.
 	pub fn execute(
 		self,
-		address: u32,
 		machine: &mut Machine<MEMORY_SIZE>,
 	) -> Result<(), ExecutableInstructionError> {
 		match self {
@@ -290,10 +288,18 @@ impl<const MEMORY_SIZE: usize> Rv32iInstruction<MEMORY_SIZE> {
 			Rv32iInstruction::Fence(fence) => fence.execute(machine),
 			Rv32iInstruction::Ecall(ecall) => ecall.execute(machine),
 			Rv32iInstruction::Ebreak(ebreak) => ebreak.execute(machine),
-			_ => Err(ExecutableInstructionError::InvalidInstruction(InvalidInstruction {
-				word: self.to_word(),
-				address,
-			})),
 		}
+	}
+
+	/// Loads an instruction and executes it.
+	pub fn load_and_execute(
+		word: u32,
+		address: u32,
+		machine: &mut Machine<MEMORY_SIZE>,
+	) -> Result<(), ExecutableInstructionError> {
+		let instruction = Self::from_word(word).map_err(|_e| {
+			ExecutableInstructionError::InvalidInstruction(InvalidInstruction { word, address })
+		})?;
+		instruction.execute(machine)
 	}
 }

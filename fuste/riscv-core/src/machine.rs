@@ -77,6 +77,7 @@ impl<const MEMORY_SIZE: usize> Machine<MEMORY_SIZE> {
 pub enum MachineError {
 	MemoryError(memory::MemoryError),
 	InstructionError(ExecutableInstructionError),
+	PluginError(&'static str),
 }
 
 impl Display for MachineError {
@@ -84,6 +85,7 @@ impl Display for MachineError {
 		match self {
 			MachineError::MemoryError(e) => write!(f, "MemoryError: {}", e),
 			MachineError::InstructionError(e) => write!(f, "InstructionError: {}", e),
+			MachineError::PluginError(e) => write!(f, "PluginError: {}", e),
 		}
 	}
 }

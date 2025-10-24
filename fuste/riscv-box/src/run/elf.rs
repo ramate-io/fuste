@@ -1,5 +1,6 @@
 use clap::Parser;
 use fuste_riscv_core::{
+	instructions::Rv32iInstruction,
 	machine::{Machine, MachineError, MachinePlugin},
 	plugins::rv32i_computer::Rv32iComputer,
 };
@@ -30,6 +31,9 @@ impl MachinePlugin<BOX_MEMORY_SIZE> for DebugPlugin {
 	fn tick(&mut self, machine: &mut Machine<BOX_MEMORY_SIZE>) -> Result<(), MachineError> {
 		let address = machine.registers().program_counter();
 		let instruction = machine.memory().read_word(address).map_err(MachineError::MemoryError)?;
+		let decoded_instruction = Rv32iInstruction::from_word(instruction)
+			.map_err(|_e| MachineError::PluginError("Failed to decode instruction for debugger"))?;
+		println!("{}", decoded_instruction);
 		println!("0x{:X}: 0b{:b}", address, instruction);
 
 		self.0.tick(machine)?;
