@@ -20,6 +20,7 @@
     "code-model": "small",
     "pre-link-args": {
         "ld.lld": [
+            "--entry=_start",
             "-Tlinker.lld"
         ]
     },

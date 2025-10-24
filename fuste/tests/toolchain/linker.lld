@@ -1,52 +1,42 @@
-/* RV32I no_std linker script for simple VM */
+/* simplest-rv32i.ld - minimal linker script for no_std RISC-V */
 
 ENTRY(_start);
 
 MEMORY
 {
-    /* RAM starts at 0x1000 and is 800 KB */
     RAM (rwx) : ORIGIN = 0x00001000, LENGTH = 800K
 }
 
-/* Stack size */
-_stack_size = 8K; 
+/* stack size */
+_stack_size = 8K;
 
-/* Stack bounds */
-_stack_end   = ORIGIN(RAM) + LENGTH(RAM);  /* top of RAM */
-_stack_start = _stack_end - _stack_size;   /* bottom of stack */
+/* stack boundaries */
+_stack_end   = ORIGIN(RAM) + LENGTH(RAM);
+_stack_start = _stack_end - _stack_size;
 
-/* Sections */
 SECTIONS
 {
     /* --- Text section --- */
-    .text : ALIGN(4)
-    {
-        /* Place _start first */
-        KEEP(*(.text._start))
-        
-        /* All other text */
-        *(.text .text.*)
-        
-        /* Read-only data inside text if needed */
-        *(.rodata .rodata.*)
+    .text : ALIGN(4) {
+        _start = .;                 /* symbol for entry point */
+        KEEP(*(.text._start))       /* keep Rust _start */
+        *(.text .text.*)            /* all other text */
+        *(.rodata .rodata.*)        /* read-only data */
     } > RAM
 
     /* --- Initialized data --- */
-    .data : ALIGN(4)
-    {
+    .data : ALIGN(4) {
         *(.data .data.*)
     } > RAM
 
     /* --- Uninitialized data --- */
-    .bss (NOLOAD) : ALIGN(4)
-    {
+    .bss (NOLOAD) : ALIGN(4) {
         *(.bss .bss.*)
         . = ALIGN(4);
     } > RAM
 
-    /* --- Stack (symbol only, no load) --- */
-    .stack (NOLOAD) : ALIGN(8)
-    {
+    /* --- Stack symbol only --- */
+    .stack (NOLOAD) : ALIGN(8) {
         _stack_bottom = _stack_start;
         . = _stack_end;
     } > RAM
