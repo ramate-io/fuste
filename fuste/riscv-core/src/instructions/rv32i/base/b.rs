@@ -4,6 +4,7 @@ pub mod bgeu;
 pub mod blt;
 pub mod bltu;
 pub mod bne;
+use core::fmt::{self, Display};
 
 #[derive(Debug)]
 pub struct B {
@@ -11,6 +12,12 @@ pub struct B {
 	rs1: u8,
 	rs2: u8,
 	imm: i32,
+}
+
+impl Display for B {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		write!(f, "(b) x{}, x{}, {}", self.rs1(), self.rs2(), self.offset())
+	}
 }
 
 impl B {
