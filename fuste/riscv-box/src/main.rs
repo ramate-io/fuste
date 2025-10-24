@@ -4,5 +4,11 @@ use fubox::{Fubox, FuboxError};
 #[tokio::main]
 async fn main() -> Result<(), FuboxError> {
 	let fubox = Fubox::parse();
-	fubox.execute().await
+	match fubox.execute().await {
+		Ok(()) => Ok(()),
+		Err(e) => {
+			eprintln!("Error: {}", e);
+			Ok(())
+		}
+	}
 }

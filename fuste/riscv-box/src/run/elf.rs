@@ -6,7 +6,7 @@ use fuste_riscv_core::{
 use fuste_riscv_elf::{Elf32Loader, ElfLoaderError};
 use std::path::PathBuf;
 
-const BOX_MEMORY_SIZE: usize = 1024 * 1024 * 2; // 8MB
+const BOX_MEMORY_SIZE: usize = 1024 * 1024 * 2; // 1MB
 
 #[derive(Debug, thiserror::Error)]
 pub enum ElfError {
@@ -38,7 +38,9 @@ impl Elf {
 		// Initialize the plugin and run the machine
 		println!("Running machine...");
 		let mut plugin = Rv32iComputer;
-		machine.run(&mut plugin).map_err(ElfError::MachineError)?;
+		let result = machine.run(&mut plugin).map_err(ElfError::MachineError);
+		println!("Machine log:\n{}", machine.log().as_str().unwrap());
+		result?;
 
 		Ok(())
 	}

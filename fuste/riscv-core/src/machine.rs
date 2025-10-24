@@ -81,7 +81,10 @@ pub enum MachineError {
 
 impl Display for MachineError {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-		write!(f, "{:?}", self)
+		match self {
+			MachineError::MemoryError(e) => write!(f, "MemoryError: {}", e),
+			MachineError::InstructionError(e) => write!(f, "InstructionError: {}", e),
+		}
 	}
 }
 

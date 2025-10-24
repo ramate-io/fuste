@@ -44,11 +44,12 @@ impl<const MEMORY_SIZE: usize> ExecutableInstruction<MEMORY_SIZE> for Auipc {
 	fn execute(self, machine: &mut Machine<MEMORY_SIZE>) -> Result<(), ExecutableInstructionError> {
 		let U { rd, imm } = self.0;
 
-		let registers = machine.registers_mut();
+		let pc = machine.registers().program_counter();
+		let result = pc.wrapping_add(imm);
 
-		registers.program_counter_mut().increment_by(imm);
+		machine.registers_mut().set(rd, result);
 
-		registers.set(rd, registers.program_counter());
+		machine.registers_mut().program_counter_mut().increment();
 
 		Ok(())
 	}
@@ -71,7 +72,7 @@ mod tests {
 		instruction.execute(&mut machine)?;
 
 		// program counter after increment
-		assert_eq!(machine.registers().program_counter(), program_counter_initial + imm);
+		assert_eq!(machine.registers().program_counter(), program_counter_initial + 4);
 
 		// stored in register
 		assert_eq!(machine.registers().get(1), program_counter_initial + imm);
@@ -93,7 +94,7 @@ mod tests {
 		instruction.execute(&mut machine)?;
 
 		// program counter after increment
-		assert_eq!(machine.registers().program_counter(), program_counter_initial + imm);
+		assert_eq!(machine.registers().program_counter(), program_counter_initial + 4);
 
 		// stored in register
 		assert_eq!(machine.registers().get(1), program_counter_initial + imm);

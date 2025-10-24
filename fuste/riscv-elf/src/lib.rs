@@ -33,6 +33,7 @@ impl Elf32Loader {
 		let elf = Elf::parse(buffer.as_slice())?;
 
 		for ph in &elf.program_headers {
+			println!("Loading program header: {:?}", ph);
 			if ph.p_type != goblin::elf::program_header::PT_LOAD {
 				continue;
 			}
@@ -52,6 +53,11 @@ impl Elf32Loader {
 				machine.memory_mut().write_bytes((start + file_size) as u32, &zero_padding)?;
 			}
 		}
+
+		// set the program counter
+		let entry = elf.entry as u32;
+		println!("Setting program counter to 0x{:X}", entry);
+		machine.registers_mut().program_counter_set(entry);
 
 		Ok(())
 	}

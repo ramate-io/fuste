@@ -2,6 +2,7 @@ use crate::instructions::Rv32iInstruction;
 use crate::machine::Machine;
 use crate::machine::MachineError;
 use crate::machine::MachinePlugin;
+use core::fmt::Write;
 
 /// A macro which takes a list of [WordInsructions] and returns a [u32; n] array of words.
 #[macro_export]
@@ -19,10 +20,16 @@ pub struct Rv32iComputer;
 
 impl<const MEMORY_SIZE: usize> MachinePlugin<MEMORY_SIZE> for Rv32iComputer {
 	fn tick(&mut self, machine: &mut Machine<MEMORY_SIZE>) -> Result<(), MachineError> {
+		// get the next instruction
 		let program_counter = machine.registers().program_counter();
 		let instruction =
 			machine.memory().read_word(program_counter).map_err(MachineError::MemoryError)?;
-		Rv32iInstruction::load_and_execute(instruction, machine)
+
+		// write the instruction to the machine log
+		let log = machine.log_mut();
+		writeln!(log, "0x{:X}: 0b{:b}", program_counter, instruction).unwrap();
+
+		Rv32iInstruction::load_and_execute(program_counter, instruction, machine)
 			.map_err(MachineError::InstructionError)?;
 
 		Ok(())

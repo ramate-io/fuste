@@ -1,4 +1,4 @@
-use crate::instructions::{ExecutableInstruction, ExecutableInstructionError};
+use crate::instructions::{ExecutableInstruction, ExecutableInstructionError, InvalidInstruction};
 use crate::machine::Machine;
 pub use base::b::{beq::Beq, bge::Bge, bgeu::Bgeu, blt::Blt, bltu::Bltu, bne::Bne, B};
 pub use base::i::{
@@ -26,6 +26,7 @@ pub struct Rv32iInstruction<const MEMORY_SIZE: usize>;
 
 impl<const MEMORY_SIZE: usize> Rv32iInstruction<MEMORY_SIZE> {
 	pub fn load_and_execute(
+		address: u32,
 		word: u32,
 		machine: &mut Machine<MEMORY_SIZE>,
 	) -> Result<(), ExecutableInstructionError> {
@@ -54,7 +55,10 @@ impl<const MEMORY_SIZE: usize> Rv32iInstruction<MEMORY_SIZE> {
 					Bge::FUNCT3 => Bge::new(b).execute(machine),
 					Bltu::FUNCT3 => Bltu::new(b).execute(machine),
 					Bgeu::FUNCT3 => Bgeu::new(b).execute(machine),
-					_ => Err(ExecutableInstructionError::InvalidInstruction(word)),
+					_ => Err(ExecutableInstructionError::InvalidInstruction(InvalidInstruction {
+						word,
+						address,
+					})),
 				}
 			}
 			// Load instructions share an opcode
@@ -67,7 +71,10 @@ impl<const MEMORY_SIZE: usize> Rv32iInstruction<MEMORY_SIZE> {
 					Lw::FUNCT3 => Lw::new(i).execute(machine),
 					Lbu::FUNCT3 => Lbu::new(i).execute(machine),
 					Lhu::FUNCT3 => Lhu::new(i).execute(machine),
-					_ => Err(ExecutableInstructionError::InvalidInstruction(word)),
+					_ => Err(ExecutableInstructionError::InvalidInstruction(InvalidInstruction {
+						word,
+						address,
+					})),
 				}
 			}
 			// I format shares an opcode
@@ -89,10 +96,15 @@ impl<const MEMORY_SIZE: usize> Rv32iInstruction<MEMORY_SIZE> {
 						match i.funct7() {
 							Srai::FUNCT7 => Srai::new(i).execute(machine),
 							Srl::FUNCT7 => Srli::new(i).execute(machine),
-							_ => Err(ExecutableInstructionError::InvalidInstruction(word)),
+							_ => Err(ExecutableInstructionError::InvalidInstruction(
+								InvalidInstruction { word, address },
+							)),
 						}
 					}
-					_ => Err(ExecutableInstructionError::InvalidInstruction(word)),
+					_ => Err(ExecutableInstructionError::InvalidInstruction(InvalidInstruction {
+						word,
+						address,
+					})),
 				}
 			}
 			// R format shares an opcode
@@ -110,7 +122,10 @@ impl<const MEMORY_SIZE: usize> Rv32iInstruction<MEMORY_SIZE> {
 					(Sra::FUNCT3, Sra::FUNCT7) => Sra::new(r).execute(machine),
 					(Or::FUNCT3, Or::FUNCT7) => Or::new(r).execute(machine),
 					(And::FUNCT3, And::FUNCT7) => And::new(r).execute(machine),
-					_ => Err(ExecutableInstructionError::InvalidInstruction(word)),
+					_ => Err(ExecutableInstructionError::InvalidInstruction(InvalidInstruction {
+						word,
+						address,
+					})),
 				}
 			}
 			// Fence has its own opcode
@@ -121,10 +136,16 @@ impl<const MEMORY_SIZE: usize> Rv32iInstruction<MEMORY_SIZE> {
 				match i.imm() {
 					Ecall::IMM => Ecall::new(i).execute(machine),
 					Ebreak::IMM => Ebreak::new(i).execute(machine),
-					_ => Err(ExecutableInstructionError::InvalidInstruction(word)),
+					_ => Err(ExecutableInstructionError::InvalidInstruction(InvalidInstruction {
+						word,
+						address,
+					})),
 				}
 			}
-			_ => Err(ExecutableInstructionError::InvalidInstruction(word)),
+			_ => Err(ExecutableInstructionError::InvalidInstruction(InvalidInstruction {
+				word,
+				address,
+			})),
 		}
 	}
 }
