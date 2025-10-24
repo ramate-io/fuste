@@ -1,6 +1,7 @@
 use super::U;
 use crate::instructions::{ExecutableInstruction, ExecutableInstructionError, WordInstruction};
 use crate::machine::Machine;
+use core::fmt::{self, Display};
 
 /// Auipc: load upper immediate.
 ///
@@ -10,6 +11,7 @@ pub struct Auipc(U);
 
 impl Auipc {
 	pub const OPCODE: u32 = 0b0010111;
+	pub const INSTRUCTION_NAME: &'static str = "auipc";
 
 	#[inline(always)]
 	pub fn new(u: U) -> Self {
@@ -24,6 +26,12 @@ impl Auipc {
 	#[inline(always)]
 	pub fn imm(&self) -> u32 {
 		self.0.imm()
+	}
+}
+
+impl Display for Auipc {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		write!(f, "{} x{}, 0x{:X}", Self::INSTRUCTION_NAME, self.rd(), self.imm())
 	}
 }
 

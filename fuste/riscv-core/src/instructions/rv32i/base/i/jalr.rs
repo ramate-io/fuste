@@ -1,6 +1,7 @@
 use super::I;
 use crate::instructions::{ExecutableInstruction, ExecutableInstructionError, WordInstruction};
 use crate::machine::Machine;
+use core::fmt::{self, Display};
 
 /// JALR: Jump and Link Register.
 ///
@@ -11,6 +12,7 @@ pub struct Jalr(I);
 impl Jalr {
 	pub const OPCODE: u32 = 0b1100111;
 	pub const FUNCT3: u8 = 0b000;
+	pub const INSTRUCTION_NAME: &'static str = "jalr";
 
 	#[inline(always)]
 	pub fn new(i: I) -> Self {
@@ -35,6 +37,12 @@ impl Jalr {
 	#[inline(always)]
 	pub fn funct3(&self) -> u8 {
 		self.0.funct3()
+	}
+}
+
+impl Display for Jalr {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		write!(f, "{} x{}, {}(x{})", Self::INSTRUCTION_NAME, self.rd(), self.imm(), self.rs1())
 	}
 }
 

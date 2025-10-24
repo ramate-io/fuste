@@ -1,6 +1,7 @@
 use super::J;
 use crate::instructions::{ExecutableInstruction, ExecutableInstructionError, WordInstruction};
 use crate::machine::Machine;
+use core::fmt::{self, Display};
 
 /// JAL: Jump and Link.
 ///
@@ -10,6 +11,7 @@ pub struct Jal(J);
 
 impl Jal {
 	pub const OPCODE: u32 = 0b1101111;
+	pub const INSTRUCTION_NAME: &'static str = "jal";
 
 	#[inline(always)]
 	pub fn of(rd: u8, imm: i32) -> Self {
@@ -29,6 +31,12 @@ impl Jal {
 	#[inline(always)]
 	pub fn imm(&self) -> i32 {
 		self.0.imm()
+	}
+}
+
+impl Display for Jal {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		write!(f, "{} x{}, {}", Self::INSTRUCTION_NAME, self.rd(), self.imm())
 	}
 }
 

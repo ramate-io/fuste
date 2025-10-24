@@ -1,6 +1,7 @@
 use super::I;
 use crate::instructions::{ExecutableInstruction, ExecutableInstructionError, WordInstruction};
 use crate::machine::Machine;
+use core::fmt::{self, Display};
 
 /// ECALL: Environment Call.
 ///
@@ -11,6 +12,7 @@ pub struct Ecall(I);
 impl Ecall {
 	pub const OPCODE: u32 = 0b1110011;
 	pub const IMM: i32 = 1;
+	pub const INSTRUCTION_NAME: &'static str = "ecall";
 
 	#[inline(always)]
 	pub fn new(i: I) -> Self {
@@ -40,6 +42,12 @@ impl Ecall {
 	#[inline(always)]
 	pub fn funct7(&self) -> u8 {
 		self.0.funct7()
+	}
+}
+
+impl Display for Ecall {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		write!(f, "{}", Self::INSTRUCTION_NAME)
 	}
 }
 

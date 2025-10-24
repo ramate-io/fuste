@@ -3,6 +3,7 @@ use crate::instructions::{
 	EbreakExit, ExecutableInstruction, ExecutableInstructionError, WordInstruction,
 };
 use crate::machine::Machine;
+use core::fmt::{self, Display};
 
 /// EBREAK: Environment Break.
 ///
@@ -15,6 +16,7 @@ impl Ebreak {
 	pub const IMM: i32 = 0;
 	pub const FUNCT3: u8 = 0b111;
 	pub const RS1: u8 = 0;
+	pub const INSTRUCTION_NAME: &'static str = "ebreak";
 
 	#[inline(always)]
 	pub fn of(rd: u8, imm: i32) -> Self {
@@ -49,6 +51,12 @@ impl Ebreak {
 	#[inline(always)]
 	pub fn funct7(&self) -> u8 {
 		self.0.funct7()
+	}
+}
+
+impl Display for Ebreak {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		write!(f, "{}", Self::INSTRUCTION_NAME)
 	}
 }
 

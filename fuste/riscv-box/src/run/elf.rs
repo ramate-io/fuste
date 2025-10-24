@@ -36,8 +36,7 @@ impl MachinePlugin<BOX_MEMORY_SIZE> for DebugPlugin {
 		let instruction = machine.memory().read_word(address).map_err(MachineError::MemoryError)?;
 		let decoded_instruction = Rv32iInstruction::<BOX_MEMORY_SIZE>::from_word(instruction)
 			.map_err(|_e| MachineError::PluginError("Failed to decode instruction for debugger"))?;
-		println!("{:?}", decoded_instruction);
-		println!("0x{:X}: 0b{:b}", address, instruction);
+		println!("0x{:X}: 0b{:b} -> {}", address, instruction, decoded_instruction);
 
 		self.0.tick(machine)?;
 		Ok(())

@@ -1,6 +1,7 @@
 use super::S;
 use crate::instructions::{ExecutableInstruction, ExecutableInstructionError, WordInstruction};
 use crate::machine::Machine;
+use core::fmt::{self, Display};
 
 /// SH: Store Halfword.
 ///
@@ -11,6 +12,7 @@ pub struct Sh(S);
 impl Sh {
 	pub const OPCODE: u32 = S::OPCODE; // 0b0100011
 	pub const FUNCT3: u8 = 0b001;
+	pub const INSTRUCTION_NAME: &'static str = "sh";
 
 	#[inline(always)]
 	pub fn new(s: S) -> Self {
@@ -35,6 +37,12 @@ impl Sh {
 	#[inline(always)]
 	pub fn funct3(&self) -> u8 {
 		self.0.funct3()
+	}
+}
+
+impl Display for Sh {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		write!(f, "{} x{}, {}(x{})", Self::INSTRUCTION_NAME, self.rs2(), self.imm(), self.rs1())
 	}
 }
 
