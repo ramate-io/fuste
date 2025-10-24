@@ -4,7 +4,7 @@ use clap::Subcommand;
 
 #[derive(Debug, thiserror::Error)]
 pub enum RunError {
-	#[error("Encountered an error while loading the ELF file: {0}")]
+	#[error("Encountered an error while loading and running an ELF program: {0}")]
 	ElfError(#[from] elf::ElfError),
 }
 
