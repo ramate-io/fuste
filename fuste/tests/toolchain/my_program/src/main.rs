@@ -9,7 +9,7 @@ extern "C" {
 }
 
 #[no_mangle]
-pub extern "C" fn _start() -> ! {
+pub extern "C" fn _start() {
 	unsafe {
 		// set stack pointer
 		asm!("la sp, _stack_end", options(nomem, nostack, preserves_flags));
@@ -17,8 +17,16 @@ pub extern "C" fn _start() -> ! {
 	main();
 }
 
+#[inline(always)]
 #[no_mangle]
-pub extern "C" fn main() -> ! {
+pub extern "C" fn exit() {
+	unsafe {
+		core::arch::asm!("ebreak", options(nomem, nostack, preserves_flags));
+	}
+}
+
+#[no_mangle]
+pub extern "C" fn main() {
 	// Replace with your entrypoint logic
 	let mut j = 0;
 	for i in 0..10 {
@@ -26,7 +34,7 @@ pub extern "C" fn main() -> ! {
 		j += i;
 	}
 
-	panic!("program finished");
+	exit();
 }
 
 #[panic_handler]
