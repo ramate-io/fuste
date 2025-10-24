@@ -59,7 +59,8 @@ impl Elf {
 		let mut plugin = DebugPlugin(Rv32iComputer);
 		match self.ticks {
 			Some(ticks) => {
-				for _ in 0..ticks {
+				for i in 0..ticks {
+					println!("Tick {}:", i);
 					plugin.tick(&mut machine)?;
 				}
 			}
