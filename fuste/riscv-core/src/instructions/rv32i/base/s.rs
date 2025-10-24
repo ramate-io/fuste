@@ -32,7 +32,7 @@ impl S {
 
 				// Sign extend the 12-bit immediate
 				if (imm_raw & 0b0000_0000_0000_1000_0000_0000) != 0 {
-					imm_raw | 0b1111_1111_1111_0000_0000_0000
+					imm_raw | 0b1111_1111_1111_1111_1111_0000_0000_0000
 				} else {
 					imm_raw
 				}
@@ -129,8 +129,16 @@ mod tests {
 	#[test]
 	fn test_immediate_sign_extension_negative() {
 		// Build a word with imm = -1 (all 12 immediate bits set)
-		let word = (0x7F << 25) | (0x1F << 7) | S::OPCODE; // funct3/rs1/rs2 zero
+		let word = (0b111_1111 << 25) | (0b1_1111 << 7) | S::OPCODE; // funct3/rs1/rs2 zero
 		let s = S::from_word(word);
 		assert_eq!(s.imm(), -1);
+	}
+
+	#[test]
+	fn test_immediate_sign_extension_positive() {
+		// Build a word with imm = 1 (all 12 immediate bits set)
+		let word = (0b000_0000 << 25) | (0b0_0001 << 7) | S::OPCODE; // funct3/rs1/rs2 zero
+		let s = S::from_word(word);
+		assert_eq!(s.imm(), 1);
 	}
 }
