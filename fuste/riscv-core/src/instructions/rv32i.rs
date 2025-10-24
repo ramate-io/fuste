@@ -211,6 +211,10 @@ pub enum DecodedInstruction {
 	Ebreak(Ebreak),
 }
 
+/// For now, we'll keep the decoded layer separate from the executable layer.
+///
+/// We may change this, as even though it adds a little bit of overhead, there should only be one
+/// [DecodedInstruct] added per tick. The tag on the struct should be a byte.
 #[derive(Debug)]
 pub enum DecodedInstructionError {
 	InvalidInstruction(u32),
