@@ -11,7 +11,7 @@ fn _start() -> ! {
 		asm!("la sp, _stack_end", options(nomem, nostack, preserves_flags));
 	}
 	main();
-	exit()
+	exit();
 }
 
 extern "C" {
@@ -26,14 +26,18 @@ pub extern "C" fn exit() -> ! {
 	loop {}
 }
 
-#[no_mangle]
-pub extern "C" fn main() {
-	// Replace with your entrypoint logic
+pub fn add(a: u32, b: u32) -> u32 {
+	a + b
+}
+
+fn main() -> ! {
 	let mut j = 0;
 	for i in 0..10 {
 		assert_eq!(i, i);
 		j += i;
+		j = add(j, i);
 	}
+	exit();
 }
 
 #[panic_handler]

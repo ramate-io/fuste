@@ -1,6 +1,6 @@
 use clap::Parser;
 use fuste_riscv_core::{
-	machine::{Machine, MachineError},
+	machine::{Machine, MachineError, MachinePlugin},
 	plugins::rv32i_computer::Rv32iComputer,
 };
 use fuste_riscv_elf::{Elf32Loader, ElfLoaderError};
@@ -24,6 +24,19 @@ pub struct Elf {
 	pub path: PathBuf,
 }
 
+pub struct DebugPlugin(Rv32iComputer);
+
+impl MachinePlugin<BOX_MEMORY_SIZE> for DebugPlugin {
+	fn tick(&mut self, machine: &mut Machine<BOX_MEMORY_SIZE>) -> Result<(), MachineError> {
+		let address = machine.registers().program_counter();
+		let instruction = machine.memory().read_word(address).map_err(MachineError::MemoryError)?;
+		println!("0x{:X}: 0b{:b}", address, instruction);
+
+		self.0.tick(machine)?;
+		Ok(())
+	}
+}
+
 impl Elf {
 	pub async fn execute(&self) -> Result<(), ElfError> {
 		// Initialize the machine and loader
@@ -36,11 +49,8 @@ impl Elf {
 		loader.load_elf(&mut machine, &self.path)?;
 
 		// Initialize the plugin and run the machine
-		println!("Running machine...");
-		let mut plugin = Rv32iComputer;
-		let result = machine.run(&mut plugin).map_err(ElfError::MachineError);
-		println!("Machine log:\n{}", machine.log().as_str().unwrap());
-		result?;
+		let mut plugin = DebugPlugin(Rv32iComputer);
+		machine.run(&mut plugin).map_err(ElfError::MachineError)?;
 
 		Ok(())
 	}
