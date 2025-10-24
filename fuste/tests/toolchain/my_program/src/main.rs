@@ -10,34 +10,39 @@ fn _start() -> ! {
 		// set stack pointer
 		asm!("la sp, _stack_end", options(nomem, nostack, preserves_flags));
 	}
-	main();
-	exit();
+	_main();
 }
 
 extern "C" {
 	static _stack_end: u32;
 }
 
-#[no_mangle]
-pub extern "C" fn exit() -> ! {
+pub fn exit() -> ! {
 	unsafe {
 		asm!("ebreak", options(nomem, nostack, preserves_flags));
 	}
 	loop {}
 }
 
+#[no_mangle]
+pub extern "C" fn _main() -> ! {
+	let _ = main();
+	exit();
+}
+
 pub fn add(a: u32, b: u32) -> u32 {
 	a + b
 }
 
-fn main() -> ! {
+fn main() -> Result<(), ()> {
 	let mut j = 0;
 	for i in 0..10 {
 		assert_eq!(i, i);
 		j += i;
 		j = add(j, i);
 	}
-	exit();
+
+	Ok(())
 }
 
 #[panic_handler]
