@@ -38,6 +38,9 @@ pub struct Elf {
 	/// Whether to log the registers at the end of the execution
 	#[clap(long)]
 	pub log_registers_at_end: bool,
+	/// The name of the entrypoint symbol to load
+	#[clap(long, default_value = "_start")]
+	pub entrypoint_symbol_name: String,
 }
 
 pub struct DebugPlugin {
@@ -73,12 +76,10 @@ impl MachinePlugin<BOX_MEMORY_SIZE> for DebugPlugin {
 impl Elf {
 	pub async fn execute(&self) -> Result<(), ElfError> {
 		// Initialize the machine and loader
-		println!("Loading ELF file: {}", self.path.display());
-		let loader = Elf32Loader::new();
+		let loader = Elf32Loader::new(self.entrypoint_symbol_name.clone());
 		let mut machine = Machine::<BOX_MEMORY_SIZE>::new();
 
 		// Load the ELF file into the machine
-		println!("Loading ELF file into machine...");
 		loader.load_elf(&mut machine, &self.path)?;
 
 		// Initialize the plugin and run the machine

@@ -16,13 +16,23 @@ pub enum ElfLoaderError {
 	MemoryError(#[from] MemoryError),
 	#[error("Invalid symbol name: {0}")]
 	InvalidSymbolName(String),
+	#[error("Symbol name matching entrypoint \"{0}\" not found in ELF file")]
+	EntrypointNotFound(String),
 }
 
-pub struct Elf32Loader;
+pub struct Elf32Loader {
+	entrypoint_symbol_name: String,
+}
+
+impl Default for Elf32Loader {
+	fn default() -> Self {
+		Self::new("_start".to_string())
+	}
+}
 
 impl Elf32Loader {
-	pub fn new() -> Self {
-		Self
+	pub fn new(entrypoint_symbol_name: String) -> Self {
+		Self { entrypoint_symbol_name }
 	}
 
 	pub fn load_elf<const MEMORY_SIZE: usize>(
@@ -34,34 +44,25 @@ impl Elf32Loader {
 		let buffer = fs::read(path.as_ref())?;
 		let elf = Elf::parse(buffer.as_slice())?;
 
-		println!("Symbols in ELF:");
-
 		// Normal symbol table
+		let mut flag_entrypoint_found = false;
 		for sym in elf.syms.iter() {
 			let name = elf
 				.strtab
 				.get_at(sym.st_name)
 				.ok_or(ElfLoaderError::InvalidSymbolName(sym.st_name.to_string()))?;
-			// println!("0x{:08X} {} {:?} size {}", sym.st_value, name, sym.st_type(), sym.st_size);
 
 			if name == "_start" {
-				let start = sym.st_value as usize;
-				let end = start + sym.st_size as usize;
-				println!("_start bytes: {:02X?}", &buffer[start..end]);
+				flag_entrypoint_found = true;
+				break;
 			}
 		}
 
-		// Dynamic symbols (if present)
-		for sym in elf.dynsyms.iter() {
-			let name = elf
-				.dynstrtab
-				.get_at(sym.st_name)
-				.ok_or(ElfLoaderError::InvalidSymbolName(sym.st_name.to_string()))?;
-			println!("0x{:08X} {} {:?} size {}", sym.st_value, name, sym.st_type(), sym.st_size);
+		if !flag_entrypoint_found {
+			return Err(ElfLoaderError::EntrypointNotFound(self.entrypoint_symbol_name.clone()));
 		}
 
 		for ph in &elf.program_headers {
-			println!("Loading program header: {:?}", ph);
 			if ph.p_type != goblin::elf::program_header::PT_LOAD {
 				continue;
 			}
@@ -84,7 +85,6 @@ impl Elf32Loader {
 
 		// set the program counter
 		let entry = elf.entry as u32;
-		println!("Setting program counter to 0x{:X}", entry);
 		machine.registers_mut().program_counter_set(entry);
 
 		Ok(())
