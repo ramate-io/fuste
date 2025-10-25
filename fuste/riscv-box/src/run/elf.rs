@@ -126,9 +126,9 @@ pub fn handle_ecall_interrupt(
 	error: EcallInterrupt,
 	machine: &mut Machine<BOX_MEMORY_SIZE>,
 ) -> Result<(), ElfError> {
-	let syscall_number = machine.csrs().registers().get(0x17);
+	let syscall_number = machine.csrs().registers().get(17);
 	if syscall_number == 93 {
-		let syscall_status_address = machine.csrs().registers().get(0x10);
+		let syscall_status_address = machine.csrs().registers().get(10);
 		let syscall_status = machine
 			.memory()
 			.read_word(syscall_status_address)

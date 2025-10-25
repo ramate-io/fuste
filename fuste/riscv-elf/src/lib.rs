@@ -53,7 +53,10 @@ impl Elf32Loader {
 
 		// Dynamic symbols (if present)
 		for sym in elf.dynsyms.iter() {
-			let name = elf.dynstrtab.get(sym.st_name).unwrap_or(Ok("<invalid>"))?;
+			let name = elf
+				.dynstrtab
+				.get_at(sym.st_name)
+				.ok_or(ElfLoaderError::InvalidSymbolName(sym.st_name.to_string()))?;
 			println!("0x{:08X} {} {:?} size {}", sym.st_value, name, sym.st_type(), sym.st_size);
 		}
 

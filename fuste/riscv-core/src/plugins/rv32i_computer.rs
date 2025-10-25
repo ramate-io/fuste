@@ -87,7 +87,7 @@ mod tests {
 			// Jump back to loop start
 			Jal::of(2, -12), // jump back to add instruction (4 words back)
 			// Ebreak instruction to exit the program
-			Ebreak::of(0, 0)
+			Ebreak::of()
 		];
 
 		// Load program into memory

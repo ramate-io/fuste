@@ -14,13 +14,14 @@ pub struct Ebreak(I);
 impl Ebreak {
 	pub const OPCODE: u32 = 0b1110011;
 	pub const IMM: i32 = 1;
-	pub const FUNCT3: u8 = 0b111;
+	pub const FUNCT3: u8 = 0;
+	pub const RD: u8 = 0;
 	pub const RS1: u8 = 0;
 	pub const INSTRUCTION_NAME: &'static str = "ebreak";
 
 	#[inline(always)]
-	pub fn of(rd: u8, imm: i32) -> Self {
-		Self(I::new(rd, Self::FUNCT3, Self::RS1, imm))
+	pub fn of() -> Self {
+		Self(I::new(Self::RD, Self::FUNCT3, Self::RS1, Self::IMM))
 	}
 
 	#[inline(always)]
