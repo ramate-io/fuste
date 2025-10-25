@@ -2,7 +2,7 @@ pub mod program_counter;
 pub use program_counter::ProgramCounter;
 
 /// The registers of the machine.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Registers {
 	// TODO: decide whether to represent the 0x0 as a special register or not. It is supposed to always be 0.
 	general_purpose: [u32; 32],

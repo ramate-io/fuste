@@ -24,13 +24,13 @@ pub trait ExecutableInstruction<const MEMORY_SIZE: usize>: Sized + WordInstructi
 }
 
 #[derive(Debug, PartialEq)]
-pub struct EcallExit {
+pub struct EcallInterrupt {
 	address: u32,
 	word: u32,
 }
 
 #[derive(Debug, PartialEq)]
-pub struct EbreakExit {
+pub struct EbreakInterrupt {
 	address: u32,
 	word: u32,
 }
@@ -43,7 +43,8 @@ pub struct InvalidInstruction {
 
 #[derive(Debug, PartialEq)]
 pub enum ExecutableInstructionError {
-	EbreakExit(EbreakExit),
+	EbreakInterrupt(EbreakInterrupt),
+	EcallInterrupt(EcallInterrupt),
 	InvalidInstruction(InvalidInstruction),
 	MemoryError(MemoryError),
 }
@@ -54,8 +55,11 @@ impl Display for ExecutableInstructionError {
 			ExecutableInstructionError::InvalidInstruction(w) => {
 				write!(f, "InvalidInstruction: 0b{:b} at 0x{:X}", w.word, w.address)
 			}
-			ExecutableInstructionError::EbreakExit(e) => {
-				write!(f, "EbreakExit: {:?}", e)
+			ExecutableInstructionError::EcallInterrupt(e) => {
+				write!(f, "EcallInterrupt: {:?}", e)
+			}
+			ExecutableInstructionError::EbreakInterrupt(e) => {
+				write!(f, "EbreakInterrupt: {:?}", e)
 			}
 			ExecutableInstructionError::MemoryError(e) => {
 				write!(f, "MemoryError: {:?}", e)

@@ -6,11 +6,14 @@ use crate::log::RingBuffer;
 use core::error::Error;
 use core::fmt::{self, Display};
 pub use registers::Registers;
+pub mod csrs;
+pub use csrs::Csrs;
 
 /// The machine is the memory layout against which the plugins operate.
 pub struct Machine<const MEMORY_SIZE: usize> {
 	memory: Memory<MEMORY_SIZE>,
 	registers: Registers,
+	csrs: Csrs,
 	#[cfg(debug_assertions)]
 	log: RingBuffer<4096>,
 }
@@ -23,7 +26,12 @@ pub trait MachinePlugin<const MEMORY_SIZE: usize> {
 impl<const MEMORY_SIZE: usize> Machine<MEMORY_SIZE> {
 	/// Creates a new machine instance with all memory and registers initialized to zero.
 	pub fn new() -> Self {
-		Self { memory: Memory::new(), registers: Registers::new(), log: RingBuffer::new() }
+		Self {
+			memory: Memory::new(),
+			registers: Registers::new(),
+			csrs: Csrs::new(),
+			log: RingBuffer::new(),
+		}
 	}
 
 	/// Borrows the memory of the machine.
@@ -48,6 +56,25 @@ impl<const MEMORY_SIZE: usize> Machine<MEMORY_SIZE> {
 	#[inline(always)]
 	pub fn registers_mut(&mut self) -> &mut Registers {
 		&mut self.registers
+	}
+
+	/// Borrows the CSRs of the machine.
+	#[inline(always)]
+	pub fn csrs(&self) -> &Csrs {
+		&self.csrs
+	}
+
+	/// Borrows the CSRs of the machine mutably.
+	#[inline(always)]
+	pub fn csrs_mut(&mut self) -> &mut Csrs {
+		&mut self.csrs
+	}
+
+	/// Traps the registers of the machine in the CSRs.
+	#[inline(always)]
+	pub fn trap_registers(&mut self) {
+		let registers = self.registers.clone();
+		self.csrs_mut().registers_set(registers);
 	}
 
 	/// Runs the machine with the given plugin.

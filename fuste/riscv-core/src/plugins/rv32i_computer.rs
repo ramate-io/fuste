@@ -104,7 +104,9 @@ mod tests {
 		for _ in 0..100 {
 			match computer.tick(&mut machine) {
 				Ok(()) => (),
-				Err(MachineError::InstructionError(ExecutableInstructionError::EbreakExit(_e))) => {
+				Err(MachineError::InstructionError(
+					ExecutableInstructionError::EbreakInterrupt(_e),
+				)) => {
 					break;
 				}
 				Err(e) => return Err(e),
