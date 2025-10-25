@@ -1,6 +1,6 @@
 use clap::Parser;
 use fuste_riscv_core::{
-	instructions::Rv32iInstruction,
+	instructions::{EcallInterrupt, ExecutableInstructionError, Rv32iInstruction},
 	machine::{Machine, MachineError, MachinePlugin},
 	plugins::rv32i_computer::Rv32iComputer,
 };
@@ -92,12 +92,26 @@ impl Elf {
 			Some(ticks) => {
 				for i in 0..ticks {
 					print!("Tick {}: ", i);
-					plugin.tick(&mut machine)?;
+					match plugin.tick(&mut machine) {
+						Ok(()) => (),
+						Err(MachineError::InstructionError(
+							ExecutableInstructionError::EcallInterrupt(error),
+						)) => {
+							handle_ecall_interrupt(error, &mut machine)?;
+						}
+						Err(e) => return Err(ElfError::MachineError(e)),
+					}
 				}
 			}
-			None => {
-				machine.run(&mut plugin).map_err(ElfError::MachineError)?;
-			}
+			None => match machine.run(&mut plugin) {
+				Ok(()) => (),
+				Err(MachineError::InstructionError(
+					ExecutableInstructionError::EcallInterrupt(error),
+				)) => {
+					handle_ecall_interrupt(error, &mut machine)?;
+				}
+				Err(e) => return Err(ElfError::MachineError(e)),
+			},
 		}
 
 		if self.log_registers_at_end {
@@ -105,5 +119,31 @@ impl Elf {
 		}
 
 		Ok(())
+	}
+}
+
+pub fn handle_ecall_interrupt(
+	error: EcallInterrupt,
+	machine: &mut Machine<BOX_MEMORY_SIZE>,
+) -> Result<(), ElfError> {
+	let syscall_number = machine.csrs().registers().get(0x17);
+	if syscall_number == 93 {
+		let syscall_status_address = machine.csrs().registers().get(0x10);
+		let syscall_status = machine
+			.memory()
+			.read_word(syscall_status_address)
+			.map_err(MachineError::MemoryError)?;
+		println!("Program exited with status: {}", syscall_status);
+		if syscall_status == 0 {
+			Ok(())
+		} else {
+			Err(ElfError::MachineError(MachineError::InstructionError(
+				ExecutableInstructionError::EcallInterrupt(error),
+			)))
+		}
+	} else {
+		Err(ElfError::MachineError(MachineError::InstructionError(
+			ExecutableInstructionError::EcallInterrupt(error),
+		)))
 	}
 }

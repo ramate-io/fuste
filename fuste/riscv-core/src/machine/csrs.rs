@@ -1,5 +1,4 @@
 use super::registers::Registers;
-use crate::machine::Machine;
 
 /// Note: these are not RISC-V CSRs, but an adaption for the
 /// current state of the virtual machine which does not implement privileges

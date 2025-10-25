@@ -22,9 +22,15 @@ extern "C" {
 
 #[no_mangle]
 #[inline(never)]
-pub fn exit() -> ! {
+pub fn exit(status: u32) -> ! {
 	unsafe {
-		asm!("ebreak", options(noreturn, nomem, preserves_flags));
+		core::arch::asm!(
+			"mv a0, {0}",      // a0 = pointer to ExitStatus
+			"li a7, 93",       // syscall number (93 = exit)
+			"ecall",
+			in(reg) status,
+			options(noreturn)
+		);
 	}
 }
 
@@ -32,7 +38,7 @@ pub fn exit() -> ! {
 #[inline(never)]
 pub extern "C" fn _main() -> ! {
 	let _ = main();
-	exit();
+	exit(0);
 }
 
 pub fn add(a: u32, b: u32) -> u32 {
@@ -52,5 +58,5 @@ fn main() -> Result<(), ()> {
 
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
-	exit();
+	exit(1);
 }
