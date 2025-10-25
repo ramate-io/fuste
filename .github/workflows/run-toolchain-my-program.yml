@@ -1,0 +1,19 @@
+# This workflow runs cargo test on every pushed commit.
+
+name: Run Toolchain My Program
+
+on:
+  push:
+    branches:
+
+jobs:
+  cargo-test:
+    uses: ./.github/workflows/nix-command.yml
+    with:
+      command: |
+        cargo build -p fubox
+        cd fuste/tests/toolchain
+        nix develop
+        cargo run --target riscv32i-ramate-fuste-elf.json -p my_program
+      nix_flake_path: '.'
+      runner: 'ubuntu-latest'
