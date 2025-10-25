@@ -14,6 +14,8 @@ pub enum ElfLoaderError {
 	ElfTooLarge { memory_size: usize, elf_size: usize },
 	#[error("Failed to write bytes to memory: {0}")]
 	MemoryError(#[from] MemoryError),
+	#[error("Invalid symbol name: {0}")]
+	InvalidSymbolName(String),
 }
 
 pub struct Elf32Loader;
@@ -31,6 +33,29 @@ impl Elf32Loader {
 		// Read the ELF file into memory
 		let buffer = fs::read(path.as_ref())?;
 		let elf = Elf::parse(buffer.as_slice())?;
+
+		println!("Symbols in ELF:");
+
+		// Normal symbol table
+		for sym in elf.syms.iter() {
+			let name = elf
+				.strtab
+				.get_at(sym.st_name)
+				.ok_or(ElfLoaderError::InvalidSymbolName(sym.st_name.to_string()))?;
+			// println!("0x{:08X} {} {:?} size {}", sym.st_value, name, sym.st_type(), sym.st_size);
+
+			if name == "_start" {
+				let start = sym.st_value as usize;
+				let end = start + sym.st_size as usize;
+				println!("_start bytes: {:02X?}", &buffer[start..end]);
+			}
+		}
+
+		// Dynamic symbols (if present)
+		for sym in elf.dynsyms.iter() {
+			let name = elf.dynstrtab.get(sym.st_name).unwrap_or(Ok("<invalid>"))?;
+			println!("0x{:08X} {} {:?} size {}", sym.st_value, name, sym.st_type(), sym.st_size);
+		}
 
 		for ph in &elf.program_headers {
 			println!("Loading program header: {:?}", ph);

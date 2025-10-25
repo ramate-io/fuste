@@ -21,9 +21,16 @@
         };
         craneLib = (crane.mkLib pkgs).overrideToolchain(toolchain);
         frameworks = pkgs.darwin.apple_sdk.frameworks;
+        riscv32 = import nixpkgs {
+          localSystem = "${system}";
+          crossSystem = {
+            config = "riscv32-unknown-elf";
+          };
+        };
 
         # An LLVM build environment
         dependencies = with pkgs; [
+          qemu
           cargo-machete
           protobuf
           grpcurl

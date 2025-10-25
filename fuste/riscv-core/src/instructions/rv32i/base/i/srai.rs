@@ -1,6 +1,7 @@
 use super::I;
 use crate::instructions::{ExecutableInstruction, ExecutableInstructionError, WordInstruction};
 use crate::machine::Machine;
+use core::fmt::{self, Display};
 
 /// SRAI: Shift Right Arithmetic Immediate.
 ///
@@ -12,6 +13,7 @@ impl Srai {
 	pub const OPCODE: u32 = 0b0010011;
 	pub const FUNCT3: u8 = 0b101;
 	pub const FUNCT7: u8 = 0b0100000; // SRAI is distinguished by funct7
+	pub const INSTRUCTION_NAME: &'static str = "srai";
 
 	#[inline(always)]
 	pub fn new(i: I) -> Self {
@@ -36,6 +38,12 @@ impl Srai {
 	#[inline(always)]
 	pub fn funct3(&self) -> u8 {
 		self.0.funct3()
+	}
+}
+
+impl Display for Srai {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		write!(f, "{} x{}, x{}, {}", Self::INSTRUCTION_NAME, self.rd(), self.rs1(), self.shamt())
 	}
 }
 

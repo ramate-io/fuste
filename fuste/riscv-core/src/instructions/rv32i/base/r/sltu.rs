@@ -1,6 +1,7 @@
 use super::R;
 use crate::instructions::{ExecutableInstruction, ExecutableInstructionError, WordInstruction};
 use crate::machine::Machine;
+use core::fmt::{self, Display};
 
 /// SLTU: Set Less Than Unsigned.
 ///
@@ -9,6 +10,7 @@ use crate::machine::Machine;
 pub struct Sltu(R);
 
 impl Sltu {
+	pub const INSTRUCTION_NAME: &'static str = "sltu";
 	pub const OPCODE: u32 = 0b0110011;
 	pub const FUNCT3: u8 = 0b011;
 	pub const FUNCT7: u8 = 0b0000000;
@@ -36,6 +38,12 @@ impl Sltu {
 	#[inline(always)]
 	pub fn funct3(&self) -> u8 {
 		self.0.funct3()
+	}
+}
+
+impl Display for Sltu {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		write!(f, "{} x{}, x{}, {}", Self::INSTRUCTION_NAME, self.rd(), self.rs1(), self.rs2())
 	}
 }
 

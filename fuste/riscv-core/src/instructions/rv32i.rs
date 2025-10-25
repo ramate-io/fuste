@@ -293,13 +293,60 @@ impl<const MEMORY_SIZE: usize> Rv32iInstruction<MEMORY_SIZE> {
 
 	/// Loads an instruction and executes it.
 	pub fn load_and_execute(
-		word: u32,
 		address: u32,
+		word: u32,
 		machine: &mut Machine<MEMORY_SIZE>,
 	) -> Result<(), ExecutableInstructionError> {
 		let instruction = Self::from_word(word).map_err(|_e| {
 			ExecutableInstructionError::InvalidInstruction(InvalidInstruction { word, address })
 		})?;
 		instruction.execute(machine)
+	}
+}
+
+impl<const MEMORY_SIZE: usize> Display for Rv32iInstruction<MEMORY_SIZE> {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		match self {
+			Rv32iInstruction::Lui(lui) => write!(f, "{}", lui),
+			Rv32iInstruction::Auipc(auipc) => write!(f, "{}", auipc),
+			Rv32iInstruction::Jal(jal) => write!(f, "{}", jal),
+			Rv32iInstruction::Jalr(jalr) => write!(f, "{}", jalr),
+			Rv32iInstruction::Beq(beq) => write!(f, "{}", beq),
+			Rv32iInstruction::Bne(bne) => write!(f, "{}", bne),
+			Rv32iInstruction::Blt(blt) => write!(f, "{}", blt),
+			Rv32iInstruction::Bge(bge) => write!(f, "{}", bge),
+			Rv32iInstruction::Bltu(bltu) => write!(f, "{}", bltu),
+			Rv32iInstruction::Bgeu(bgeu) => write!(f, "{}", bgeu),
+			Rv32iInstruction::Lb(lb) => write!(f, "{}", lb),
+			Rv32iInstruction::Lh(lh) => write!(f, "{}", lh),
+			Rv32iInstruction::Lw(lw) => write!(f, "{}", lw),
+			Rv32iInstruction::Lbu(lbu) => write!(f, "{}", lbu),
+			Rv32iInstruction::Lhu(lhu) => write!(f, "{}", lhu),
+			Rv32iInstruction::Sb(sb) => write!(f, "{}", sb),
+			Rv32iInstruction::Sh(sh) => write!(f, "{}", sh),
+			Rv32iInstruction::Sw(sw) => write!(f, "{}", sw),
+			Rv32iInstruction::Addi(addi) => write!(f, "{}", addi),
+			Rv32iInstruction::Slti(slti) => write!(f, "{}", slti),
+			Rv32iInstruction::Sltiu(sltiu) => write!(f, "{}", sltiu),
+			Rv32iInstruction::Xori(xori) => write!(f, "{}", xori),
+			Rv32iInstruction::Ori(ori) => write!(f, "{}", ori),
+			Rv32iInstruction::Andi(andi) => write!(f, "{}", andi),
+			Rv32iInstruction::Slli(slli) => write!(f, "{}", slli),
+			Rv32iInstruction::Srli(srli) => write!(f, "{}", srli),
+			Rv32iInstruction::Srai(srai) => write!(f, "{}", srai),
+			Rv32iInstruction::Add(add) => write!(f, "{}", add),
+			Rv32iInstruction::Sub(sub) => write!(f, "{}", sub),
+			Rv32iInstruction::Sll(sll) => write!(f, "{}", sll),
+			Rv32iInstruction::Slt(slt) => write!(f, "{}", slt),
+			Rv32iInstruction::Sltu(sltu) => write!(f, "{}", sltu),
+			Rv32iInstruction::Xor(xor) => write!(f, "{}", xor),
+			Rv32iInstruction::Srl(srl) => write!(f, "{}", srl),
+			Rv32iInstruction::Sra(sra) => write!(f, "{}", sra),
+			Rv32iInstruction::Or(or) => write!(f, "{}", or),
+			Rv32iInstruction::And(and) => write!(f, "{}", and),
+			Rv32iInstruction::Fence(fence) => write!(f, "{}", fence),
+			Rv32iInstruction::Ecall(ecall) => write!(f, "{}", ecall),
+			Rv32iInstruction::Ebreak(ebreak) => write!(f, "{}", ebreak),
+		}
 	}
 }

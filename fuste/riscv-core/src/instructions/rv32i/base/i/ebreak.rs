@@ -13,7 +13,7 @@ pub struct Ebreak(I);
 
 impl Ebreak {
 	pub const OPCODE: u32 = 0b1110011;
-	pub const IMM: i32 = 0;
+	pub const IMM: i32 = 1;
 	pub const FUNCT3: u8 = 0b111;
 	pub const RS1: u8 = 0;
 	pub const INSTRUCTION_NAME: &'static str = "ebreak";

@@ -1,6 +1,7 @@
 use super::B;
 use crate::instructions::{ExecutableInstruction, ExecutableInstructionError, WordInstruction};
 use crate::machine::Machine;
+use core::fmt::{self, Display};
 
 /// BLTU: Branch if Less Than Unsigned.
 ///
@@ -11,6 +12,7 @@ pub struct Bltu(B);
 impl Bltu {
 	pub const OPCODE: u32 = 0b1100011;
 	pub const FUNCT3: u8 = 0b110;
+	pub const INSTRUCTION_NAME: &'static str = "bltu";
 
 	#[inline(always)]
 	pub fn new(b: B) -> Self {
@@ -35,6 +37,12 @@ impl Bltu {
 	#[inline(always)]
 	pub fn funct3(&self) -> u8 {
 		self.0.funct3()
+	}
+}
+
+impl Display for Bltu {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		write!(f, "{} x{}, x{}, {}", Self::INSTRUCTION_NAME, self.rs1(), self.rs2(), self.offset())
 	}
 }
 

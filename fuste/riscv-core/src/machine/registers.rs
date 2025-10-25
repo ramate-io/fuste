@@ -27,11 +27,17 @@ impl Registers {
 
 	#[inline(always)]
 	pub fn get(&self, index: usize) -> u32 {
+		if index == 0 {
+			return 0;
+		}
 		self.general_purpose[index]
 	}
 
 	#[inline(always)]
 	pub fn set(&mut self, index: u8, value: u32) {
+		if index == 0 {
+			return;
+		}
 		self.general_purpose[index as usize] = value;
 	}
 

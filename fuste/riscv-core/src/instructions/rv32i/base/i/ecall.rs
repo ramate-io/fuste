@@ -11,7 +11,7 @@ pub struct Ecall(I);
 
 impl Ecall {
 	pub const OPCODE: u32 = 0b1110011;
-	pub const IMM: i32 = 1;
+	pub const IMM: i32 = 0;
 	pub const INSTRUCTION_NAME: &'static str = "ecall";
 
 	#[inline(always)]

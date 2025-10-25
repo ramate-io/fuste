@@ -1,6 +1,7 @@
 use super::I;
 use crate::instructions::{ExecutableInstruction, ExecutableInstructionError, WordInstruction};
 use crate::machine::Machine;
+use core::fmt::{self, Display};
 
 /// SLLI: Shift Left Logical Immediate.
 ///
@@ -11,6 +12,7 @@ pub struct Slli(I);
 impl Slli {
 	pub const OPCODE: u32 = 0b0010011;
 	pub const FUNCT3: u8 = 0b001;
+	pub const INSTRUCTION_NAME: &'static str = "slli";
 
 	#[inline(always)]
 	pub fn new(i: I) -> Self {
@@ -35,6 +37,12 @@ impl Slli {
 	#[inline(always)]
 	pub fn funct3(&self) -> u8 {
 		self.0.funct3()
+	}
+}
+
+impl Display for Slli {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		write!(f, "{} x{}, x{}, {}", Self::INSTRUCTION_NAME, self.rd(), self.rs1(), self.shamt())
 	}
 }
 

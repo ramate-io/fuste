@@ -8,7 +8,10 @@ use core::panic::PanicInfo;
 fn _start() -> ! {
 	unsafe {
 		// set stack pointer
-		asm!("la sp, _stack_end", options(nomem, nostack, preserves_flags));
+		asm!(
+			"la sp, {stack}",
+			stack = sym _stack_end
+		);
 	}
 	_main();
 }
@@ -17,14 +20,16 @@ extern "C" {
 	static _stack_end: u32;
 }
 
+#[no_mangle]
+#[inline(never)]
 pub fn exit() -> ! {
 	unsafe {
-		asm!("ebreak", options(nomem, nostack, preserves_flags));
+		asm!("ebreak", options(noreturn, nomem, preserves_flags));
 	}
-	loop {}
 }
 
 #[no_mangle]
+#[inline(never)]
 pub extern "C" fn _main() -> ! {
 	let _ = main();
 	exit();
@@ -47,5 +52,5 @@ fn main() -> Result<(), ()> {
 
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
-	loop {}
+	exit();
 }

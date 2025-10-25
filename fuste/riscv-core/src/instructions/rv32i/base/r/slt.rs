@@ -1,6 +1,7 @@
 use super::R;
 use crate::instructions::{ExecutableInstruction, ExecutableInstructionError, WordInstruction};
 use crate::machine::Machine;
+use core::fmt::{self, Display};
 
 /// SLT: Set Less Than.
 ///
@@ -9,6 +10,7 @@ use crate::machine::Machine;
 pub struct Slt(R);
 
 impl Slt {
+	pub const INSTRUCTION_NAME: &'static str = "slt";
 	pub const OPCODE: u32 = 0b0110011;
 	pub const FUNCT3: u8 = 0b010;
 	pub const FUNCT7: u8 = 0b0000000;
@@ -41,6 +43,12 @@ impl Slt {
 	#[inline(always)]
 	pub fn funct7(&self) -> u8 {
 		self.0.funct7()
+	}
+}
+
+impl Display for Slt {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		write!(f, "{} x{}, x{}, {}", Self::INSTRUCTION_NAME, self.rd(), self.rs1(), self.rs2())
 	}
 }
 
