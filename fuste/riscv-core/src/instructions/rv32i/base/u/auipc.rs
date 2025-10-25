@@ -1,6 +1,7 @@
 use super::U;
 use crate::instructions::{ExecutableInstruction, ExecutableInstructionError, WordInstruction};
 use crate::machine::Machine;
+use core::fmt::{self, Display};
 
 /// Auipc: load upper immediate.
 ///
@@ -10,6 +11,7 @@ pub struct Auipc(U);
 
 impl Auipc {
 	pub const OPCODE: u32 = 0b0010111;
+	pub const INSTRUCTION_NAME: &'static str = "auipc";
 
 	#[inline(always)]
 	pub fn new(u: U) -> Self {
@@ -24,6 +26,12 @@ impl Auipc {
 	#[inline(always)]
 	pub fn imm(&self) -> u32 {
 		self.0.imm()
+	}
+}
+
+impl Display for Auipc {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		write!(f, "{} x{}, 0x{:X}", Self::INSTRUCTION_NAME, self.rd(), self.imm())
 	}
 }
 
@@ -44,11 +52,12 @@ impl<const MEMORY_SIZE: usize> ExecutableInstruction<MEMORY_SIZE> for Auipc {
 	fn execute(self, machine: &mut Machine<MEMORY_SIZE>) -> Result<(), ExecutableInstructionError> {
 		let U { rd, imm } = self.0;
 
-		let registers = machine.registers_mut();
+		let pc = machine.registers().program_counter();
+		let result = pc.wrapping_add(imm);
 
-		registers.program_counter_mut().increment_by(imm);
+		machine.registers_mut().set(rd, result);
 
-		registers.set(rd, registers.program_counter());
+		machine.registers_mut().program_counter_mut().increment();
 
 		Ok(())
 	}
@@ -71,7 +80,7 @@ mod tests {
 		instruction.execute(&mut machine)?;
 
 		// program counter after increment
-		assert_eq!(machine.registers().program_counter(), program_counter_initial + imm);
+		assert_eq!(machine.registers().program_counter(), program_counter_initial + 4);
 
 		// stored in register
 		assert_eq!(machine.registers().get(1), program_counter_initial + imm);
@@ -93,7 +102,7 @@ mod tests {
 		instruction.execute(&mut machine)?;
 
 		// program counter after increment
-		assert_eq!(machine.registers().program_counter(), program_counter_initial + imm);
+		assert_eq!(machine.registers().program_counter(), program_counter_initial + 4);
 
 		// stored in register
 		assert_eq!(machine.registers().get(1), program_counter_initial + imm);

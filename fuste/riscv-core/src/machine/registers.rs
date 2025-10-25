@@ -2,7 +2,7 @@ pub mod program_counter;
 pub use program_counter::ProgramCounter;
 
 /// The registers of the machine.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Registers {
 	// TODO: decide whether to represent the 0x0 as a special register or not. It is supposed to always be 0.
 	general_purpose: [u32; 32],
@@ -27,11 +27,17 @@ impl Registers {
 
 	#[inline(always)]
 	pub fn get(&self, index: usize) -> u32 {
+		if index == 0 {
+			return 0;
+		}
 		self.general_purpose[index]
 	}
 
 	#[inline(always)]
 	pub fn set(&mut self, index: u8, value: u32) {
+		if index == 0 {
+			return;
+		}
 		self.general_purpose[index as usize] = value;
 	}
 

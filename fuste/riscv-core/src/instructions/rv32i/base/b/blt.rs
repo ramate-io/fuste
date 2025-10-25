@@ -1,6 +1,7 @@
 use super::B;
 use crate::instructions::{ExecutableInstruction, ExecutableInstructionError, WordInstruction};
 use crate::machine::Machine;
+use core::fmt::{self, Display};
 
 /// BLT: Branch if Less Than.
 ///
@@ -11,6 +12,7 @@ pub struct Blt(B);
 impl Blt {
 	pub const OPCODE: u32 = 0b1100011;
 	pub const FUNCT3: u8 = 0b100;
+	pub const INSTRUCTION_NAME: &'static str = "blt";
 
 	#[inline(always)]
 	pub fn of(rs1: u8, rs2: u8, imm: i32) -> Self {
@@ -40,6 +42,12 @@ impl Blt {
 	#[inline(always)]
 	pub fn funct3(&self) -> u8 {
 		self.0.funct3()
+	}
+}
+
+impl Display for Blt {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		write!(f, "{} x{}, x{}, {}", Self::INSTRUCTION_NAME, self.rs1(), self.rs2(), self.offset())
 	}
 }
 

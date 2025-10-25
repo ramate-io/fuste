@@ -1,6 +1,9 @@
 use super::I;
-use crate::instructions::{ExecutableInstruction, ExecutableInstructionError, WordInstruction};
+use crate::instructions::{
+	EcallInterrupt, ExecutableInstruction, ExecutableInstructionError, WordInstruction,
+};
 use crate::machine::Machine;
+use core::fmt::{self, Display};
 
 /// ECALL: Environment Call.
 ///
@@ -10,7 +13,8 @@ pub struct Ecall(I);
 
 impl Ecall {
 	pub const OPCODE: u32 = 0b1110011;
-	pub const IMM: i32 = 1;
+	pub const IMM: i32 = 0;
+	pub const INSTRUCTION_NAME: &'static str = "ecall";
 
 	#[inline(always)]
 	pub fn new(i: I) -> Self {
@@ -43,6 +47,12 @@ impl Ecall {
 	}
 }
 
+impl Display for Ecall {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		write!(f, "{}", Self::INSTRUCTION_NAME)
+	}
+}
+
 impl WordInstruction for Ecall {
 	#[inline(always)]
 	fn to_word(self) -> u32 {
@@ -60,10 +70,15 @@ impl<const MEMORY_SIZE: usize> ExecutableInstruction<MEMORY_SIZE> for Ecall {
 	///
 	/// [Machine] does not have a privileged mode, so this instruction is a no-op.
 	#[inline(always)]
-	fn execute(
-		self,
-		_machine: &mut Machine<MEMORY_SIZE>,
-	) -> Result<(), ExecutableInstructionError> {
-		Ok(())
+	fn execute(self, machine: &mut Machine<MEMORY_SIZE>) -> Result<(), ExecutableInstructionError> {
+		let program_counter = machine.registers().program_counter();
+		machine.csrs_mut().epc_set(program_counter);
+		machine.csrs_mut().cause_set(0);
+		machine.trap_registers();
+
+		Err(ExecutableInstructionError::EcallInterrupt(EcallInterrupt {
+			address: program_counter,
+			word: self.to_word(),
+		}))
 	}
 }

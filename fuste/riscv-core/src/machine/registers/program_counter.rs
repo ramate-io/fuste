@@ -1,5 +1,5 @@
 /// The program counter register.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ProgramCounter {
 	program_counter: u32,
 }

@@ -1,6 +1,8 @@
 use crate::machine::memory::MemoryError;
 use crate::machine::Machine;
 pub mod rv32i;
+pub use core::error::Error;
+pub use core::fmt::{self, Display};
 pub use rv32i::Rv32iInstruction;
 
 pub trait WordInstruction {
@@ -22,16 +24,48 @@ pub trait ExecutableInstruction<const MEMORY_SIZE: usize>: Sized + WordInstructi
 }
 
 #[derive(Debug, PartialEq)]
-pub struct EbreakExit {
+pub struct EcallInterrupt {
 	address: u32,
 	word: u32,
 }
 
 #[derive(Debug, PartialEq)]
+pub struct EbreakInterrupt {
+	address: u32,
+	word: u32,
+}
+
+#[derive(Debug, PartialEq)]
+pub struct InvalidInstruction {
+	word: u32,
+	address: u32,
+}
+
+#[derive(Debug, PartialEq)]
 pub enum ExecutableInstructionError {
-	EbreakExit(EbreakExit),
-	InvalidInstruction(u32),
+	EbreakInterrupt(EbreakInterrupt),
+	EcallInterrupt(EcallInterrupt),
+	InvalidInstruction(InvalidInstruction),
 	MemoryError(MemoryError),
+}
+
+impl Display for ExecutableInstructionError {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		match self {
+			ExecutableInstructionError::InvalidInstruction(w) => {
+				write!(f, "InvalidInstruction: 0b{:b} at 0x{:X}", w.word, w.address)
+			}
+			ExecutableInstructionError::EcallInterrupt(e) => {
+				write!(f, "EcallInterrupt: {:?}", e)
+			}
+			ExecutableInstructionError::EbreakInterrupt(e) => {
+				write!(f, "EbreakInterrupt: {:?}", e)
+			}
+			ExecutableInstructionError::MemoryError(e) => {
+				write!(f, "MemoryError: {:?}", e)
+			}
+		}
+	}
 }
 
 impl From<MemoryError> for ExecutableInstructionError {

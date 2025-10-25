@@ -1,6 +1,7 @@
 use super::I;
 use crate::instructions::{ExecutableInstruction, ExecutableInstructionError, WordInstruction};
 use crate::machine::Machine;
+use core::fmt::{self, Display};
 
 /// ADDI: Add Immediate.
 ///
@@ -11,6 +12,7 @@ pub struct Addi(I);
 impl Addi {
 	pub const OPCODE: u32 = 0b0010011;
 	pub const FUNCT3: u8 = 0b000;
+	pub const INSTRUCTION_NAME: &'static str = "addi";
 
 	#[inline(always)]
 	pub fn of(rd: u8, rs1: u8, imm: i32) -> Self {
@@ -40,6 +42,12 @@ impl Addi {
 	#[inline(always)]
 	pub fn funct3(&self) -> u8 {
 		self.0.funct3()
+	}
+}
+
+impl Display for Addi {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		write!(f, "{} x{}, x{}, {}", Self::INSTRUCTION_NAME, self.rd(), self.rs1(), self.imm())
 	}
 }
 

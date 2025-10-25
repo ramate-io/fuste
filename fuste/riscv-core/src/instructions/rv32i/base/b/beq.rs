@@ -1,6 +1,7 @@
 use super::B;
 use crate::instructions::{ExecutableInstruction, ExecutableInstructionError, WordInstruction};
 use crate::machine::Machine;
+use core::fmt::{self, Display};
 
 /// BEQ: Branch if Equal.
 ///
@@ -8,9 +9,16 @@ use crate::machine::Machine;
 #[derive(Debug)]
 pub struct Beq(B);
 
+impl Display for Beq {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		write!(f, "{} {}", Self::INSTRUCTION_NAME, self.0)
+	}
+}
+
 impl Beq {
 	pub const OPCODE: u32 = 0b1100011;
 	pub const FUNCT3: u8 = 0b000;
+	pub const INSTRUCTION_NAME: &str = "beq";
 
 	#[inline(always)]
 	pub fn new(b: B) -> Self {

@@ -1,6 +1,7 @@
 use super::R;
 use crate::instructions::{ExecutableInstruction, ExecutableInstructionError, WordInstruction};
 use crate::machine::Machine;
+use core::fmt::{self, Display};
 
 /// SRA: Shift Right Arithmetic.
 ///
@@ -9,6 +10,7 @@ use crate::machine::Machine;
 pub struct Sra(R);
 
 impl Sra {
+	pub const INSTRUCTION_NAME: &'static str = "sra";
 	pub const OPCODE: u32 = 0b0110011;
 	pub const FUNCT3: u8 = 0b101;
 	pub const FUNCT7: u8 = 0b0100000;
@@ -41,6 +43,12 @@ impl Sra {
 	#[inline(always)]
 	pub fn funct7(&self) -> u8 {
 		self.0.funct7()
+	}
+}
+
+impl Display for Sra {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		write!(f, "{} x{}, x{}, {}", Self::INSTRUCTION_NAME, self.rd(), self.rs1(), self.rs2())
 	}
 }
 

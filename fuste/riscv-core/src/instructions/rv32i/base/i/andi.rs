@@ -1,6 +1,7 @@
 use super::I;
 use crate::instructions::{ExecutableInstruction, ExecutableInstructionError, WordInstruction};
 use crate::machine::Machine;
+use core::fmt::{self, Display};
 
 /// ANDI: AND Immediate.
 ///
@@ -11,6 +12,7 @@ pub struct Andi(I);
 impl Andi {
 	pub const OPCODE: u32 = 0b0010011;
 	pub const FUNCT3: u8 = 0b111;
+	pub const INSTRUCTION_NAME: &'static str = "andi";
 
 	#[inline(always)]
 	pub fn new(i: I) -> Self {
@@ -35,6 +37,12 @@ impl Andi {
 	#[inline(always)]
 	pub fn funct3(&self) -> u8 {
 		self.0.funct3()
+	}
+}
+
+impl Display for Andi {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		write!(f, "{} x{}, x{}, {}", Self::INSTRUCTION_NAME, self.rd(), self.rs1(), self.imm())
 	}
 }
 

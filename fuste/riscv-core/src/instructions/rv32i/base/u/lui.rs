@@ -1,6 +1,7 @@
 use super::U;
 use crate::instructions::{ExecutableInstruction, ExecutableInstructionError, WordInstruction};
 use crate::machine::Machine;
+use core::fmt::{self, Display};
 
 /// LUI: load upper immediate.
 ///
@@ -10,6 +11,7 @@ pub struct Lui(U);
 
 impl Lui {
 	pub const OPCODE: u32 = 0b0110111;
+	pub const INSTRUCTION_NAME: &'static str = "lui";
 
 	#[inline(always)]
 	pub fn new(u: U) -> Self {
@@ -24,6 +26,12 @@ impl Lui {
 	#[inline(always)]
 	pub fn imm(&self) -> u32 {
 		self.0.imm()
+	}
+}
+
+impl Display for Lui {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		write!(f, "{} x{}, 0x{:X}", Self::INSTRUCTION_NAME, self.rd(), self.imm())
 	}
 }
 

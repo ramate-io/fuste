@@ -1,6 +1,7 @@
 use super::R;
 use crate::instructions::{ExecutableInstruction, ExecutableInstructionError, WordInstruction};
 use crate::machine::Machine;
+use core::fmt::{self, Display};
 
 /// SUB: Subtract.
 ///
@@ -12,6 +13,7 @@ impl Sub {
 	pub const OPCODE: u32 = 0b0110011;
 	pub const FUNCT3: u8 = 0b000;
 	pub const FUNCT7: u8 = 0b0100000;
+	pub const INSTRUCTION_NAME: &'static str = "sub";
 
 	#[inline(always)]
 	pub fn new(r: R) -> Self {
@@ -41,6 +43,12 @@ impl Sub {
 	#[inline(always)]
 	pub fn funct7(&self) -> u8 {
 		self.0.funct7()
+	}
+}
+
+impl Display for Sub {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		write!(f, "{} x{}, x{}, x{}", Self::INSTRUCTION_NAME, self.rd(), self.rs1(), self.rs2())
 	}
 }
 

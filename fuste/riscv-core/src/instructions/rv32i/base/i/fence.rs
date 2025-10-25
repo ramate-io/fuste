@@ -1,6 +1,7 @@
 use super::I;
 use crate::instructions::{ExecutableInstruction, ExecutableInstructionError, WordInstruction};
 use crate::machine::Machine;
+use core::fmt::{self, Display};
 
 /// FENCE: Fence.
 ///
@@ -10,6 +11,7 @@ pub struct Fence(I);
 
 impl Fence {
 	pub const OPCODE: u32 = 0b0001111;
+	pub const INSTRUCTION_NAME: &'static str = "fence";
 
 	#[inline(always)]
 	pub fn new(i: I) -> Self {
@@ -84,6 +86,12 @@ impl Fence {
 	#[inline(always)]
 	pub fn funct7(&self) -> u8 {
 		self.0.funct7()
+	}
+}
+
+impl Display for Fence {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		write!(f, "{}", Self::INSTRUCTION_NAME)
 	}
 }
 

@@ -1,8 +1,9 @@
 use super::I;
 use crate::instructions::{
-	EbreakExit, ExecutableInstruction, ExecutableInstructionError, WordInstruction,
+	EbreakInterrupt, ExecutableInstruction, ExecutableInstructionError, WordInstruction,
 };
 use crate::machine::Machine;
+use core::fmt::{self, Display};
 
 /// EBREAK: Environment Break.
 ///
@@ -12,13 +13,15 @@ pub struct Ebreak(I);
 
 impl Ebreak {
 	pub const OPCODE: u32 = 0b1110011;
-	pub const IMM: i32 = 0;
-	pub const FUNCT3: u8 = 0b111;
+	pub const IMM: i32 = 1;
+	pub const FUNCT3: u8 = 0;
+	pub const RD: u8 = 0;
 	pub const RS1: u8 = 0;
+	pub const INSTRUCTION_NAME: &'static str = "ebreak";
 
 	#[inline(always)]
-	pub fn of(rd: u8, imm: i32) -> Self {
-		Self(I::new(rd, Self::FUNCT3, Self::RS1, imm))
+	pub fn of() -> Self {
+		Self(I::new(Self::RD, Self::FUNCT3, Self::RS1, Self::IMM))
 	}
 
 	#[inline(always)]
@@ -52,6 +55,12 @@ impl Ebreak {
 	}
 }
 
+impl Display for Ebreak {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		write!(f, "{}", Self::INSTRUCTION_NAME)
+	}
+}
+
 impl WordInstruction for Ebreak {
 	#[inline(always)]
 	fn to_word(self) -> u32 {
@@ -68,7 +77,12 @@ impl<const MEMORY_SIZE: usize> ExecutableInstruction<MEMORY_SIZE> for Ebreak {
 	/// Ebreak simply exits the program with the current address and word.
 	#[inline(always)]
 	fn execute(self, machine: &mut Machine<MEMORY_SIZE>) -> Result<(), ExecutableInstructionError> {
-		Err(ExecutableInstructionError::EbreakExit(EbreakExit {
+		let program_counter = machine.registers().program_counter();
+		machine.csrs_mut().epc_set(program_counter);
+		machine.csrs_mut().cause_set(0);
+		machine.trap_registers();
+
+		Err(ExecutableInstructionError::EbreakInterrupt(EbreakInterrupt {
 			address: machine.registers().program_counter(),
 			word: self.to_word(),
 		}))

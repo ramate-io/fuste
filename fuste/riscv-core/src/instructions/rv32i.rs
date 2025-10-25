@@ -1,4 +1,6 @@
-use crate::instructions::{ExecutableInstruction, ExecutableInstructionError};
+use crate::instructions::{
+	ExecutableInstruction, ExecutableInstructionError, InvalidInstruction, WordInstruction,
+};
 use crate::machine::Machine;
 pub use base::b::{beq::Beq, bge::Bge, bgeu::Bgeu, blt::Blt, bltu::Bltu, bne::Bne, B};
 pub use base::i::{
@@ -11,8 +13,25 @@ pub use base::r::{
 	add::Add, and::And, or::Or, sll::Sll, slt::Slt, sltu::Sltu, sra::Sra, srl::Srl, sub::Sub,
 	xor::Xor, R,
 };
+pub use base::s::{sb::Sb, sh::Sh, sw::Sw, S};
 pub use base::u::{auipc::Auipc, lui::Lui};
 pub mod base;
+use core::fmt::{self, Display};
+
+#[derive(Debug)]
+pub enum Rv32iInstructionError {
+	InvalidInstruction(u32),
+}
+
+impl Display for Rv32iInstructionError {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		match self {
+			Rv32iInstructionError::InvalidInstruction(i) => {
+				write!(f, "InvalidInstruction: 0b{:b}", i)
+			}
+		}
+	}
+}
 
 /// The reason for instruction not being an enum of different instruction types can be thought of as twofold:
 ///
@@ -22,13 +41,52 @@ pub mod base;
 /// As a result, pulling out the decoding logic into a match statement is a good compromise.
 /// The additional benefit is that the match statement reads like the table which describeds the instruction set.
 #[derive(Debug)]
-pub struct Rv32iInstruction<const MEMORY_SIZE: usize>;
+pub enum Rv32iInstruction<const MEMORY_SIZE: usize> {
+	Lui(Lui),
+	Auipc(Auipc),
+	Jal(Jal),
+	Jalr(Jalr),
+	Beq(Beq),
+	Bne(Bne),
+	Blt(Blt),
+	Bge(Bge),
+	Bltu(Bltu),
+	Bgeu(Bgeu),
+	Lb(Lb),
+	Lh(Lh),
+	Lw(Lw),
+	Lbu(Lbu),
+	Lhu(Lhu),
+	Sb(Sb),
+	Sh(Sh),
+	Sw(Sw),
+	Addi(Addi),
+	Slti(Slti),
+	Sltiu(Sltiu),
+	Xori(Xori),
+	Ori(Ori),
+	Andi(Andi),
+	Slli(Slli),
+	Srli(Srli),
+	Srai(Srai),
+	Add(Add),
+	Sub(Sub),
+	Sll(Sll),
+	Slt(Slt),
+	Sltu(Sltu),
+	Xor(Xor),
+	Srl(Srl),
+	Sra(Sra),
+	Or(Or),
+	And(And),
+	Fence(Fence),
+	Ecall(Ecall),
+	Ebreak(Ebreak),
+}
 
 impl<const MEMORY_SIZE: usize> Rv32iInstruction<MEMORY_SIZE> {
-	pub fn load_and_execute(
-		word: u32,
-		machine: &mut Machine<MEMORY_SIZE>,
-	) -> Result<(), ExecutableInstructionError> {
+	/// Converts a word to an instruction.
+	pub fn from_word(word: u32) -> Result<Self, Rv32iInstructionError> {
 		// The opcode is the least significant 7 bits of the word.
 		let opcode = word & 0b0000_0000_0000_0000_0000_0000_0111_1111;
 
@@ -37,24 +95,24 @@ impl<const MEMORY_SIZE: usize> Rv32iInstruction<MEMORY_SIZE> {
 		// For semantic clarity, we may change this in the short run, however.
 		match opcode {
 			// U format is one that doesn't share an opcode throughout its members
-			Lui::OPCODE => Lui::load_and_execute(word, machine),
-			Auipc::OPCODE => Auipc::load_and_execute(word, machine),
+			Lui::OPCODE => Ok(Rv32iInstruction::Lui(Lui::from_word(word))),
+			Auipc::OPCODE => Ok(Rv32iInstruction::Auipc(Auipc::from_word(word))),
 			// J format is just JAL
-			Jal::OPCODE => Jal::load_and_execute(word, machine),
+			Jal::OPCODE => Ok(Rv32iInstruction::Jal(Jal::from_word(word))),
 			// JALR has its own opcode
-			Jalr::OPCODE => Jalr::load_and_execute(word, machine),
+			Jalr::OPCODE => Ok(Rv32iInstruction::Jalr(Jalr::from_word(word))),
 			// B format shares an opcode
 			B::OPCODE => {
 				// For B-type instructions, we need to check funct3
 				let b = base::b::B::from_word(word);
 				match b.funct3() {
-					Beq::FUNCT3 => Beq::new(b).execute(machine),
-					Bne::FUNCT3 => Bne::new(b).execute(machine),
-					Blt::FUNCT3 => Blt::new(b).execute(machine),
-					Bge::FUNCT3 => Bge::new(b).execute(machine),
-					Bltu::FUNCT3 => Bltu::new(b).execute(machine),
-					Bgeu::FUNCT3 => Bgeu::new(b).execute(machine),
-					_ => Err(ExecutableInstructionError::InvalidInstruction(word)),
+					Beq::FUNCT3 => Ok(Rv32iInstruction::Beq(Beq::new(b))),
+					Bne::FUNCT3 => Ok(Rv32iInstruction::Bne(Bne::new(b))),
+					Blt::FUNCT3 => Ok(Rv32iInstruction::Blt(Blt::new(b))),
+					Bge::FUNCT3 => Ok(Rv32iInstruction::Bge(Bge::new(b))),
+					Bltu::FUNCT3 => Ok(Rv32iInstruction::Bltu(Bltu::new(b))),
+					Bgeu::FUNCT3 => Ok(Rv32iInstruction::Bgeu(Bgeu::new(b))),
+					_ => Err(Rv32iInstructionError::InvalidInstruction(word)),
 				}
 			}
 			// Load instructions share an opcode
@@ -62,12 +120,22 @@ impl<const MEMORY_SIZE: usize> Rv32iInstruction<MEMORY_SIZE> {
 				// For load instructions, we need to check funct3
 				let i = base::i::I::from_word(word);
 				match i.funct3() {
-					Lb::FUNCT3 => Lb::new(i).execute(machine),
-					Lh::FUNCT3 => Lh::new(i).execute(machine),
-					Lw::FUNCT3 => Lw::new(i).execute(machine),
-					Lbu::FUNCT3 => Lbu::new(i).execute(machine),
-					Lhu::FUNCT3 => Lhu::new(i).execute(machine),
-					_ => Err(ExecutableInstructionError::InvalidInstruction(word)),
+					Lb::FUNCT3 => Ok(Rv32iInstruction::Lb(Lb::new(i))),
+					Lh::FUNCT3 => Ok(Rv32iInstruction::Lh(Lh::new(i))),
+					Lw::FUNCT3 => Ok(Rv32iInstruction::Lw(Lw::new(i))),
+					Lbu::FUNCT3 => Ok(Rv32iInstruction::Lbu(Lbu::new(i))),
+					Lhu::FUNCT3 => Ok(Rv32iInstruction::Lhu(Lhu::new(i))),
+					_ => Err(Rv32iInstructionError::InvalidInstruction(word)),
+				}
+			}
+			// Store instructions share an opcode
+			S::OPCODE => {
+				let s = base::s::S::from_word(word);
+				match s.funct3() {
+					Sb::FUNCT3 => Ok(Rv32iInstruction::Sb(Sb::new(s))),
+					Sh::FUNCT3 => Ok(Rv32iInstruction::Sh(Sh::new(s))),
+					Sw::FUNCT3 => Ok(Rv32iInstruction::Sw(Sw::new(s))),
+					_ => Err(Rv32iInstructionError::InvalidInstruction(word)),
 				}
 			}
 			// I format shares an opcode
@@ -75,24 +143,24 @@ impl<const MEMORY_SIZE: usize> Rv32iInstruction<MEMORY_SIZE> {
 				// For I-type instructions, we need to check funct3
 				let i = base::i::I::from_word(word);
 				match i.funct3() {
-					Addi::FUNCT3 => Addi::new(i).execute(machine),
-					Slti::FUNCT3 => Slti::new(i).execute(machine),
-					Sltiu::FUNCT3 => Sltiu::new(i).execute(machine),
-					Xori::FUNCT3 => Xori::new(i).execute(machine),
-					Ori::FUNCT3 => Ori::new(i).execute(machine),
-					Andi::FUNCT3 => Andi::new(i).execute(machine),
-					Slli::FUNCT3 => Slli::new(i).execute(machine),
+					Addi::FUNCT3 => Ok(Rv32iInstruction::Addi(Addi::new(i))),
+					Slti::FUNCT3 => Ok(Rv32iInstruction::Slti(Slti::new(i))),
+					Sltiu::FUNCT3 => Ok(Rv32iInstruction::Sltiu(Sltiu::new(i))),
+					Xori::FUNCT3 => Ok(Rv32iInstruction::Xori(Xori::new(i))),
+					Ori::FUNCT3 => Ok(Rv32iInstruction::Ori(Ori::new(i))),
+					Andi::FUNCT3 => Ok(Rv32iInstruction::Andi(Andi::new(i))),
+					Slli::FUNCT3 => Ok(Rv32iInstruction::Slli(Slli::new(i))),
 					// For SRLI and SRAI, both have funct3=101, distinguished by funct7
 					Srli::FUNCT3 => {
 						// Check if it's SRAI (funct7=0100000) or SRLI (funct7=0000000)
 						// For I format, funct7 is in bits [31:25] of the immediate field
 						match i.funct7() {
-							Srai::FUNCT7 => Srai::new(i).execute(machine),
-							Srl::FUNCT7 => Srli::new(i).execute(machine),
-							_ => Err(ExecutableInstructionError::InvalidInstruction(word)),
+							Srai::FUNCT7 => Ok(Rv32iInstruction::Srai(Srai::new(i))),
+							Srl::FUNCT7 => Ok(Rv32iInstruction::Srli(Srli::new(i))),
+							_ => Err(Rv32iInstructionError::InvalidInstruction(word)),
 						}
 					}
-					_ => Err(ExecutableInstructionError::InvalidInstruction(word)),
+					_ => Err(Rv32iInstructionError::InvalidInstruction(word)),
 				}
 			}
 			// R format shares an opcode
@@ -100,31 +168,185 @@ impl<const MEMORY_SIZE: usize> Rv32iInstruction<MEMORY_SIZE> {
 				// For R-type instructions, we need to check funct3 and funct7
 				let r = base::r::R::from_word(word);
 				match (r.funct3(), r.funct7()) {
-					(Add::FUNCT3, Add::FUNCT7) => Add::new(r).execute(machine),
-					(Sub::FUNCT3, Sub::FUNCT7) => Sub::new(r).execute(machine),
-					(Sll::FUNCT3, Sll::FUNCT7) => Sll::new(r).execute(machine),
-					(Slt::FUNCT3, Slt::FUNCT7) => Slt::new(r).execute(machine),
-					(Sltu::FUNCT3, Sltu::FUNCT7) => Sltu::new(r).execute(machine),
-					(Xor::FUNCT3, Xor::FUNCT7) => Xor::new(r).execute(machine),
-					(Srl::FUNCT3, Srl::FUNCT7) => Srl::new(r).execute(machine),
-					(Sra::FUNCT3, Sra::FUNCT7) => Sra::new(r).execute(machine),
-					(Or::FUNCT3, Or::FUNCT7) => Or::new(r).execute(machine),
-					(And::FUNCT3, And::FUNCT7) => And::new(r).execute(machine),
-					_ => Err(ExecutableInstructionError::InvalidInstruction(word)),
+					(Add::FUNCT3, Add::FUNCT7) => Ok(Rv32iInstruction::Add(Add::new(r))),
+					(Sub::FUNCT3, Sub::FUNCT7) => Ok(Rv32iInstruction::Sub(Sub::new(r))),
+					(Sll::FUNCT3, Sll::FUNCT7) => Ok(Rv32iInstruction::Sll(Sll::new(r))),
+					(Slt::FUNCT3, Slt::FUNCT7) => Ok(Rv32iInstruction::Slt(Slt::new(r))),
+					(Sltu::FUNCT3, Sltu::FUNCT7) => Ok(Rv32iInstruction::Sltu(Sltu::new(r))),
+					(Xor::FUNCT3, Xor::FUNCT7) => Ok(Rv32iInstruction::Xor(Xor::new(r))),
+					(Srl::FUNCT3, Srl::FUNCT7) => Ok(Rv32iInstruction::Srl(Srl::new(r))),
+					(Sra::FUNCT3, Sra::FUNCT7) => Ok(Rv32iInstruction::Sra(Sra::new(r))),
+					(Or::FUNCT3, Or::FUNCT7) => Ok(Rv32iInstruction::Or(Or::new(r))),
+					(And::FUNCT3, And::FUNCT7) => Ok(Rv32iInstruction::And(And::new(r))),
+					_ => Err(Rv32iInstructionError::InvalidInstruction(word)),
 				}
 			}
 			// Fence has its own opcode
-			Fence::OPCODE => Fence::load_and_execute(word, machine),
+			Fence::OPCODE => Ok(Rv32iInstruction::Fence(Fence::from_word(word))),
 			// Environment instructions have their own structure
 			Ecall::OPCODE => {
 				let i = base::i::I::from_word(word);
 				match i.imm() {
-					Ecall::IMM => Ecall::new(i).execute(machine),
-					Ebreak::IMM => Ebreak::new(i).execute(machine),
-					_ => Err(ExecutableInstructionError::InvalidInstruction(word)),
+					Ecall::IMM => Ok(Rv32iInstruction::Ecall(Ecall::new(i))),
+					Ebreak::IMM => Ok(Rv32iInstruction::Ebreak(Ebreak::new(i))),
+					_ => Err(Rv32iInstructionError::InvalidInstruction(word)),
 				}
 			}
-			_ => Err(ExecutableInstructionError::InvalidInstruction(word)),
+			_ => Err(Rv32iInstructionError::InvalidInstruction(word)),
+		}
+	}
+
+	/// Converts the instruction to a word.
+	pub fn to_word(self) -> u32 {
+		match self {
+			Rv32iInstruction::Lui(lui) => lui.to_word(),
+			Rv32iInstruction::Auipc(auipc) => auipc.to_word(),
+			Rv32iInstruction::Jal(jal) => jal.to_word(),
+			Rv32iInstruction::Jalr(jalr) => jalr.to_word(),
+			Rv32iInstruction::Beq(beq) => beq.to_word(),
+			Rv32iInstruction::Bne(bne) => bne.to_word(),
+			Rv32iInstruction::Blt(blt) => blt.to_word(),
+			Rv32iInstruction::Bge(bge) => bge.to_word(),
+			Rv32iInstruction::Bltu(bltu) => bltu.to_word(),
+			Rv32iInstruction::Bgeu(bgeu) => bgeu.to_word(),
+			Rv32iInstruction::Lb(lb) => lb.to_word(),
+			Rv32iInstruction::Lh(lh) => lh.to_word(),
+			Rv32iInstruction::Lw(lw) => lw.to_word(),
+			Rv32iInstruction::Lbu(lbu) => lbu.to_word(),
+			Rv32iInstruction::Lhu(lhu) => lhu.to_word(),
+			Rv32iInstruction::Sb(sb) => sb.to_word(),
+			Rv32iInstruction::Sh(sh) => sh.to_word(),
+			Rv32iInstruction::Sw(sw) => sw.to_word(),
+			Rv32iInstruction::Addi(addi) => addi.to_word(),
+			Rv32iInstruction::Slti(slti) => slti.to_word(),
+			Rv32iInstruction::Sltiu(sltiu) => sltiu.to_word(),
+			Rv32iInstruction::Xori(xori) => xori.to_word(),
+			Rv32iInstruction::Ori(ori) => ori.to_word(),
+			Rv32iInstruction::Andi(andi) => andi.to_word(),
+			Rv32iInstruction::Slli(slli) => slli.to_word(),
+			Rv32iInstruction::Srli(srli) => srli.to_word(),
+			Rv32iInstruction::Srai(srai) => srai.to_word(),
+			Rv32iInstruction::Add(add) => add.to_word(),
+			Rv32iInstruction::Sub(sub) => sub.to_word(),
+			Rv32iInstruction::Sll(sll) => sll.to_word(),
+			Rv32iInstruction::Slt(slt) => slt.to_word(),
+			Rv32iInstruction::Sltu(sltu) => sltu.to_word(),
+			Rv32iInstruction::Xor(xor) => xor.to_word(),
+			Rv32iInstruction::Srl(srl) => srl.to_word(),
+			Rv32iInstruction::Sra(sra) => sra.to_word(),
+			Rv32iInstruction::Or(or) => or.to_word(),
+			Rv32iInstruction::And(and) => and.to_word(),
+			Rv32iInstruction::Fence(fence) => fence.to_word(),
+			Rv32iInstruction::Ecall(ecall) => ecall.to_word(),
+			Rv32iInstruction::Ebreak(ebreak) => ebreak.to_word(),
+		}
+	}
+
+	/// Executes the instruction.
+	pub fn execute(
+		self,
+		machine: &mut Machine<MEMORY_SIZE>,
+	) -> Result<(), ExecutableInstructionError> {
+		match self {
+			Rv32iInstruction::Lui(lui) => lui.execute(machine),
+			Rv32iInstruction::Auipc(auipc) => auipc.execute(machine),
+			Rv32iInstruction::Jal(jal) => jal.execute(machine),
+			Rv32iInstruction::Jalr(jalr) => jalr.execute(machine),
+			Rv32iInstruction::Beq(beq) => beq.execute(machine),
+			Rv32iInstruction::Bne(bne) => bne.execute(machine),
+			Rv32iInstruction::Blt(blt) => blt.execute(machine),
+			Rv32iInstruction::Bge(bge) => bge.execute(machine),
+			Rv32iInstruction::Bltu(bltu) => bltu.execute(machine),
+			Rv32iInstruction::Bgeu(bgeu) => bgeu.execute(machine),
+			Rv32iInstruction::Lb(lb) => lb.execute(machine),
+			Rv32iInstruction::Lh(lh) => lh.execute(machine),
+			Rv32iInstruction::Lw(lw) => lw.execute(machine),
+			Rv32iInstruction::Lbu(lbu) => lbu.execute(machine),
+			Rv32iInstruction::Lhu(lhu) => lhu.execute(machine),
+			Rv32iInstruction::Sb(sb) => sb.execute(machine),
+			Rv32iInstruction::Sh(sh) => sh.execute(machine),
+			Rv32iInstruction::Sw(sw) => sw.execute(machine),
+			Rv32iInstruction::Addi(addi) => addi.execute(machine),
+			Rv32iInstruction::Slti(slti) => slti.execute(machine),
+			Rv32iInstruction::Sltiu(sltiu) => sltiu.execute(machine),
+			Rv32iInstruction::Xori(xori) => xori.execute(machine),
+			Rv32iInstruction::Ori(ori) => ori.execute(machine),
+			Rv32iInstruction::Andi(andi) => andi.execute(machine),
+			Rv32iInstruction::Slli(slli) => slli.execute(machine),
+			Rv32iInstruction::Srli(srli) => srli.execute(machine),
+			Rv32iInstruction::Srai(srai) => srai.execute(machine),
+			Rv32iInstruction::Add(add) => add.execute(machine),
+			Rv32iInstruction::Sub(sub) => sub.execute(machine),
+			Rv32iInstruction::Sll(sll) => sll.execute(machine),
+			Rv32iInstruction::Slt(slt) => slt.execute(machine),
+			Rv32iInstruction::Sltu(sltu) => sltu.execute(machine),
+			Rv32iInstruction::Xor(xor) => xor.execute(machine),
+			Rv32iInstruction::Srl(srl) => srl.execute(machine),
+			Rv32iInstruction::Sra(sra) => sra.execute(machine),
+			Rv32iInstruction::Or(or) => or.execute(machine),
+			Rv32iInstruction::And(and) => and.execute(machine),
+			Rv32iInstruction::Fence(fence) => fence.execute(machine),
+			Rv32iInstruction::Ecall(ecall) => ecall.execute(machine),
+			Rv32iInstruction::Ebreak(ebreak) => ebreak.execute(machine),
+		}
+	}
+
+	/// Loads an instruction and executes it.
+	pub fn load_and_execute(
+		address: u32,
+		word: u32,
+		machine: &mut Machine<MEMORY_SIZE>,
+	) -> Result<(), ExecutableInstructionError> {
+		let instruction = Self::from_word(word).map_err(|_e| {
+			ExecutableInstructionError::InvalidInstruction(InvalidInstruction { word, address })
+		})?;
+		instruction.execute(machine)
+	}
+}
+
+impl<const MEMORY_SIZE: usize> Display for Rv32iInstruction<MEMORY_SIZE> {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		match self {
+			Rv32iInstruction::Lui(lui) => write!(f, "{}", lui),
+			Rv32iInstruction::Auipc(auipc) => write!(f, "{}", auipc),
+			Rv32iInstruction::Jal(jal) => write!(f, "{}", jal),
+			Rv32iInstruction::Jalr(jalr) => write!(f, "{}", jalr),
+			Rv32iInstruction::Beq(beq) => write!(f, "{}", beq),
+			Rv32iInstruction::Bne(bne) => write!(f, "{}", bne),
+			Rv32iInstruction::Blt(blt) => write!(f, "{}", blt),
+			Rv32iInstruction::Bge(bge) => write!(f, "{}", bge),
+			Rv32iInstruction::Bltu(bltu) => write!(f, "{}", bltu),
+			Rv32iInstruction::Bgeu(bgeu) => write!(f, "{}", bgeu),
+			Rv32iInstruction::Lb(lb) => write!(f, "{}", lb),
+			Rv32iInstruction::Lh(lh) => write!(f, "{}", lh),
+			Rv32iInstruction::Lw(lw) => write!(f, "{}", lw),
+			Rv32iInstruction::Lbu(lbu) => write!(f, "{}", lbu),
+			Rv32iInstruction::Lhu(lhu) => write!(f, "{}", lhu),
+			Rv32iInstruction::Sb(sb) => write!(f, "{}", sb),
+			Rv32iInstruction::Sh(sh) => write!(f, "{}", sh),
+			Rv32iInstruction::Sw(sw) => write!(f, "{}", sw),
+			Rv32iInstruction::Addi(addi) => write!(f, "{}", addi),
+			Rv32iInstruction::Slti(slti) => write!(f, "{}", slti),
+			Rv32iInstruction::Sltiu(sltiu) => write!(f, "{}", sltiu),
+			Rv32iInstruction::Xori(xori) => write!(f, "{}", xori),
+			Rv32iInstruction::Ori(ori) => write!(f, "{}", ori),
+			Rv32iInstruction::Andi(andi) => write!(f, "{}", andi),
+			Rv32iInstruction::Slli(slli) => write!(f, "{}", slli),
+			Rv32iInstruction::Srli(srli) => write!(f, "{}", srli),
+			Rv32iInstruction::Srai(srai) => write!(f, "{}", srai),
+			Rv32iInstruction::Add(add) => write!(f, "{}", add),
+			Rv32iInstruction::Sub(sub) => write!(f, "{}", sub),
+			Rv32iInstruction::Sll(sll) => write!(f, "{}", sll),
+			Rv32iInstruction::Slt(slt) => write!(f, "{}", slt),
+			Rv32iInstruction::Sltu(sltu) => write!(f, "{}", sltu),
+			Rv32iInstruction::Xor(xor) => write!(f, "{}", xor),
+			Rv32iInstruction::Srl(srl) => write!(f, "{}", srl),
+			Rv32iInstruction::Sra(sra) => write!(f, "{}", sra),
+			Rv32iInstruction::Or(or) => write!(f, "{}", or),
+			Rv32iInstruction::And(and) => write!(f, "{}", and),
+			Rv32iInstruction::Fence(fence) => write!(f, "{}", fence),
+			Rv32iInstruction::Ecall(ecall) => write!(f, "{}", ecall),
+			Rv32iInstruction::Ebreak(ebreak) => write!(f, "{}", ebreak),
 		}
 	}
 }
