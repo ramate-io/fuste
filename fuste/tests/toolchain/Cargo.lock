@@ -6,9 +6,17 @@ version = 4
 name = "fuste"
 version = "0.0.1"
 dependencies = [
+ "fuste-channel",
  "fuste-ecall",
  "fuste-exit",
  "fuste-write",
+]
+
+[[package]]
+name = "fuste-channel"
+version = "0.0.1"
+dependencies = [
+ "fuste-ecall",
 ]
 
 [[package]]

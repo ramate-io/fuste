@@ -195,8 +195,9 @@ pub fn channel_op(
 				in("a1") _buffer.as_ptr(),      // pointer to buffer
 				in("a2") _buffer.len(),         // length
 				in("a3") _status_ignored,       // if this isn't reset, the system must have ignored the call
-				lateout("a3") status,          // return value (bytes written or -errno)
-				lateout("a4") size,            // the
+				lateout("a3") _status,          // return value (bytes written or -errno)
+				lateout("a4") _size,            // the size of the buffer written
+				lateout("a5") _system_status,   // the system status of the operation
 			);
 		}
 

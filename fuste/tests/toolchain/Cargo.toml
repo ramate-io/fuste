@@ -10,6 +10,7 @@ members = [
   "env/ecall",
   "env/exit",
   "env/write",
+  "env/channel",
   "env/fuste"
 
 ]
@@ -28,6 +29,7 @@ rust-version = "1.85.0"
 fuste-ecall = { path = "env/ecall" }
 fuste-exit = { path = "env/exit" }
 fuste-write = { path = "env/write" }
+fuste-channel = { path = "env/channel" }
 fuste = { path = "env/fuste" }
 
 [workspace.lints.clippy]
