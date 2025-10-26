@@ -4,7 +4,13 @@ resolver = "2"
 
 members = [
   
-  "my_program"
+  "my_program",
+  "my-fuste-program",
+
+  "../../../fuste/environment/ecall",
+  "../../../fuste/environment/exit",
+  "../../../fuste/environment/write",
+  "../../../fuste/environment/fuste"
 
 ]
 
@@ -12,14 +18,17 @@ members = [
 version = "0.0.1"
 edition = "2021"
 license = "MIT OR Apache-2.0"
-authors = ["Movement Labs"]
+authors = ["Ramate LLC"]
 repository = "www.github.com/ramate/fuste"
 homepage = "www.github.com/ramate/fuste"
 publish = false
 rust-version = "1.85.0"
 
-
 [workspace.dependencies]
+fuste-ecall = { path = "../../../fuste/environment/ecall" }
+fuste-exit = { path = "../../../fuste/environment/exit" }
+fuste-write = { path = "../../../fuste/environment/write" }
+fuste = { path = "../../../fuste/environment/fuste" }
 
 [workspace.lints.clippy]
 debug_assert_with_mut_call = "deny"

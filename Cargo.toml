@@ -8,10 +8,10 @@ members = [
   "fuste/riscv-elf",
   "fuste/riscv-box",
 
-  "fuste/environment/ecall",
-  "fuste/environment/exit",
-  "fuste/environment/write",
-  "fuste/environment/fuste"
+  "fuste/env/ecall",
+  "fuste/env/exit",
+  "fuste/env/write",
+  "fuste/env/fuste"
 
 ]
 
@@ -19,7 +19,7 @@ members = [
 version = "0.0.1"
 edition = "2021"
 license = "MIT OR Apache-2.0"
-authors = ["Movement Labs"]
+authors = ["Ramate LLC"]
 repository = "www.github.com/ramate/fuste"
 homepage = "www.github.com/ramate/fuste"
 publish = false
@@ -46,10 +46,10 @@ clap-markdown-ext = { git = "https://github.com/movementlabsxyz/clap-markdown-ex
 fuste-riscv-core = { path = "fuste/riscv-core" }
 fuste-riscv-elf = { path = "fuste/riscv-elf" }
 
-fuste-ecall = { path = "fuste/environment/ecall" }
-fuste-exit = { path = "fuste/environment/exit" }
-fuste-write = { path = "fuste/environment/write" }
-fuste = { path = "fuste/environment/fuste" }
+fuste-ecall = { path = "fuste/env/ecall" }
+fuste-exit = { path = "fuste/env/exit" }
+fuste-write = { path = "fuste/env/write" }
+fuste = { path = "fuste/env/fuste" }
 
 [workspace.lints.clippy]
 debug_assert_with_mut_call = "deny"
