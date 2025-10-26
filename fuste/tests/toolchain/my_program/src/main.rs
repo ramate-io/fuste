@@ -37,13 +37,13 @@ pub fn exit(status: u32) -> ! {
 
 #[no_mangle]
 #[inline(never)]
-pub fn write(fd: u32, buffer: &[u8]) -> Result<i32, i32> {
+pub fn write(system_id: u32, buffer: &[u8]) -> Result<i32, i32> {
 	let ret: i32;
 	unsafe {
 		core::arch::asm!(
 			"ecall",
 			in("a7") 64,                   // syscall number for write
-			in("a0") fd,                   // file descriptor
+			in("a0") system_id,                   // file descriptor
 			in("a1") buffer.as_ptr(),      // pointer to buffer
 			in("a2") buffer.len(),         // length
 			lateout("a3") ret,             // return value (bytes written or -errno)
@@ -82,6 +82,104 @@ macro_rules! println {
         $crate::print!($($arg)*);
         $crate::print!("\n");
     });
+}
+
+/// Writes to a stack-allocated buffer and antcipates that system will write back into the buffer.
+///
+/// Returns the status of the operation and the size of the buffer written, i.e.,
+/// the slices length corresponding to the bytes written by the system.
+/// The system MUST always write fewwer bytes than the original length of the buffer.
+///
+/// This is generally the preferred means of communication between the program and a system,
+/// as it doesn't require dynamic memory allocation or special registers.
+#[no_mangle]
+#[inline(never)]
+pub fn write_channel(system_id: u32, buffer: &mut [u8]) -> Result<(i32, u32), i32> {
+	let status_ignored = -1;
+	let status: i32;
+	let size: u32;
+	unsafe {
+		core::arch::asm!(
+			"ecall",
+			in("a7") 33,                   // syscall number for write
+			in("a0") system_id,            // file descriptor
+			in("a1") buffer.as_ptr(),      // pointer to buffer
+			in("a2") buffer.len(),         // length
+			in("a3") status_ignored,       // if this isn't reset, the system must have ignored the call
+			lateout("a3") status,          // return value (bytes written or -errno)
+			lateout("a4") size,            // the
+		);
+	}
+
+	// This is the immediate status of the channel.
+	// It does not necessarily indicate the operation has completed.
+	if status < 0 {
+		Err(status)
+	} else {
+		Ok((status, size))
+	}
+}
+
+/// Reads the status of a channel.
+///
+/// This has the same call structure as [write_channel],
+/// but it does not expect the system to iniate anything.
+#[no_mangle]
+#[inline(never)]
+pub fn read_channel(system_id: u32, buffer: &mut [u8]) -> Result<(i32, u32), i32> {
+	let status_ignored = -1;
+	let status: i32;
+	let size: u32;
+	unsafe {
+		core::arch::asm!(
+			"ecall",
+			in("a7") 34,                   // syscall number for write
+			in("a0") system_id,            // file descriptor
+			in("a1") buffer.as_ptr(),      // pointer to buffer
+			in("a2") buffer.len(),         // length
+			in("a3") status_ignored,       // if this isn't reset, the system must have ignored the call
+			lateout("a3") status,          // return value (bytes written or -errno)
+			lateout("a4") size,            // the
+		);
+	}
+
+	// This is the immediate status of the channel.
+	// It does not necessarily indicate the operation has completed.
+	if status < 0 {
+		Err(status)
+	} else {
+		Ok((status, size))
+	}
+}
+
+/// Writes to a channel and blocks until the operation is complete.
+pub fn block_on_channel(system_id: u32, buffer: &mut [u8]) -> Result<(i32, u32), i32> {
+	let (status, size) = write_channel(system_id, buffer)?;
+	if status == 0 {
+		Ok((status, size))
+	} else {
+		loop {
+			let (status, size) = read_channel(system_id, buffer)?;
+			if status == 0 {
+				return Ok((status, size));
+			}
+		}
+	}
+}
+
+/// Blocks on a channel and returns the slice of the buffer that was written by the system.
+pub fn block_request_channel<'a>(
+	system_id: u32,
+	buffer: &'a mut [u8],
+) -> Result<&'a mut [u8], i32> {
+	let (_status, size) = block_on_channel(system_id, buffer)?;
+	let written_len = size as usize;
+	if written_len > buffer.len() {
+		return Err(-2);
+	}
+
+	// SAFETY: the system guarantees that it wrote at most `buffer.len()` bytes
+	Ok(&mut buffer[..written_len])
 }
 
 #[no_mangle]
