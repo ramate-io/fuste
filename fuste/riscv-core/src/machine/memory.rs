@@ -21,6 +21,14 @@ impl<const SIZE: usize> Memory<SIZE> {
 		Ok(self.memory[address as usize])
 	}
 
+	/// Read multiple bytes from memory at the given address
+	pub fn read_bytes(&self, address: u32, length: u32) -> Result<&[u8], MemoryError> {
+		if address as usize + length as usize > SIZE {
+			return Err(MemoryError::AddressOutOfBounds(address));
+		}
+		Ok(&self.memory[address as usize..address as usize + length as usize])
+	}
+
 	/// Write a byte to memory at the given address
 	pub fn write_byte(&mut self, address: u32, value: u8) -> Result<(), MemoryError> {
 		if address as usize >= SIZE {

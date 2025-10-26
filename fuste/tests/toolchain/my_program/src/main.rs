@@ -2,6 +2,7 @@
 #![no_main]
 
 use core::arch::asm;
+use core::fmt::{self, Write};
 use core::panic::PanicInfo;
 
 #[no_mangle]
@@ -36,6 +37,55 @@ pub fn exit(status: u32) -> ! {
 
 #[no_mangle]
 #[inline(never)]
+pub fn write(fd: u32, buffer: &[u8]) -> Result<i32, i32> {
+	let ret: i32;
+	unsafe {
+		core::arch::asm!(
+			"ecall",
+			in("a7") 64,                   // syscall number for write
+			in("a0") fd,                   // file descriptor
+			in("a1") buffer.as_ptr(),      // pointer to buffer
+			in("a2") buffer.len(),         // length
+			lateout("a3") ret,             // return value (bytes written or -errno)
+		);
+	}
+
+	if ret < 0 {
+		Err(ret)
+	} else {
+		Ok(ret)
+	}
+}
+
+pub struct Stdout;
+
+impl Write for Stdout {
+	fn write_str(&mut self, s: &str) -> fmt::Result {
+		write(1, s.as_bytes()).map(|_| ()).map_err(|_| fmt::Error)
+	}
+}
+
+#[macro_export]
+macro_rules! print {
+    ($($arg:tt)*) => ({
+        use core::fmt::Write;
+        let _ = core::write!($crate::Stdout, $($arg)*);
+    });
+}
+
+#[macro_export]
+macro_rules! println {
+    () => ({
+        $crate::print!("\n");
+    });
+    ($($arg:tt)*) => ({
+        $crate::print!($($arg)*);
+        $crate::print!("\n");
+    });
+}
+
+#[no_mangle]
+#[inline(never)]
 pub extern "C" fn _main() -> ! {
 	let _ = main();
 	exit(0);
@@ -51,6 +101,8 @@ fn main() -> Result<(), ()> {
 		assert_eq!(i, i);
 		j += i;
 		j = add(j, i);
+		println!("Hello, world!");
+		println!("i: {}, j: {}", i, j);
 	}
 
 	Ok(())
