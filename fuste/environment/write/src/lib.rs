@@ -9,6 +9,10 @@ use fuste_ecall::Ecall;
 pub struct WriteSystemId(u32);
 
 impl WriteSystemId {
+	pub const fn constant(value: u32) -> Self {
+		Self(value)
+	}
+
 	pub fn new(value: u32) -> Self {
 		Self(value)
 	}

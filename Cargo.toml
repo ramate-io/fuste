@@ -10,7 +10,8 @@ members = [
 
   "fuste/environment/ecall",
   "fuste/environment/exit",
-  "fuste/environment/write"
+  "fuste/environment/write",
+  "fuste/environment/fuste"
 
 ]
 
@@ -48,6 +49,7 @@ fuste-riscv-elf = { path = "fuste/riscv-elf" }
 fuste-ecall = { path = "fuste/environment/ecall" }
 fuste-exit = { path = "fuste/environment/exit" }
 fuste-write = { path = "fuste/environment/write" }
+fuste = { path = "fuste/environment/fuste" }
 
 [workspace.lints.clippy]
 debug_assert_with_mut_call = "deny"
