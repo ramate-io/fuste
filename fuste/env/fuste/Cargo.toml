@@ -1,0 +1,19 @@
+[package]
+name = "fuste"
+version = { workspace = true }
+edition = "2021"
+license = { workspace = true }
+authors = { workspace = true }
+repository = { workspace = true }
+homepage = { workspace = true }
+publish = { workspace = true }
+rust-version = { workspace = true }
+
+[dependencies]
+fuste-ecall = { workspace = true }
+fuste-exit = { workspace = true }
+fuste-write = { workspace = true }
+fuste-channel = { workspace = true }
+
+[lints]
+workspace = true

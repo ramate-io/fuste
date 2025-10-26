@@ -187,6 +187,34 @@ dependencies = [
 ]
 
 [[package]]
+name = "fuste"
+version = "0.0.1"
+dependencies = [
+ "fuste-channel",
+ "fuste-ecall",
+ "fuste-exit",
+ "fuste-write",
+]
+
+[[package]]
+name = "fuste-channel"
+version = "0.0.1"
+dependencies = [
+ "fuste-ecall",
+]
+
+[[package]]
+name = "fuste-ecall"
+version = "0.0.1"
+
+[[package]]
+name = "fuste-exit"
+version = "0.0.1"
+dependencies = [
+ "fuste-ecall",
+]
+
+[[package]]
 name = "fuste-riscv-core"
 version = "0.0.1"
 
@@ -197,6 +225,13 @@ dependencies = [
  "fuste-riscv-core",
  "goblin",
  "thiserror 1.0.69",
+]
+
+[[package]]
+name = "fuste-write"
+version = "0.0.1"
+dependencies = [
+ "fuste-ecall",
 ]
 
 [[package]]
