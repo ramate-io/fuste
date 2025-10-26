@@ -191,6 +191,13 @@ name = "fuste-ecall"
 version = "0.0.1"
 
 [[package]]
+name = "fuste-exit"
+version = "0.0.1"
+dependencies = [
+ "fuste-ecall",
+]
+
+[[package]]
 name = "fuste-riscv-core"
 version = "0.0.1"
 
