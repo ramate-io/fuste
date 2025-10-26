@@ -36,6 +36,33 @@ pub fn exit(status: u32) -> ! {
 
 #[no_mangle]
 #[inline(never)]
+pub fn write<const COUNT: usize>(buffer: &[u8; COUNT]) -> Result<(), ()> {
+	unsafe {
+		// set the pointer to the buffer
+		core::arch::asm!(
+			"mv a0, {0}",      // a0 = pointer to buffer
+			"li a7, 64",       // syscall number (64 = write)
+			"ecall",
+			in(reg) buffer,
+		);
+
+		// read the a1 pointer as a u32 status
+		let status = core::arch::asm!(
+			"mv a1, {0}",      // a1 = pointer to status
+			"lw a1, 0(a1)",
+			in(reg) status,
+		);
+	}
+
+	if status != 0 {
+		return Err(());
+	}
+
+	Ok(())
+}
+
+#[no_mangle]
+#[inline(never)]
 pub extern "C" fn _main() -> ! {
 	let _ = main();
 	exit(0);
