@@ -196,6 +196,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "fuste-channel"
+version = "0.0.1"
+dependencies = [
+ "fuste-ecall",
+]
+
+[[package]]
 name = "fuste-ecall"
 version = "0.0.1"
 

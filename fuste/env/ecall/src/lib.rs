@@ -17,6 +17,7 @@ impl Display for EcallError {
 	}
 }
 
+#[repr(u32)]
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Ecall {
 	Exit = 93,
