@@ -8,3 +8,4 @@ pub use fuste_write::{
 };
 pub mod io;
 pub use io::Stdout;
+pub mod prelude;
