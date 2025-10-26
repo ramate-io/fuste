@@ -41,7 +41,7 @@ impl ExitStatus {
 
 #[inline(never)]
 pub fn exit(status: ExitStatus) -> ! {
-	let _ecall = Ecall::Exit.to_u32();
+	let _ecall = Ecall::Exit.to_u8();
 	let _status = status.to_u32();
 
 	#[cfg(target_family = "fuste")]
@@ -49,7 +49,7 @@ pub fn exit(status: ExitStatus) -> ! {
 		unsafe {
 			core::arch::asm!(
 				"mv a0, {0}",      // a0 = pointer to ExitStatus
-				"li a7, {1}",       // syscall number (93 = exit)
+				"mv a7, {1}",       // syscall number (93 = exit)
 				"ecall",
 				in(reg) _status,
 				in(reg) _ecall,

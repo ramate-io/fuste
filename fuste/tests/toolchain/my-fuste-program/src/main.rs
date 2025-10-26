@@ -3,7 +3,7 @@
 
 use core::arch::asm;
 use core::panic::PanicInfo;
-use fuste::{exit, println};
+use fuste::{exit, println, ExitStatus};
 
 #[no_mangle]
 fn _start() -> ! {
@@ -25,7 +25,7 @@ extern "C" {
 #[inline(never)]
 pub extern "C" fn _main() -> ! {
 	let _ = main();
-	exit(0);
+	exit(ExitStatus::Success);
 }
 
 pub fn add(a: u32, b: u32) -> u32 {
@@ -47,5 +47,5 @@ fn main() -> Result<(), ()> {
 
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
-	exit(1);
+	exit(ExitStatus::Error);
 }

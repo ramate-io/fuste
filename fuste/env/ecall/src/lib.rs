@@ -4,7 +4,7 @@ use core::fmt::{self, Display};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum EcallError {
-	InvalidEcall(u32),
+	InvalidEcall(u8),
 	InvalidEcallStatus(u32),
 }
 
@@ -17,6 +17,7 @@ impl Display for EcallError {
 	}
 }
 
+#[repr(u8)]
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Ecall {
 	Exit = 93,
@@ -26,11 +27,11 @@ pub enum Ecall {
 }
 
 impl Ecall {
-	pub fn to_u32(self) -> u32 {
-		self as u32
+	pub fn to_u8(self) -> u8 {
+		self as u8
 	}
 
-	pub fn try_from_u32(value: u32) -> Result<Self, EcallError> {
+	pub fn try_from_u8(value: u8) -> Result<Self, EcallError> {
 		match value {
 			93 => Ok(Ecall::Exit),
 			64 => Ok(Ecall::Write),
@@ -69,19 +70,19 @@ pub mod tests {
 
 	#[test]
 	fn test_ecall_try_from_u32() {
-		assert_eq!(Ecall::try_from_u32(93), Ok(Ecall::Exit));
-		assert_eq!(Ecall::try_from_u32(64), Ok(Ecall::Write));
-		assert_eq!(Ecall::try_from_u32(33), Ok(Ecall::WriteChannel));
-		assert_eq!(Ecall::try_from_u32(34), Ok(Ecall::ReadChannel));
-		assert_eq!(Ecall::try_from_u32(35), Err(EcallError::InvalidEcall(35)));
+		assert_eq!(Ecall::try_from_u8(93), Ok(Ecall::Exit));
+		assert_eq!(Ecall::try_from_u8(64), Ok(Ecall::Write));
+		assert_eq!(Ecall::try_from_u8(33), Ok(Ecall::WriteChannel));
+		assert_eq!(Ecall::try_from_u8(34), Ok(Ecall::ReadChannel));
+		assert_eq!(Ecall::try_from_u8(35), Err(EcallError::InvalidEcall(35)));
 	}
 
 	#[test]
-	fn test_ecall_to_u32() {
-		assert_eq!(Ecall::Exit.to_u32(), 93);
-		assert_eq!(Ecall::Write.to_u32(), 64);
-		assert_eq!(Ecall::WriteChannel.to_u32(), 33);
-		assert_eq!(Ecall::ReadChannel.to_u32(), 34);
+	fn test_ecall_to_u8() {
+		assert_eq!(Ecall::Exit.to_u8(), 93);
+		assert_eq!(Ecall::Write.to_u8(), 64);
+		assert_eq!(Ecall::WriteChannel.to_u8(), 33);
+		assert_eq!(Ecall::ReadChannel.to_u8(), 34);
 	}
 
 	#[test]

@@ -141,7 +141,7 @@ impl Display for WriteError {
 
 #[inline(never)]
 pub fn write(system_id: WriteSystemId, _buffer: &[u8]) -> Result<WriteStatus, WriteError> {
-	let _ecall = Ecall::Write.to_u32();
+	let _ecall = Ecall::Write.to_u8();
 	let _system_id = system_id.to_u32();
 	let _status: i32;
 	let _system_status: i32;

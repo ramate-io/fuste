@@ -7,10 +7,10 @@ members = [
   "my_program",
   "my-fuste-program",
 
-  "../../../fuste/environment/ecall",
-  "../../../fuste/environment/exit",
-  "../../../fuste/environment/write",
-  "../../../fuste/environment/fuste"
+  "env/ecall",
+  "env/exit",
+  "env/write",
+  "env/fuste"
 
 ]
 
@@ -25,10 +25,10 @@ publish = false
 rust-version = "1.85.0"
 
 [workspace.dependencies]
-fuste-ecall = { path = "../../../fuste/environment/ecall" }
-fuste-exit = { path = "../../../fuste/environment/exit" }
-fuste-write = { path = "../../../fuste/environment/write" }
-fuste = { path = "../../../fuste/environment/fuste" }
+fuste-ecall = { path = "env/ecall" }
+fuste-exit = { path = "env/exit" }
+fuste-write = { path = "env/write" }
+fuste = { path = "env/fuste" }
 
 [workspace.lints.clippy]
 debug_assert_with_mut_call = "deny"
