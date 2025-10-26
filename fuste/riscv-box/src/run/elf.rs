@@ -5,6 +5,7 @@ use fuste_riscv_core::{
 	plugins::rv32i_computer::Rv32iComputer,
 };
 use fuste_riscv_elf::{Elf32Loader, ElfLoaderError};
+use std::ops::ControlFlow;
 use std::path::PathBuf;
 
 const BOX_MEMORY_SIZE: usize = 1024 * 1024 * 2; // 1MB
@@ -89,30 +90,30 @@ impl Elf {
 			log_instructions: self.log_instructions,
 			log_registers: self.log_registers,
 		};
-		match self.ticks {
-			Some(ticks) => {
-				for i in 0..ticks {
-					print!("Tick {}: ", i);
-					match plugin.tick(&mut machine) {
-						Ok(()) => (),
-						Err(MachineError::InstructionError(
-							ExecutableInstructionError::EcallInterrupt(error),
-						)) => {
-							handle_ecall_interrupt(error, &mut machine)?;
-						}
-						Err(e) => return Err(ElfError::MachineError(e)),
-					}
-				}
-			}
-			None => match machine.run(&mut plugin) {
+
+		let mut tick = 0;
+		loop {
+			match plugin.tick(&mut machine) {
 				Ok(()) => (),
 				Err(MachineError::InstructionError(
 					ExecutableInstructionError::EcallInterrupt(error),
 				)) => {
-					handle_ecall_interrupt(error, &mut machine)?;
+					let control_flow = handle_ecall_interrupt(error, &mut machine)?;
+					match control_flow {
+						ControlFlow::Break(()) => break,
+						ControlFlow::Continue(()) => (),
+					}
 				}
 				Err(e) => return Err(ElfError::MachineError(e)),
-			},
+			}
+
+			// increment the tick (we can trim this down later, but this is a debugging environment)
+			tick += 1;
+			if let Some(ticks) = self.ticks {
+				if tick >= ticks {
+					break;
+				}
+			}
 		}
 
 		if self.log_registers_at_end {
@@ -126,7 +127,7 @@ impl Elf {
 pub fn handle_ecall_interrupt(
 	error: EcallInterrupt,
 	machine: &mut Machine<BOX_MEMORY_SIZE>,
-) -> Result<(), ElfError> {
+) -> Result<ControlFlow<()>, ElfError> {
 	let syscall_number = machine.csrs().registers().get(17);
 	if syscall_number == 93 {
 		let syscall_status_address = machine.csrs().registers().get(10);
@@ -136,12 +137,35 @@ pub fn handle_ecall_interrupt(
 			.map_err(MachineError::MemoryError)?;
 		println!("Program exited with status: {}", syscall_status);
 		if syscall_status == 0 {
-			Ok(())
+			Ok(ControlFlow::Break(()))
 		} else {
 			Err(ElfError::MachineError(MachineError::InstructionError(
 				ExecutableInstructionError::EcallInterrupt(error),
 			)))
 		}
+	} else if syscall_number == 64 {
+		let write_fd = machine.csrs().registers().get(10);
+		let write_buffer_address = machine.csrs().registers().get(11);
+		let write_buffer_length = machine.csrs().registers().get(12);
+		let write_buffer = machine
+			.memory()
+			.read_bytes(write_buffer_address, write_buffer_length)
+			.map_err(MachineError::MemoryError)?;
+
+		if write_fd == 1 {
+			// print the write buffer to stdout
+			print!("{}", String::from_utf8_lossy(write_buffer));
+			// write 0 to the result register a3
+			machine.csrs_mut().registers_mut().set(13, 0);
+			machine.csrs_mut().registers_mut().program_counter_mut().increment();
+			machine.commit_csrs();
+		} else {
+			return Err(ElfError::MachineError(MachineError::InstructionError(
+				ExecutableInstructionError::EcallInterrupt(error),
+			)));
+		}
+
+		Ok(ControlFlow::Continue(()))
 	} else {
 		Err(ElfError::MachineError(MachineError::InstructionError(
 			ExecutableInstructionError::EcallInterrupt(error),

@@ -58,6 +58,12 @@ impl<const MEMORY_SIZE: usize> Machine<MEMORY_SIZE> {
 		&mut self.registers
 	}
 
+	/// Sets the registers of the machine to the given value.
+	#[inline(always)]
+	pub fn set_registers(&mut self, registers: Registers) {
+		self.registers = registers;
+	}
+
 	/// Borrows the CSRs of the machine.
 	#[inline(always)]
 	pub fn csrs(&self) -> &Csrs {
@@ -75,6 +81,13 @@ impl<const MEMORY_SIZE: usize> Machine<MEMORY_SIZE> {
 	pub fn trap_registers(&mut self) {
 		let registers = self.registers.clone();
 		self.csrs_mut().registers_set(registers);
+	}
+
+	/// Commits the CSRs to the registers of the machine.
+	#[inline(always)]
+	pub fn commit_csrs(&mut self) {
+		let csrs = self.csrs().registers().clone();
+		self.set_registers(csrs);
 	}
 
 	/// Runs the machine with the given plugin.

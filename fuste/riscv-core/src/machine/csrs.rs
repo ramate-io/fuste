@@ -5,7 +5,7 @@ use super::registers::Registers;
 /// directly--instead resorting more typically to a plugin design pattern.
 ///
 /// We may eventually extend this to be a LIFO queue of CSRs.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Csrs {
 	/// The program counter at the point of the trap.
 	epc: u32,
