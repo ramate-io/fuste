@@ -60,7 +60,11 @@ pub fn exit(status: ExitStatus) -> ! {
 
 	#[cfg(not(target_family = "fuste"))]
 	{
-		loop {}
+		loop {
+			// we could make this call to a machine field that
+			// is only compiled and available in non fuste targets.
+			// that would potentially make testing fun.
+		}
 	}
 }
 
