@@ -6,7 +6,9 @@ members = [
   
   "fuste/riscv-core",
   "fuste/riscv-elf",
-  "fuste/riscv-box"
+  "fuste/riscv-box",
+
+  "fuste/environment/ecall"
 
 ]
 
@@ -40,6 +42,8 @@ clap-markdown-ext = { git = "https://github.com/movementlabsxyz/clap-markdown-ex
 
 fuste-riscv-core = { path = "fuste/riscv-core" }
 fuste-riscv-elf = { path = "fuste/riscv-elf" }
+
+fuste-ecall = { path = "fuste/environment/ecall" }
 
 [workspace.lints.clippy]
 debug_assert_with_mut_call = "deny"
