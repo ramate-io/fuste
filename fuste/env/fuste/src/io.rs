@@ -1,5 +1,6 @@
 use crate::{write, WriteSystemId};
 use core::fmt::{self, Write};
+pub use fuste_channel::ops::{block_on_channel, block_on_channel_request};
 
 pub struct Stdout;
 

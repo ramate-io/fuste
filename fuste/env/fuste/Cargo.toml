@@ -13,6 +13,7 @@ rust-version = { workspace = true }
 fuste-ecall = { workspace = true }
 fuste-exit = { workspace = true }
 fuste-write = { workspace = true }
+fuste-channel = { workspace = true }
 
 [lints]
 workspace = true
