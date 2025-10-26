@@ -38,3 +38,10 @@ impl Ecall {
 		}
 	}
 }
+
+#[derive(Debug, Clone)]
+pub enum EcallStatus {
+	Success = 0,
+	Error = 1,
+	NotImplemented = 2,
+}
