@@ -33,12 +33,12 @@ pub enum ChannelStatusCode {
 	Failure = -2,
 	/// The operation was ignored.
 	Ignored = -1,
+	/// The system is holding the channel.
+	SystemHolding = 0,
 	/// The operation completed successfully.
-	Success = 0,
-	/// The system yielded back to the caller.
-	Yielded = 1,
-	/// The system is holding the channel, no new data yet.
-	Holding = 2,
+	Success = 1,
+	/// The system has yieled the channel back to the caller.
+	Yielded = 2,
 }
 
 impl Display for ChannelStatusCode {
@@ -58,9 +58,9 @@ impl ChannelStatusCode {
 			-3 => Ok(ChannelStatusCode::InvalidSystem),
 			-2 => Ok(ChannelStatusCode::Failure),
 			-1 => Ok(ChannelStatusCode::Ignored),
-			0 => Ok(ChannelStatusCode::Success),
-			1 => Ok(ChannelStatusCode::Yielded),
-			2 => Ok(ChannelStatusCode::Holding),
+			0 => Ok(ChannelStatusCode::SystemHolding),
+			1 => Ok(ChannelStatusCode::Success),
+			2 => Ok(ChannelStatusCode::Yielded),
 			_ => Err(ChannelError::InvalidStatusCode(value)),
 		}
 	}
@@ -73,8 +73,8 @@ impl ChannelStatusCode {
 		*self == ChannelStatusCode::Yielded
 	}
 
-	pub fn is_holding(&self) -> bool {
-		*self == ChannelStatusCode::Holding
+	pub fn is_in_progress(&self) -> bool {
+		*self == ChannelStatusCode::SystemHolding
 	}
 }
 
@@ -121,18 +121,10 @@ impl ChannelStatus {
 		self.code.is_success()
 	}
 
-	pub fn has_yielded(&self) -> bool {
-		self.code.has_yielded()
-	}
-
-	pub fn is_holding(&self) -> bool {
-		self.code.is_holding()
-	}
-
 	pub fn ok(self) -> Result<ChannelStatus, ChannelError> {
 		match self.code {
 			ChannelStatusCode::Success => Ok(self),
-			ChannelStatusCode::Holding => Ok(self),
+			ChannelStatusCode::SystemHolding => Ok(self),
 			ChannelStatusCode::Yielded => Ok(self),
 			ChannelStatusCode::SystemError => Err(ChannelError::SystemError(self)),
 			ChannelStatusCode::InvalidSystem => Err(ChannelError::InvalidSystem(self)),

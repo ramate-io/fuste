@@ -1,0 +1,16 @@
+[package]
+name = "fuste-alloc"
+version = { workspace = true }
+edition = "2021"
+license = { workspace = true }
+authors = { workspace = true }
+repository = { workspace = true }
+homepage = { workspace = true }
+publish = { workspace = true }
+rust-version = { workspace = true }
+
+[dependencies]
+fuste-ecall = { workspace = true }
+
+[lints]
+workspace = true
