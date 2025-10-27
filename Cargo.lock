@@ -197,6 +197,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "fuste-alloc"
+version = "0.0.1"
+
+[[package]]
 name = "fuste-channel"
 version = "0.0.1"
 dependencies = [

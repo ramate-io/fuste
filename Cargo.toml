@@ -12,6 +12,7 @@ members = [
   "fuste/env/exit",
   "fuste/env/write",
   "fuste/env/channel",
+  "fuste/env/alloc",
   "fuste/env/fuste"
 
 ]
@@ -51,6 +52,7 @@ fuste-ecall = { path = "fuste/env/ecall" }
 fuste-exit = { path = "fuste/env/exit" }
 fuste-write = { path = "fuste/env/write" }
 fuste-channel = { path = "fuste/env/channel" }
+fuste-alloc = { path = "fuste/env/alloc" }
 fuste = { path = "fuste/env/fuste" }
 
 [workspace.lints.clippy]

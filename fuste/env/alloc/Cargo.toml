@@ -10,7 +10,6 @@ publish = { workspace = true }
 rust-version = { workspace = true }
 
 [dependencies]
-fuste-ecall = { workspace = true }
 
 [lints]
 workspace = true
