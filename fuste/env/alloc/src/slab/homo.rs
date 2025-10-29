@@ -1,6 +1,7 @@
 use super::{Slab, SlabError};
 
 /// A cache of slabs which are all of the same dimension.
+#[derive(Debug)]
 pub struct HomoSlabCache<
 	'a,
 	const BLOCK_SIZE: usize,

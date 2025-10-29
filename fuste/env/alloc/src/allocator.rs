@@ -1,6 +1,3 @@
-pub mod gallocator;
-pub mod notepad;
-
 use crate::slab::{homo::HomoSlabCache, SlabError};
 use core::alloc::Layout;
 use core::ptr::NonNull;
@@ -197,28 +194,21 @@ mod tests {
 
 	#[test]
 	fn simple_alloc_free() {
-		static mut MEMORY_32: [[[u8; 32]; 4]; 1] = [[[0; 32]; 4]; 1];
-		let slabs32_arr = [Slab::new_const(unsafe { &mut MEMORY_32[0] })];
-
-		let slabs128_arr: [Slab<'static, 128, 4>; 0] = [];
-		let slabs64_arr: [Slab<'static, 64, 4>; 0] = [];
-		let slabs256_arr: [Slab<'static, 256, 4>; 0] = [];
-		let slabs512_arr: [Slab<'static, 512, 4>; 0] = [];
-		let slabs1024_arr: [Slab<'static, 1024, 4>; 0] = [];
-		let slabs2048_arr: [Slab<'static, 2048, 4>; 0] = [];
-		let slabs4096_arr: [Slab<'static, 4096, 4>; 0] = [];
-		let slabs8192_arr: [Slab<'static, 8192, 4>; 0] = [];
+		static mut MEMORY_32: [[[u8; 32]; 4]; 2] = [[[0; 32]; 4]; 2];
 
 		let mut allocator = Allocator {
-			slab32: HomoSlabCache::new_const(slabs32_arr),
-			slab64: HomoSlabCache::new_const(slabs64_arr),
-			slab128: HomoSlabCache::new_const(slabs128_arr),
-			slab256: HomoSlabCache::new_const(slabs256_arr),
-			slab512: HomoSlabCache::new_const(slabs512_arr),
-			slab1024: HomoSlabCache::new_const(slabs1024_arr),
-			slab2048: HomoSlabCache::new_const(slabs2048_arr),
-			slab4096: HomoSlabCache::new_const(slabs4096_arr),
-			slab8192: HomoSlabCache::new_const(slabs8192_arr),
+			slab32: HomoSlabCache::<'static, 32, 4, 2>::new_const([
+				Slab::new_const(unsafe { &mut MEMORY_32[0] }),
+				Slab::new_const(unsafe { &mut MEMORY_32[1] }),
+			]),
+			slab64: HomoSlabCache::<'static, 64, 4, 0>::new_const([]),
+			slab128: HomoSlabCache::<'static, 128, 4, 0>::new_const([]),
+			slab256: HomoSlabCache::<'static, 256, 4, 0>::new_const([]),
+			slab512: HomoSlabCache::<'static, 512, 4, 0>::new_const([]),
+			slab1024: HomoSlabCache::<'static, 1024, 4, 0>::new_const([]),
+			slab2048: HomoSlabCache::<'static, 2048, 4, 0>::new_const([]),
+			slab4096: HomoSlabCache::<'static, 4096, 4, 0>::new_const([]),
+			slab8192: HomoSlabCache::<'static, 8192, 4, 0>::new_const([]),
 		};
 
 		let layout = Layout::from_size_align(16, 8).unwrap();

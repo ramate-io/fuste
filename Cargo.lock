@@ -219,6 +219,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "fuste-galloc"
+version = "0.0.1"
+dependencies = [
+ "fuste-alloc",
+]
+
+[[package]]
 name = "fuste-riscv-core"
 version = "0.0.1"
 

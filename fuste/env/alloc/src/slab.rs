@@ -7,6 +7,7 @@ pub enum SlabError {
 	InvalidPointer,
 }
 
+#[derive(Debug)]
 pub struct Slab<'a, const BLOCK_SIZE: usize, const NUM_BLOCKS: usize> {
 	memory: &'a mut [[u8; BLOCK_SIZE]; NUM_BLOCKS],
 	bitmap: u32, // supports up to 32 blocks

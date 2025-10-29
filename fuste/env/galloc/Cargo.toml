@@ -1,0 +1,20 @@
+[package]
+name = "fuste-galloc"
+version = { workspace = true }
+edition = "2021"
+license = { workspace = true }
+authors = { workspace = true }
+repository = { workspace = true }
+homepage = { workspace = true }
+publish = { workspace = true }
+rust-version = { workspace = true }
+
+[dependencies]
+fuste-alloc = { workspace = true }
+
+[features]
+default = ["galloc"]
+galloc = []
+
+[lints]
+workspace = true

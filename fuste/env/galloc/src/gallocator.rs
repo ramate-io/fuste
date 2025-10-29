@@ -1,7 +1,7 @@
-use crate::allocator::Allocator;
 use core::alloc::GlobalAlloc;
 use core::alloc::Layout;
 use core::cell::UnsafeCell;
+use fuste_alloc::allocator::Allocator;
 
 pub struct Gallocator<
 	const NUM_32_BYTE_BLOCKS: usize,
@@ -23,7 +23,7 @@ pub struct Gallocator<
 	const NUM_8192_BYTE_BLOCKS: usize,
 	const NUM_8192_BYTE_SLABS: usize,
 > {
-	allocator: &'static UnsafeCell<
+	pub(crate) allocator: &'static UnsafeCell<
 		Allocator<
 			'static,
 			NUM_32_BYTE_BLOCKS,
