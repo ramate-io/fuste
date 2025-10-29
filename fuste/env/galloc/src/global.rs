@@ -273,12 +273,28 @@ pub static GLOBAL_ALLOCATOR: Gallocator<
 #[cfg(test)]
 mod tests {
 
+	extern crate alloc;
+	use alloc::string::{String, ToString};
+
 	#[test]
-	pub fn test_can_allocate_strings() {
+	pub fn test_can_allocate_test_heap_data() {
+		// This is purely stack based, so we are simply testing that what the test harness needs can be allocated on the heap.
+
 		let s = "Hello, world!";
 		let ptr = s.as_ptr();
 		let len = s.len();
 		let s2 = unsafe { core::str::from_utf8_unchecked(core::slice::from_raw_parts(ptr, len)) };
 		assert_eq!(s, s2);
+	}
+
+	#[test]
+	pub fn test_can_allocate_small_strings() {
+		let s = "Hello, world!".to_string();
+		let ptr = s.as_ptr();
+		let len = s.len();
+		let s2 = unsafe { core::str::from_utf8_unchecked(core::slice::from_raw_parts(ptr, len)) };
+		assert_eq!(s, "Hello, world!");
+		assert_eq!(s, s2);
+		assert_eq!(s, String::from("Hello, world!"));
 	}
 }

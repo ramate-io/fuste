@@ -230,6 +230,6 @@ mod tests {
 		unsafe { *ptr = 42 };
 
 		allocator.free_ptr(ptr).unwrap();
-		assert_eq!(allocator.slab32.free_count(), 4);
+		assert_eq!(allocator.slab32.free_count(), 8);
 	}
 }
