@@ -36,6 +36,18 @@ pub struct Allocator<
 	// 8192 byte blocks and slabs
 	const NUM_8192_BYTE_BLOCKS: usize,
 	const NUM_8192_BYTE_SLABS: usize,
+	// 16384 byte blocks and slabs
+	const NUM_16384_BYTE_BLOCKS: usize,
+	const NUM_16384_BYTE_SLABS: usize,
+	// 32768 byte blocks and slabs
+	const NUM_32768_BYTE_BLOCKS: usize,
+	const NUM_32768_BYTE_SLABS: usize,
+	// 65536 byte blocks and slabs
+	const NUM_65536_BYTE_BLOCKS: usize,
+	const NUM_65536_BYTE_SLABS: usize,
+	// 131072 byte blocks and slabs
+	const NUM_131072_BYTE_BLOCKS: usize,
+	const NUM_131072_BYTE_SLABS: usize,
 > {
 	pub slab32: HomoSlabCache<'a, 32, NUM_32_BYTE_BLOCKS, NUM_32_BYTE_SLABS>,
 	pub slab64: HomoSlabCache<'a, 64, NUM_64_BYTE_BLOCKS, NUM_64_BYTE_SLABS>,
@@ -46,6 +58,10 @@ pub struct Allocator<
 	pub slab2048: HomoSlabCache<'a, 2048, NUM_2048_BYTE_BLOCKS, NUM_2048_BYTE_SLABS>,
 	pub slab4096: HomoSlabCache<'a, 4096, NUM_4096_BYTE_BLOCKS, NUM_4096_BYTE_SLABS>,
 	pub slab8192: HomoSlabCache<'a, 8192, NUM_8192_BYTE_BLOCKS, NUM_8192_BYTE_SLABS>,
+	pub slab16384: HomoSlabCache<'a, 16384, NUM_16384_BYTE_BLOCKS, NUM_16384_BYTE_SLABS>,
+	pub slab32768: HomoSlabCache<'a, 32768, NUM_32768_BYTE_BLOCKS, NUM_32768_BYTE_SLABS>,
+	pub slab65536: HomoSlabCache<'a, 65536, NUM_65536_BYTE_BLOCKS, NUM_65536_BYTE_SLABS>,
+	pub slab131072: HomoSlabCache<'a, 131072, NUM_131072_BYTE_BLOCKS, NUM_131072_BYTE_SLABS>,
 }
 
 impl<
@@ -68,6 +84,14 @@ impl<
 		const NUM_4096_BYTE_SLABS: usize,
 		const NUM_8192_BYTE_BLOCKS: usize,
 		const NUM_8192_BYTE_SLABS: usize,
+		const NUM_16384_BYTE_BLOCKS: usize,
+		const NUM_16384_BYTE_SLABS: usize,
+		const NUM_32768_BYTE_BLOCKS: usize,
+		const NUM_32768_BYTE_SLABS: usize,
+		const NUM_65536_BYTE_BLOCKS: usize,
+		const NUM_65536_BYTE_SLABS: usize,
+		const NUM_131072_BYTE_BLOCKS: usize,
+		const NUM_131072_BYTE_SLABS: usize,
 	>
 	Allocator<
 		'a,
@@ -89,6 +113,14 @@ impl<
 		NUM_4096_BYTE_SLABS,
 		NUM_8192_BYTE_BLOCKS,
 		NUM_8192_BYTE_SLABS,
+		NUM_16384_BYTE_BLOCKS,
+		NUM_16384_BYTE_SLABS,
+		NUM_32768_BYTE_BLOCKS,
+		NUM_32768_BYTE_SLABS,
+		NUM_65536_BYTE_BLOCKS,
+		NUM_65536_BYTE_SLABS,
+		NUM_131072_BYTE_BLOCKS,
+		NUM_131072_BYTE_SLABS,
 	>
 {
 	/// Allocate a block for the given layout. Returns pointer or Err.
@@ -121,6 +153,10 @@ impl<
 		try_class!(self.slab2048, 2048);
 		try_class!(self.slab4096, 4096);
 		try_class!(self.slab8192, 8192);
+		try_class!(self.slab16384, 16384);
+		try_class!(self.slab32768, 32768);
+		try_class!(self.slab65536, 65536);
+		try_class!(self.slab131072, 131072);
 
 		// Nothing fit
 		Err(SlabError::OutOfMemory)
@@ -152,6 +188,10 @@ impl<
 		try_free_class!(self.slab2048, 2048);
 		try_free_class!(self.slab4096, 4096);
 		try_free_class!(self.slab8192, 8192);
+		try_free_class!(self.slab16384, 16384);
+		try_free_class!(self.slab32768, 32768);
+		try_free_class!(self.slab65536, 65536);
+		try_free_class!(self.slab131072, 131072);
 
 		Err(SlabError::InvalidPointer)
 	}
@@ -179,6 +219,10 @@ mod tests {
 			slab2048: HomoSlabCache::<'static, 2048, 4, 0>::new_const([]),
 			slab4096: HomoSlabCache::<'static, 4096, 4, 0>::new_const([]),
 			slab8192: HomoSlabCache::<'static, 8192, 4, 0>::new_const([]),
+			slab16384: HomoSlabCache::<'static, 16384, 4, 0>::new_const([]),
+			slab32768: HomoSlabCache::<'static, 32768, 4, 0>::new_const([]),
+			slab65536: HomoSlabCache::<'static, 65536, 4, 0>::new_const([]),
+			slab131072: HomoSlabCache::<'static, 131072, 4, 0>::new_const([]),
 		};
 
 		let layout = Layout::from_size_align(16, 8).unwrap();

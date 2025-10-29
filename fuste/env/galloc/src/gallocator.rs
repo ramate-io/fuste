@@ -22,6 +22,14 @@ pub struct Gallocator<
 	const NUM_4096_BYTE_SLABS: usize,
 	const NUM_8192_BYTE_BLOCKS: usize,
 	const NUM_8192_BYTE_SLABS: usize,
+	const NUM_16384_BYTE_BLOCKS: usize,
+	const NUM_16384_BYTE_SLABS: usize,
+	const NUM_32768_BYTE_BLOCKS: usize,
+	const NUM_32768_BYTE_SLABS: usize,
+	const NUM_65536_BYTE_BLOCKS: usize,
+	const NUM_65536_BYTE_SLABS: usize,
+	const NUM_131072_BYTE_BLOCKS: usize,
+	const NUM_131072_BYTE_SLABS: usize,
 > {
 	pub(crate) allocator: &'static UnsafeCell<
 		Allocator<
@@ -44,6 +52,14 @@ pub struct Gallocator<
 			NUM_4096_BYTE_SLABS,
 			NUM_8192_BYTE_BLOCKS,
 			NUM_8192_BYTE_SLABS,
+			NUM_16384_BYTE_BLOCKS,
+			NUM_16384_BYTE_SLABS,
+			NUM_32768_BYTE_BLOCKS,
+			NUM_32768_BYTE_SLABS,
+			NUM_65536_BYTE_BLOCKS,
+			NUM_65536_BYTE_SLABS,
+			NUM_131072_BYTE_BLOCKS,
+			NUM_131072_BYTE_SLABS,
 		>,
 	>,
 }
@@ -68,6 +84,14 @@ unsafe impl<
 		const NUM_4096_BYTE_SLABS: usize,
 		const NUM_8192_BYTE_BLOCKS: usize,
 		const NUM_8192_BYTE_SLABS: usize,
+		const NUM_16384_BYTE_BLOCKS: usize,
+		const NUM_16384_BYTE_SLABS: usize,
+		const NUM_32768_BYTE_BLOCKS: usize,
+		const NUM_32768_BYTE_SLABS: usize,
+		const NUM_65536_BYTE_BLOCKS: usize,
+		const NUM_65536_BYTE_SLABS: usize,
+		const NUM_131072_BYTE_BLOCKS: usize,
+		const NUM_131072_BYTE_SLABS: usize,
 	> GlobalAlloc
 	for Gallocator<
 		NUM_32_BYTE_BLOCKS,
@@ -88,6 +112,14 @@ unsafe impl<
 		NUM_4096_BYTE_SLABS,
 		NUM_8192_BYTE_BLOCKS,
 		NUM_8192_BYTE_SLABS,
+		NUM_16384_BYTE_BLOCKS,
+		NUM_16384_BYTE_SLABS,
+		NUM_32768_BYTE_BLOCKS,
+		NUM_32768_BYTE_SLABS,
+		NUM_65536_BYTE_BLOCKS,
+		NUM_65536_BYTE_SLABS,
+		NUM_131072_BYTE_BLOCKS,
+		NUM_131072_BYTE_SLABS,
 	>
 {
 	unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
@@ -123,6 +155,14 @@ unsafe impl<
 		const NUM_4096_BYTE_SLABS: usize,
 		const NUM_8192_BYTE_BLOCKS: usize,
 		const NUM_8192_BYTE_SLABS: usize,
+		const NUM_16384_BYTE_BLOCKS: usize,
+		const NUM_16384_BYTE_SLABS: usize,
+		const NUM_32768_BYTE_BLOCKS: usize,
+		const NUM_32768_BYTE_SLABS: usize,
+		const NUM_65536_BYTE_BLOCKS: usize,
+		const NUM_65536_BYTE_SLABS: usize,
+		const NUM_131072_BYTE_BLOCKS: usize,
+		const NUM_131072_BYTE_SLABS: usize,
 	> Sync
 	for Gallocator<
 		NUM_32_BYTE_BLOCKS,
@@ -143,6 +183,14 @@ unsafe impl<
 		NUM_4096_BYTE_SLABS,
 		NUM_8192_BYTE_BLOCKS,
 		NUM_8192_BYTE_SLABS,
+		NUM_16384_BYTE_BLOCKS,
+		NUM_16384_BYTE_SLABS,
+		NUM_32768_BYTE_BLOCKS,
+		NUM_32768_BYTE_SLABS,
+		NUM_65536_BYTE_BLOCKS,
+		NUM_65536_BYTE_SLABS,
+		NUM_131072_BYTE_BLOCKS,
+		NUM_131072_BYTE_SLABS,
 	>
 {
 }

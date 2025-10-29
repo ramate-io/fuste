@@ -58,6 +58,41 @@ static NUM_8192_BYTE_SLABS: usize = 1;
 static mut MEMORY_8192: [[[u8; 8192]; NUM_8192_BYTE_BLOCKS]; NUM_8192_BYTE_SLABS] =
 	[[[0; 8192]; NUM_8192_BYTE_BLOCKS]; NUM_8192_BYTE_SLABS];
 
+// 16384 byte blocks and slabs
+static NUM_16384_BYTE_BLOCKS: usize = 0;
+static NUM_16384_BYTE_SLABS: usize = 0;
+static mut _MEMORY_16384: [[[u8; 16384]; NUM_16384_BYTE_BLOCKS]; NUM_16384_BYTE_SLABS] =
+	[[[0; 16384]; NUM_16384_BYTE_BLOCKS]; NUM_16384_BYTE_SLABS];
+
+// 32768 byte blocks and slabs
+// 32768 byte blocks and slabs
+
+#[cfg(not(test))]
+pub const NUM_32768_BYTE_BLOCKS: usize = 0;
+#[cfg(not(test))]
+pub const NUM_32768_BYTE_SLABS: usize = 0;
+#[cfg(not(test))]
+pub static mut _MEMORY_32768: [[[u8; 32768]; NUM_32768_BYTE_BLOCKS]; NUM_32768_BYTE_SLABS] =
+	[[[0; 32768]; NUM_32768_BYTE_BLOCKS]; NUM_32768_BYTE_SLABS];
+
+#[cfg(test)]
+pub const NUM_32768_BYTE_BLOCKS: usize = 32;
+#[cfg(test)]
+pub const NUM_32768_BYTE_SLABS: usize = 4;
+#[cfg(test)]
+pub static mut MEMORY_32768: [[[u8; 32768]; NUM_32768_BYTE_BLOCKS]; NUM_32768_BYTE_SLABS] =
+	[[[0; 32768]; NUM_32768_BYTE_BLOCKS]; NUM_32768_BYTE_SLABS];
+
+static NUM_65536_BYTE_BLOCKS: usize = 0;
+static NUM_65536_BYTE_SLABS: usize = 0;
+static mut _MEMORY_65536: [[[u8; 65536]; NUM_65536_BYTE_BLOCKS]; NUM_65536_BYTE_SLABS] =
+	[[[0; 65536]; NUM_65536_BYTE_BLOCKS]; NUM_65536_BYTE_SLABS];
+
+static NUM_131072_BYTE_BLOCKS: usize = 0;
+static NUM_131072_BYTE_SLABS: usize = 0;
+static mut _MEMORY_131072: [[[u8; 131072]; NUM_131072_BYTE_BLOCKS]; NUM_131072_BYTE_SLABS] =
+	[[[0; 131072]; NUM_131072_BYTE_BLOCKS]; NUM_131072_BYTE_SLABS];
+
 static mut ALLOCATOR_INSTANCE: UnsafeCell<
 	Allocator<
 		'static,
@@ -79,6 +114,14 @@ static mut ALLOCATOR_INSTANCE: UnsafeCell<
 		NUM_4096_BYTE_SLABS,
 		NUM_8192_BYTE_BLOCKS,
 		NUM_8192_BYTE_SLABS,
+		NUM_16384_BYTE_BLOCKS,
+		NUM_16384_BYTE_SLABS,
+		NUM_32768_BYTE_BLOCKS,
+		NUM_32768_BYTE_SLABS,
+		NUM_65536_BYTE_BLOCKS,
+		NUM_65536_BYTE_SLABS,
+		NUM_131072_BYTE_BLOCKS,
+		NUM_131072_BYTE_SLABS,
 	>,
 > = UnsafeCell::new(Allocator {
 	slab32: HomoSlabCache::<'static, 32, 32, 32>::new_const([
@@ -166,6 +209,30 @@ static mut ALLOCATOR_INSTANCE: UnsafeCell<
 	slab8192: HomoSlabCache::<'static, 8192, NUM_8192_BYTE_BLOCKS, NUM_8192_BYTE_SLABS>::new_const(
 		[Slab::new_const(unsafe { &mut MEMORY_8192[0] })],
 	),
+	slab16384:
+		HomoSlabCache::<'static, 16384, NUM_16384_BYTE_BLOCKS, NUM_16384_BYTE_SLABS>::new_const([]),
+	slab32768:
+		HomoSlabCache::<'static, 32768, NUM_32768_BYTE_BLOCKS, NUM_32768_BYTE_SLABS>::new_const(
+			#[cfg(test)]
+			{
+				[
+					Slab::new_const(unsafe { &mut MEMORY_32768[0] }),
+					Slab::new_const(unsafe { &mut MEMORY_32768[1] }),
+					Slab::new_const(unsafe { &mut MEMORY_32768[2] }),
+					Slab::new_const(unsafe { &mut MEMORY_32768[3] }),
+				]
+			},
+			#[cfg(not(test))]
+			{
+				[]
+			},
+		),
+	slab65536:
+		HomoSlabCache::<'static, 65536, NUM_65536_BYTE_BLOCKS, NUM_65536_BYTE_SLABS>::new_const([]),
+	slab131072:
+		HomoSlabCache::<'static, 131072, NUM_131072_BYTE_BLOCKS, NUM_131072_BYTE_SLABS>::new_const(
+			[],
+		),
 });
 
 #[global_allocator]
@@ -188,6 +255,14 @@ pub static GLOBAL_ALLOCATOR: Gallocator<
 	NUM_4096_BYTE_SLABS,
 	NUM_8192_BYTE_BLOCKS,
 	NUM_8192_BYTE_SLABS,
+	NUM_16384_BYTE_BLOCKS,
+	NUM_16384_BYTE_SLABS,
+	NUM_32768_BYTE_BLOCKS,
+	NUM_32768_BYTE_SLABS,
+	NUM_65536_BYTE_BLOCKS,
+	NUM_65536_BYTE_SLABS,
+	NUM_131072_BYTE_BLOCKS,
+	NUM_131072_BYTE_SLABS,
 > = Gallocator {
 	allocator: unsafe {
 		#[allow(static_mut_refs)]
