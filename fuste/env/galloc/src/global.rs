@@ -194,3 +194,16 @@ pub static GLOBAL_ALLOCATOR: Gallocator<
 		&ALLOCATOR_INSTANCE
 	},
 };
+
+#[cfg(test)]
+mod tests {
+
+	#[test]
+	pub fn test_can_allocate_strings() {
+		let s = "Hello, world!";
+		let ptr = s.as_ptr();
+		let len = s.len();
+		let s2 = unsafe { core::str::from_utf8_unchecked(core::slice::from_raw_parts(ptr, len)) };
+		assert_eq!(s, s2);
+	}
+}

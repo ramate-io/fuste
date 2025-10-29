@@ -2,36 +2,6 @@ use crate::slab::{homo::HomoSlabCache, SlabError};
 use core::alloc::Layout;
 use core::ptr::NonNull;
 
-pub trait AllocatorLayout {
-	// 32 byte blocks and slabs
-	const NUM_32_BYTE_BLOCKS: usize;
-	const NUM_32_BYTE_SLABS: usize;
-	// 64 byte blocks and slabs
-	const NUM_64_BYTE_BLOCKS: usize;
-	const NUM_64_BYTE_SLABS: usize;
-	// 128 byte blocks and slabs
-	const NUM_128_BYTE_BLOCKS: usize;
-	const NUM_128_BYTE_SLABS: usize;
-	// 256 byte blocks and slabs
-	const NUM_256_BYTE_BLOCKS: usize;
-	const NUM_256_BYTE_SLABS: usize;
-	// 512 byte blocks and slabs
-	const NUM_512_BYTE_BLOCKS: usize;
-	const NUM_512_BYTE_SLABS: usize;
-	// 1024 byte blocks and slabs
-	const NUM_1024_BYTE_BLOCKS: usize;
-	const NUM_1024_BYTE_SLABS: usize;
-	// 2048 byte blocks and slabs
-	const NUM_2048_BYTE_BLOCKS: usize;
-	const NUM_2048_BYTE_SLABS: usize;
-	// 4096 byte blocks and slabs
-	const NUM_4096_BYTE_BLOCKS: usize;
-	const NUM_4096_BYTE_SLABS: usize;
-	// 8192 byte blocks and slabs
-	const NUM_8192_BYTE_BLOCKS: usize;
-	const NUM_8192_BYTE_SLABS: usize;
-}
-
 /// Small helper result type used below
 type AllocPtr = *mut u8;
 

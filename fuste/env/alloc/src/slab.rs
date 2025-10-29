@@ -16,6 +16,10 @@ pub struct Slab<'a, const BLOCK_SIZE: usize, const NUM_BLOCKS: usize> {
 impl<'a, const BLOCK_SIZE: usize, const NUM_BLOCKS: usize> Slab<'a, BLOCK_SIZE, NUM_BLOCKS> {
 	/// Create a new constant slab
 	pub const fn new_const(memory: &'a mut [[u8; BLOCK_SIZE]; NUM_BLOCKS]) -> Self {
+		if NUM_BLOCKS > 32 {
+			panic!("NUM_BLOCKS must be less than or equal to 32 for the bitmap to work");
+		}
+
 		Self { memory, bitmap: 0 }
 	}
 
@@ -26,7 +30,9 @@ impl<'a, const BLOCK_SIZE: usize, const NUM_BLOCKS: usize> Slab<'a, BLOCK_SIZE, 
 
 	/// Allocate a block. Returns a mutable reference to the fixed-size block.
 	pub fn alloc(&mut self) -> Result<&mut [u8; BLOCK_SIZE], SlabError> {
-		if self.bitmap == (1 << NUM_BLOCKS) - 1 {
+		let all_allocated = if NUM_BLOCKS < 32 { (1u32 << NUM_BLOCKS) - 1 } else { u32::MAX };
+
+		if self.bitmap == all_allocated {
 			return Err(SlabError::OutOfMemory);
 		}
 
