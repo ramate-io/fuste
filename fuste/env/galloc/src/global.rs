@@ -1,4 +1,6 @@
 use crate::Gallocator;
+use core::alloc::GlobalAlloc;
+use core::alloc::Layout;
 use core::cell::UnsafeCell;
 use fuste_alloc::allocator::Allocator;
 use fuste_alloc::slab::homo::HomoSlabCache;
@@ -235,8 +237,7 @@ static mut ALLOCATOR_INSTANCE: UnsafeCell<
 		),
 });
 
-#[global_allocator]
-pub static GLOBAL_ALLOCATOR: Gallocator<
+static GLOBAL_ALLOCATOR: Gallocator<
 	NUM_32_BYTE_BLOCKS,
 	NUM_32_BYTE_SLABS,
 	NUM_64_BYTE_BLOCKS,
@@ -270,11 +271,59 @@ pub static GLOBAL_ALLOCATOR: Gallocator<
 	},
 };
 
+/// A singletone proxy to the global allocator.
+pub struct Galloc;
+
+impl Galloc {
+	pub const GALLOCATOR: &'static Gallocator<
+		NUM_32_BYTE_BLOCKS,
+		NUM_32_BYTE_SLABS,
+		NUM_64_BYTE_BLOCKS,
+		NUM_64_BYTE_SLABS,
+		NUM_128_BYTE_BLOCKS,
+		NUM_128_BYTE_SLABS,
+		NUM_256_BYTE_BLOCKS,
+		NUM_256_BYTE_SLABS,
+		NUM_512_BYTE_BLOCKS,
+		NUM_512_BYTE_SLABS,
+		NUM_1024_BYTE_BLOCKS,
+		NUM_1024_BYTE_SLABS,
+		NUM_2048_BYTE_BLOCKS,
+		NUM_2048_BYTE_SLABS,
+		NUM_4096_BYTE_BLOCKS,
+		NUM_4096_BYTE_SLABS,
+		NUM_8192_BYTE_BLOCKS,
+		NUM_8192_BYTE_SLABS,
+		NUM_16384_BYTE_BLOCKS,
+		NUM_16384_BYTE_SLABS,
+		NUM_32768_BYTE_BLOCKS,
+		NUM_32768_BYTE_SLABS,
+		NUM_65536_BYTE_BLOCKS,
+		NUM_65536_BYTE_SLABS,
+		NUM_131072_BYTE_BLOCKS,
+		NUM_131072_BYTE_SLABS,
+	> = &GLOBAL_ALLOCATOR;
+}
+
+unsafe impl GlobalAlloc for Galloc {
+	unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
+		GLOBAL_ALLOCATOR.alloc(layout)
+	}
+
+	unsafe fn dealloc(&self, ptr: *mut u8, layout: Layout) {
+		GLOBAL_ALLOCATOR.dealloc(ptr, layout)
+	}
+}
+
 #[cfg(test)]
 mod tests {
 
 	extern crate alloc;
+	use super::Galloc;
 	use alloc::string::{String, ToString};
+
+	#[global_allocator]
+	static GLOBAL_ALLOCATOR: Galloc = Galloc;
 
 	#[test]
 	pub fn test_can_allocate_test_heap_data() {

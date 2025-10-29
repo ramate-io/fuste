@@ -16,5 +16,6 @@ jobs:
         nix develop
         cargo run --target riscv32i-ramate-fuste-elf.json -p my-program
         cargo run --target riscv32i-ramate-fuste-elf.json -p my-fuste-program
+        cargo run --target riscv32i-ramate-fuste-elf.json -p my-fuste-heap-program
       nix_flake_path: '.'
       runner: 'ubuntu-latest'
