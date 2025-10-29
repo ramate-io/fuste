@@ -13,6 +13,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "fuste-alloc"
+version = "0.0.1"
+
+[[package]]
 name = "fuste-channel"
 version = "0.0.1"
 dependencies = [
@@ -31,10 +35,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "fuste-galloc"
+version = "0.0.1"
+dependencies = [
+ "fuste-alloc",
+]
+
+[[package]]
 name = "fuste-write"
 version = "0.0.1"
 dependencies = [
  "fuste-ecall",
+]
+
+[[package]]
+name = "my-fuste-heap-program"
+version = "0.1.0"
+dependencies = [
+ "fuste",
+ "fuste-galloc",
 ]
 
 [[package]]
@@ -45,5 +64,5 @@ dependencies = [
 ]
 
 [[package]]
-name = "my_program"
+name = "my-program"
 version = "0.1.0"

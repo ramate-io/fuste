@@ -197,6 +197,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "fuste-alloc"
+version = "0.0.1"
+
+[[package]]
 name = "fuste-channel"
 version = "0.0.1"
 dependencies = [
@@ -212,6 +216,13 @@ name = "fuste-exit"
 version = "0.0.1"
 dependencies = [
  "fuste-ecall",
+]
+
+[[package]]
+name = "fuste-galloc"
+version = "0.0.1"
+dependencies = [
+ "fuste-alloc",
 ]
 
 [[package]]

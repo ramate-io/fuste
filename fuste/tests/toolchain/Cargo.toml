@@ -6,12 +6,15 @@ members = [
   
   "my-program",
   "my-fuste-program",
+  "my-fuste-heap-program",
 
   "env/ecall",
   "env/exit",
   "env/write",
   "env/channel",
-  "env/fuste"
+  "env/fuste",
+  "env/alloc",
+  "env/galloc"
 
 ]
 
@@ -30,6 +33,8 @@ fuste-ecall = { path = "env/ecall" }
 fuste-exit = { path = "env/exit" }
 fuste-write = { path = "env/write" }
 fuste-channel = { path = "env/channel" }
+fuste-alloc = { path = "env/alloc" }
+fuste-galloc = { path = "env/galloc" }
 fuste = { path = "env/fuste" }
 
 [workspace.lints.clippy]

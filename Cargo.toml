@@ -12,7 +12,9 @@ members = [
   "fuste/env/exit",
   "fuste/env/write",
   "fuste/env/channel",
-  "fuste/env/fuste"
+  "fuste/env/alloc",
+  "fuste/env/galloc",
+  "fuste/env/fuste",
 
 ]
 
@@ -38,6 +40,10 @@ thiserror = "1.0.50"
 goblin = { version = "0.10.3" }
 clap = { version = "4.4.10", features = ["derive"] }
 tokio = { version = "1.35.1", features = ["full"] }
+syn = { version = "2.0", features = ["full"] }
+quote = "1.0.23"
+proc-macro2 = "1.0.32"
+paste = { version = "1.0", default-features = false }
 
 orfile = { git = "https://github.com/movementlabsxyz/orfile.git", rev = "d02299214e5aa202130cd1eb9593ce8064d1ec69" }
 orfile-util = { git = "https://github.com/movementlabsxyz/orfile.git", rev = "d02299214e5aa202130cd1eb9593ce8064d1ec69" }
@@ -51,6 +57,7 @@ fuste-ecall = { path = "fuste/env/ecall" }
 fuste-exit = { path = "fuste/env/exit" }
 fuste-write = { path = "fuste/env/write" }
 fuste-channel = { path = "fuste/env/channel" }
+fuste-alloc = { path = "fuste/env/alloc" }
 fuste = { path = "fuste/env/fuste" }
 
 [workspace.lints.clippy]
