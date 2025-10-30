@@ -13,7 +13,7 @@
 Fuste is a programmability adapter and virtual machine stack designed for integration with [Robles](https://github.com/ramate-io/robles), [Ramate's](https://github.com/ramate-io/ramate) implementation of [BFA](https://github.com/ramate-io/bfa) protocols. 
 
 > [!NOTE]
-> Currently, Fuste implements only the [RV32I](https://docs.riscv.org/reference/isa/unpriv/rv32.html) ISA. Since Fuste is intended as a programmability stack and does not ultimately have general opinions about the ISA, we may choose to implement other ISAs for Fuste virtual machines in the future. 
+> Currently, Fuste implements only the [RV32I](https://docs.riscv.org/reference/isa/unpriv/rv32.html) ISA. Since Fuste is intended as a programmability stack and does not ultimately have general opinions about the ISA, we may choose to implement other ISAs as Fuste virtual machines in the future.
 
 ## Getting started 
 1. Review the programs in the [`tests/toolchain`](/fuste/tests/toolchain/) workspace before you begin writing your own. 
