@@ -18,7 +18,7 @@ Fuste is a programmability adapter and virtual machine stack designed for integr
 ## Getting started 
 1. Review the programs in the [`tests/toolchain`](/fuste/tests/toolchain/) workspace before you begin writing your own. 
 2. Ensure you have built [`fubox`](/fuste/riscv-box/) and that is available on your `PATH`. 
-3. Configure a workspace with the desire [`env/fuste`](/fuste/env/fuste/) crates. 
+3. Configure a workspace with the desired [`env/fuste`](/fuste/env/fuste/) crates. 
 4. Configure the toolchain similar to [`tests/toolchain`](/fuste/tests/toolchain/riscv32i-ramate-fuste-elf.json). You can change the memory layout in the linker script if you like. 
 5. Write your program:
 
@@ -60,7 +60,7 @@ cargo run --target riscv32i-ramate-fuste-elf.json -p my-fuste-program
 - [`fuste-write`](/fuste/env/write/) for making one-way writes to a system. `println!` is implemented using `fuste-write`. 
 - [`fuste-channel`](/fuste/env/channel/) for opening a kernel channel with a stack-allocated buffer. Network requests are implemented using `fuste-channel`. 
 - [`fuste`](/fuste/env/fuste/) includes all of the above for those who want a complete stack-based set of symbols. 
-- [`fuste-galloc`](/fuste/env/galloc/) defines a global heap allocator for those interested in writing heap programs. It is not in [`fuste`](/fuste/env/fuste/) because, owing to the highly constrained targets for the Virtual Machine, purely stack-based programs are preferred. 
+- [`fuste-galloc`](/fuste/env/galloc/) defines a global heap allocator for those interested in writing heap programs. It is not in [`fuste`](/fuste/env/fuste/) because--owing to the highly constrained targets for the virtual machine--purely stack-based programs are preferred. 
 
 `fubox` currently implements a debugging form of the `fuste` environment. 
 
