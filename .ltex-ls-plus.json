@@ -1,6 +1,10 @@
 {
   "ltex": {
-    "enabled": ["markdown", "plaintext", "restructuredtext"],
+    "enabled": [
+      "markdown",
+      "plaintext",
+      "restructuredtext"
+    ],
     "language": "en-US",
     "checkFrequency": "save",
     "disabledRules": {
@@ -156,12 +160,21 @@
         "RPROC",
         "ROGOV",
         "RDE-n",
-        "Roadline"
+        "Roadline",
+        "toolchain",
+        "Robles"
       ]
     },
-    "bibtex": { "fields": {} },
-    "latex": { "commands": {}, "environments": {} },
-    "markdown": { "nodes": {} },
+    "bibtex": {
+      "fields": {}
+    },
+    "latex": {
+      "commands": {},
+      "environments": {}
+    },
+    "markdown": {
+      "nodes": {}
+    },
     "configurationTarget": {
       "addToDictionary": "workspaceFolder",
       "disableRule": "workspaceFolder",
