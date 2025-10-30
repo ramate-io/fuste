@@ -1,7 +1,7 @@
 <div align="center">
   <picture>
     <source srcset="./assets/fuste-bar.png" media="(prefers-color-scheme: dark)">
-    <img src="./assets/fuste-bar.png" alt="Robles" width="180">
+    <img src="./assets/fuste-bar.png" alt="Robles" width="300">
   </picture>
 </div>
 </br>
