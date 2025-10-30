@@ -4,7 +4,7 @@ Fuste is a virtual machine stack designed for integration with [Robles](https://
 
 ## Getting started 
 1. Review the programs in the [`tests/toolchain`](/fuste/tests/toolchain/) workspace before you begin writing your own. 
-2. Ensure you have built [`fubox`](/fuste/riscv-box/) and that is available on your path. 
+2. Ensure you have built [`fubox`](/fuste/riscv-box/) and that is available on your `PATH`. 
 3. Configure a workspace with the desire [`env/fuste`](/fuste/env/fuste/) crates. 
 4. Configure the toolchain similar to [`tests/toolchain`](/fuste/tests/toolchain/riscv32i-ramate-fuste-elf.json). You can change the memory layout in the linker script if you like. 
 5. Write your program:
