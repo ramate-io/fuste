@@ -39,6 +39,18 @@ fuste::entry! {
 cargo run --target riscv32i-ramate-fuste-elf.json -p my-fuste-program
 ```
 
+## Environment
+[`env/fuste`](/fuste/env/fuste/) provides the following:
+
+- [`fuste-ecall`](/fuste/env/ecall/) for defining basic `ecall` interrupt APIs with an implementing machine.
+- [`fuste-exit`](/fuste/env/exit/) for defining program termination interrupts.
+- [`fuste-write`](/fuste/env/write/) for making one-way writes to a system. `println!` is implemented using `fuste-write`. 
+- [`fuste-channel`](/fuste/env/channel/) for opening a kernel channel with a stack-allocated buffer. Network requests are implemented using `fuste-channel`. 
+- [`fuste`](/fuste/env/fuste/) includes all of the above for those who want a complete stack-based set of symbols. 
+- [`fuste-galloc`](/fuste/env/galloc/) defines a global heap allocator for those interested in writing heap programs. It is not in [`fuste`](/fuste/env/fuste/) because, owing to the highly constrained targets for the Virtual Machine, purely stack-based programs are preferred. 
+
+`fubox` currently implements a debugging form of the `fuste` environment. 
+
 ## Contributing
 
 | Task | Description |
