@@ -1,6 +1,16 @@
+<div align="center">
+  <picture>
+    <source srcset="./assets/fuste-bar.png" media="(prefers-color-scheme: dark)">
+    <img src="./assets/fuste-bar.png" alt="Robles" height="120">
+  </picture>
+</div>
+</br>
+
+> A pluggable virtual machine for constrained environments.
+
 # Fuste
 
-Fuste is a virtual machine stack designed for integration with [Robles](https://github.com/ramate-io/robles), [Ramate's](https://github.com/ramate-io/ramate) implementation of [BFA](https://github.com/ramate-io/bfa) protocols. 
+Fuste is a programmability adapter and virtual machine stack designed for integration with [Robles](https://github.com/ramate-io/robles), [Ramate's](https://github.com/ramate-io/ramate) implementation of [BFA](https://github.com/ramate-io/bfa) protocols. 
 
 ## Getting started 
 1. Review the programs in the [`tests/toolchain`](/fuste/tests/toolchain/) workspace before you begin writing your own. 
