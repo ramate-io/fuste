@@ -251,6 +251,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "fuste-lilbug"
+version = "0.0.1"
+dependencies = [
+ "fuste-exit",
+ "fuste-exit-system",
+ "fuste-riscv-core",
+]
+
+[[package]]
 name = "fuste-riscv-core"
 version = "0.0.1"
 

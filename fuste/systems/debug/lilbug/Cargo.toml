@@ -1,0 +1,18 @@
+[package]
+name = "fuste-lilbug"
+version = { workspace = true }
+edition = "2021"
+license = { workspace = true }
+authors = { workspace = true }
+repository = { workspace = true }
+homepage = { workspace = true }
+publish = { workspace = true }
+rust-version = { workspace = true }
+
+[dependencies]
+fuste-exit = { workspace = true }
+fuste-exit-system = { workspace = true }
+fuste-riscv-core = { workspace = true }
+
+[lints]
+workspace = true

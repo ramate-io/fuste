@@ -8,6 +8,13 @@ pub struct ExitSystem<const MEMORY_SIZE: usize> {
 	pub syscall_status: ExitStatus,
 }
 
+impl<const MEMORY_SIZE: usize> ExitSystem<MEMORY_SIZE> {
+	pub fn new() -> Self {
+		// Initially this is successful.
+		Self { syscall_status: ExitStatus::Success }
+	}
+}
+
 impl<const MEMORY_SIZE: usize> MachineSystem<MEMORY_SIZE> for ExitSystem<MEMORY_SIZE> {
 	fn tick(
 		&mut self,

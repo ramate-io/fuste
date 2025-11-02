@@ -25,7 +25,9 @@ members = [
   "fuste/env/systems/write/std-output",
   "fuste/systems/write/std-output",
 
-  "fuste/systems/ecall/exit"
+  "fuste/systems/ecall/exit",
+
+  "fuste/systems/debug/lilbug"
 
 ]
 
@@ -73,6 +75,8 @@ fuste = { path = "fuste/env/fuste" }
 
 # specific systems
 fuste-interrupt-handler = { path = "fuste/systems/interrupt/handler" }
+
+fuste-exit-system = { path = "fuste/systems/ecall/exit" }
 
 fuste-std-output = { path = "fuste/env/systems/write/std-output" }
 fuste-std-output-system = { path = "fuste/systems/write/std-output" }
