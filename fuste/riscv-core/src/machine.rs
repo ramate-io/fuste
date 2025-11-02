@@ -25,6 +25,22 @@ pub trait MachineSystem<const MEMORY_SIZE: usize> {
 		-> Result<ControlFlow<()>, MachineError>;
 }
 
+/// For anything that implements [MachinSystem], Option<T: MachineSystem<MEMORY_SIZE>> is a valid machine system.
+impl<const MEMORY_SIZE: usize, T: MachineSystem<MEMORY_SIZE>> MachineSystem<MEMORY_SIZE>
+	for Option<T>
+{
+	#[inline(always)]
+	fn tick(
+		&mut self,
+		machine: &mut Machine<MEMORY_SIZE>,
+	) -> Result<ControlFlow<()>, MachineError> {
+		match self {
+			Some(system) => system.tick(machine),
+			None => Ok(ControlFlow::Continue(())),
+		}
+	}
+}
+
 impl<const MEMORY_SIZE: usize> Machine<MEMORY_SIZE> {
 	/// Creates a new machine instance with all memory and registers initialized to zero.
 	pub fn new() -> Self {
