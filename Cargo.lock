@@ -235,6 +235,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "fuste-interrupt-handler-system"
+version = "0.0.1"
+dependencies = [
+ "fuste-riscv-core",
+]
+
+[[package]]
 name = "fuste-riscv-core"
 version = "0.0.1"
 
