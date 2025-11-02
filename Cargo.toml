@@ -18,6 +18,7 @@ members = [
   "fuste/env/fuste",
 
   # specific systems
+  "fuste/systems/tick/handler",
   "fuste/systems/interrupt/handler",
   "fuste/systems/ecall/dispatcher",
 
