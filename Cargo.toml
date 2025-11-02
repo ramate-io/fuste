@@ -69,6 +69,8 @@ fuste-alloc = { path = "fuste/env/alloc" }
 fuste = { path = "fuste/env/fuste" }
 
 # specific systems
+fuste-interrupt-handler = { path = "fuste/systems/interrupt/handler" }
+
 fuste-std-output = { path = "fuste/env/systems/write/std-output" }
 fuste-std-output-system = { path = "fuste/systems/write/std-output" }
 

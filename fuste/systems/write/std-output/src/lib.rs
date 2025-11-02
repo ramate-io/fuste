@@ -1,10 +1,14 @@
-use fuste_riscv_core::machine::{Machine, MachineError, MachinePlugin};
+use core::ops::ControlFlow;
+use fuste_riscv_core::machine::{Machine, MachineError, MachineSystem};
 use fuste_std_output::Stdout;
 
-pub struct StdOutputPlugin<const MEMORY_SIZE: usize>;
+pub struct StdOutputSystem<const MEMORY_SIZE: usize>;
 
-impl<const MEMORY_SIZE: usize> MachinePlugin<MEMORY_SIZE> for StdOutputPlugin<MEMORY_SIZE> {
-	fn tick(&mut self, machine: &mut Machine<MEMORY_SIZE>) -> Result<(), MachineError> {
+impl<const MEMORY_SIZE: usize> MachineSystem<MEMORY_SIZE> for StdOutputSystem<MEMORY_SIZE> {
+	fn tick(
+		&mut self,
+		machine: &mut Machine<MEMORY_SIZE>,
+	) -> Result<ControlFlow<()>, MachineError> {
 		let write_fd = machine.csrs().registers().get(10);
 		let write_buffer_address = machine.csrs().registers().get(11);
 		let write_buffer_length = machine.csrs().registers().get(12);
@@ -22,6 +26,6 @@ impl<const MEMORY_SIZE: usize> MachinePlugin<MEMORY_SIZE> for StdOutputPlugin<ME
 			machine.commit_csrs();
 		}
 
-		Ok(())
+		Ok(ControlFlow::Continue(()))
 	}
 }

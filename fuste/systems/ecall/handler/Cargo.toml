@@ -1,5 +1,5 @@
 [package]
-name = "fuste-ecall-handler-system"
+name = "fuste-ecall-handler"
 version = { workspace = true }
 edition = "2021"
 license = { workspace = true }
@@ -11,6 +11,7 @@ rust-version = { workspace = true }
 
 [dependencies]
 fuste-ecall = { workspace = true }
+fuste-interrupt-handler = { workspace = true }
 fuste-riscv-core = { workspace = true }
 
 [lints]

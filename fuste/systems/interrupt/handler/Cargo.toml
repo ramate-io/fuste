@@ -1,5 +1,5 @@
 [package]
-name = "fuste-interrupt-handler-system"
+name = "fuste-interrupt-handler"
 version = { workspace = true }
 edition = "2021"
 license = { workspace = true }

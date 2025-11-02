@@ -1,7 +1,7 @@
 use clap::Parser;
 use fuste_riscv_core::{
 	instructions::{EcallInterrupt, ExecutableInstructionError, Rv32iInstruction},
-	machine::{Machine, MachineError, MachinePlugin},
+	machine::{Machine, MachineError, MachineSystem},
 	plugins::rv32i_computer::Rv32iComputer,
 };
 use fuste_riscv_elf::{Elf32Loader, ElfLoaderError};
@@ -44,15 +44,18 @@ pub struct Elf {
 	pub entrypoint_symbol_name: String,
 }
 
-pub struct DebugPlugin {
+pub struct DebugSystem {
 	computer: Rv32iComputer,
 	log_program_counter: bool,
 	log_instructions: bool,
 	log_registers: bool,
 }
 
-impl MachinePlugin<BOX_MEMORY_SIZE> for DebugPlugin {
-	fn tick(&mut self, machine: &mut Machine<BOX_MEMORY_SIZE>) -> Result<(), MachineError> {
+impl MachineSystem<BOX_MEMORY_SIZE> for DebugSystem {
+	fn tick(
+		&mut self,
+		machine: &mut Machine<BOX_MEMORY_SIZE>,
+	) -> Result<ControlFlow<()>, MachineError> {
 		if self.log_program_counter {
 			println!("program counter: 0x{:X}", machine.registers().program_counter());
 		}
@@ -65,12 +68,11 @@ impl MachinePlugin<BOX_MEMORY_SIZE> for DebugPlugin {
 		if self.log_instructions {
 			let decoded_instruction = Rv32iInstruction::<BOX_MEMORY_SIZE>::from_word(instruction)
 				.map_err(|_e| {
-				MachineError::PluginError("Failed to decode instruction for debugger")
+				MachineError::SystemError("Failed to decode instruction for debugger")
 			})?;
 			println!("0x{address:08X}: {:40} <- 0b{:032b}", decoded_instruction, instruction);
 		}
-		self.computer.tick(machine)?;
-		Ok(())
+		self.computer.tick(machine)
 	}
 }
 
@@ -84,7 +86,7 @@ impl Elf {
 		loader.load_elf(&mut machine, &self.path)?;
 
 		// Initialize the plugin and run the machine
-		let mut plugin = DebugPlugin {
+		let mut plugin = DebugSystem {
 			computer: Rv32iComputer,
 			log_program_counter: self.log_program_counter,
 			log_instructions: self.log_instructions,
@@ -94,7 +96,8 @@ impl Elf {
 		let mut tick = 0;
 		loop {
 			match plugin.tick(&mut machine) {
-				Ok(()) => (),
+				Ok(ControlFlow::Continue(())) => (),
+				Ok(ControlFlow::Break(())) => break,
 				Err(MachineError::InstructionError(
 					ExecutableInstructionError::EcallInterrupt(error),
 				)) => {
