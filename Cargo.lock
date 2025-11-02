@@ -193,6 +193,7 @@ dependencies = [
  "fuste-channel",
  "fuste-ecall",
  "fuste-exit",
+ "fuste-std-output",
  "fuste-write",
 ]
 
@@ -237,6 +238,17 @@ dependencies = [
  "goblin",
  "thiserror 1.0.69",
 ]
+
+[[package]]
+name = "fuste-std-output"
+version = "0.0.1"
+dependencies = [
+ "fuste-write",
+]
+
+[[package]]
+name = "fuste-std-output-system"
+version = "0.0.1"
 
 [[package]]
 name = "fuste-write"
