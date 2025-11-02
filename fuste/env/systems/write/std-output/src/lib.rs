@@ -4,6 +4,10 @@ pub struct Stdout;
 
 impl Stdout {
 	pub const SYSTEM_ID: WriteSystemId = WriteSystemId::constant(1);
+
+	pub const fn to_const_u32() -> u32 {
+		Self::SYSTEM_ID.to_const_u32()
+	}
 }
 
 impl Write for Stdout {

@@ -18,6 +18,8 @@ members = [
   "fuste/env/fuste",
 
   # specific systems
+  "fuste/systems/ecall/handler",
+
   "fuste/env/systems/write/std-output",
   "fuste/systems/write/std-output",
 

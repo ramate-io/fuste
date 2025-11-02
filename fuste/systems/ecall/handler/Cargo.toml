@@ -1,5 +1,5 @@
 [package]
-name = "fuste-std-output-system"
+name = "fuste-ecall-handler-system"
 version = { workspace = true }
 edition = "2021"
 license = { workspace = true }
@@ -10,8 +10,8 @@ publish = { workspace = true }
 rust-version = { workspace = true }
 
 [dependencies]
+fuste-ecall = { workspace = true }
 fuste-riscv-core = { workspace = true }
-fuste-std-output = { workspace = true }
 
 [lints]
 workspace = true

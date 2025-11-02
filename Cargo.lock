@@ -213,6 +213,14 @@ name = "fuste-ecall"
 version = "0.0.1"
 
 [[package]]
+name = "fuste-ecall-handler-system"
+version = "0.0.1"
+dependencies = [
+ "fuste-ecall",
+ "fuste-riscv-core",
+]
+
+[[package]]
 name = "fuste-exit"
 version = "0.0.1"
 dependencies = [
@@ -249,6 +257,10 @@ dependencies = [
 [[package]]
 name = "fuste-std-output-system"
 version = "0.0.1"
+dependencies = [
+ "fuste-riscv-core",
+ "fuste-std-output",
+]
 
 [[package]]
 name = "fuste-write"

@@ -20,6 +20,10 @@ impl WriteSystemId {
 	pub fn to_u32(self) -> u32 {
 		self.0
 	}
+
+	pub const fn to_const_u32(self) -> u32 {
+		self.0
+	}
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
