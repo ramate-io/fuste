@@ -6,10 +6,10 @@ use fuste_riscv_core::{
 	machine::{Machine, MachineError, MachineSystem},
 };
 
-/// The [EcallDispatcherOps] trait provides the operations for handling ecall interrupts.
+/// The [EcallHandlerOps] trait provides the operations for handling ecall interrupts.
 ///
 /// Specifically, it allows setting the ecall interrupt before ticking the plugin.
-pub trait EcallDispatcherOps<const MEMORY_SIZE: usize>: MachineSystem<MEMORY_SIZE> {
+pub trait EcallHandlerOps<const MEMORY_SIZE: usize>: MachineSystem<MEMORY_SIZE> {
 	fn set_ecall_interrupt(&mut self, interrupt: EcallInterrupt) -> Result<(), MachineError>;
 
 	fn tick_with_ecall_interrupt(
@@ -22,10 +22,10 @@ pub trait EcallDispatcherOps<const MEMORY_SIZE: usize>: MachineSystem<MEMORY_SIZ
 	}
 }
 
-/// The [EbreakDispatcherOps] trait provides the operations for handling ebreak interrupts.
+/// The [EbreakHandlerOps] trait provides the operations for handling ebreak interrupts.
 ///
 /// Specifically, it allows setting the ebreak interrupt before ticking the plugin.
-pub trait EbreakDispatcherOps<const MEMORY_SIZE: usize>: MachineSystem<MEMORY_SIZE> {
+pub trait EbreakHandlerOps<const MEMORY_SIZE: usize>: MachineSystem<MEMORY_SIZE> {
 	fn set_ebreak_interrupt(&mut self, interrupt: EbreakInterrupt) -> Result<(), MachineError>;
 
 	fn tick_with_ebreak_interrupt(
@@ -42,21 +42,21 @@ pub trait EbreakDispatcherOps<const MEMORY_SIZE: usize>: MachineSystem<MEMORY_SI
 pub struct InterruptHandler<
 	const MEMORY_SIZE: usize,
 	Inner: MachineSystem<MEMORY_SIZE>,
-	EcallDispatcher: EcallDispatcherOps<MEMORY_SIZE>,
-	EbreakDispatcher: EbreakDispatcherOps<MEMORY_SIZE>,
+	EcallHandler: MachineSystem<MEMORY_SIZE>,
+	EbreakHandler: EbreakHandlerOps<MEMORY_SIZE>,
 > {
 	pub inner: Inner,
-	pub ecall_dispatcher: EcallDispatcher,
-	pub ebreak_dispatcher: EbreakDispatcher,
+	pub ecall_handler: EcallHandler,
+	pub ebreak_handler: EbreakHandler,
 }
 
 impl<
 		const MEMORY_SIZE: usize,
 		Inner: MachineSystem<MEMORY_SIZE>,
-		EcallDispatcher: EcallDispatcherOps<MEMORY_SIZE>,
-		EbreakDispatcher: EbreakDispatcherOps<MEMORY_SIZE>,
+		EcallHandler: EcallHandlerOps<MEMORY_SIZE>,
+		EbreakHandler: EbreakHandlerOps<MEMORY_SIZE>,
 	> MachineSystem<MEMORY_SIZE>
-	for InterruptHandler<MEMORY_SIZE, Inner, EcallDispatcher, EbreakDispatcher>
+	for InterruptHandler<MEMORY_SIZE, Inner, EcallHandler, EbreakHandler>
 {
 	/// Ticks the interrupt handler and delegates to the appropriate handler based on the interrupt type.
 	///
@@ -71,10 +71,10 @@ impl<
 			Ok(control_flow) => Ok(control_flow),
 			Err(MachineError::InstructionError(ExecutableInstructionError::EcallInterrupt(
 				ecall_interrupt,
-			))) => self.ecall_dispatcher.tick_with_ecall_interrupt(machine, ecall_interrupt),
+			))) => self.ecall_handler.tick_with_ecall_interrupt(machine, ecall_interrupt),
 			Err(MachineError::InstructionError(ExecutableInstructionError::EbreakInterrupt(
 				ebreak_interrupt,
-			))) => self.ebreak_dispatcher.tick_with_ebreak_interrupt(machine, ebreak_interrupt),
+			))) => self.ebreak_handler.tick_with_ebreak_interrupt(machine, ebreak_interrupt),
 			Err(e) => Err(e),
 		}
 	}
