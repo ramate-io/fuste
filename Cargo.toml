@@ -75,6 +75,7 @@ fuste = { path = "fuste/env/fuste" }
 
 # specific systems
 fuste-interrupt-handler = { path = "fuste/systems/interrupt/handler" }
+fuste-ecall-dispatcher = { path = "fuste/systems/ecall/dispatcher" }
 
 fuste-exit-system = { path = "fuste/systems/ecall/exit" }
 

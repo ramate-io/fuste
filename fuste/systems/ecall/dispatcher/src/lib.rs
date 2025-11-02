@@ -11,8 +11,20 @@ use fuste_riscv_core::{
 /// Marker trait for exit system dispatchers.
 pub trait ExitSystemDispatcher<const MEMORY_SIZE: usize>: MachineSystem<MEMORY_SIZE> {}
 
+/// Implement ExitSystemDispatcher for Option<T: ExitSystemDispatcher<MEMORY_SIZE>>
+impl<const MEMORY_SIZE: usize, T: ExitSystemDispatcher<MEMORY_SIZE>>
+	ExitSystemDispatcher<MEMORY_SIZE> for Option<T>
+{
+}
+
 /// Marker trait for write system dispatchers.
 pub trait WriteSystemDispatcher<const MEMORY_SIZE: usize>: MachineSystem<MEMORY_SIZE> {}
+
+/// Implement WriteSystemDispatcher for Option<T: WriteSystemDispatcher<MEMORY_SIZE>>
+impl<const MEMORY_SIZE: usize, T: WriteSystemDispatcher<MEMORY_SIZE>>
+	WriteSystemDispatcher<MEMORY_SIZE> for Option<T>
+{
+}
 
 /// Marker trait for write channel system dispatchers.
 pub trait WriteChannelSystemDispatcher<const MEMORY_SIZE: usize>:
@@ -20,9 +32,43 @@ pub trait WriteChannelSystemDispatcher<const MEMORY_SIZE: usize>:
 {
 }
 
+/// Implement WriteChannelSystemDispatcher for Option<T: WriteChannelSystemDispatcher<MEMORY_SIZE>>
+impl<const MEMORY_SIZE: usize, T: WriteChannelSystemDispatcher<MEMORY_SIZE>>
+	WriteChannelSystemDispatcher<MEMORY_SIZE> for Option<T>
+{
+}
+
 /// Marker trait for read channel system dispatchers.
 pub trait ReadChannelSystemDispatcher<const MEMORY_SIZE: usize>:
 	MachineSystem<MEMORY_SIZE>
+{
+}
+
+/// Implement ReadChannelSystemDispatcher for Option<T: ReadChannelSystemDispatcher<MEMORY_SIZE>>
+impl<const MEMORY_SIZE: usize, T: ReadChannelSystemDispatcher<MEMORY_SIZE>>
+	ReadChannelSystemDispatcher<MEMORY_SIZE> for Option<T>
+{
+}
+
+pub struct NoopDispatcher<const MEMORY_SIZE: usize> {}
+
+impl<const MEMORY_SIZE: usize> MachineSystem<MEMORY_SIZE> for NoopDispatcher<MEMORY_SIZE> {
+	fn tick(
+		&mut self,
+		_machine: &mut Machine<MEMORY_SIZE>,
+	) -> Result<ControlFlow<()>, MachineError> {
+		Ok(ControlFlow::Continue(()))
+	}
+}
+
+impl<const MEMORY_SIZE: usize> ExitSystemDispatcher<MEMORY_SIZE> for NoopDispatcher<MEMORY_SIZE> {}
+impl<const MEMORY_SIZE: usize> WriteSystemDispatcher<MEMORY_SIZE> for NoopDispatcher<MEMORY_SIZE> {}
+impl<const MEMORY_SIZE: usize> WriteChannelSystemDispatcher<MEMORY_SIZE>
+	for NoopDispatcher<MEMORY_SIZE>
+{
+}
+impl<const MEMORY_SIZE: usize> ReadChannelSystemDispatcher<MEMORY_SIZE>
+	for NoopDispatcher<MEMORY_SIZE>
 {
 }
 

@@ -1,4 +1,5 @@
 use core::ops::ControlFlow;
+use fuste_ecall_dispatcher::WriteSystemDispatcher;
 use fuste_riscv_core::machine::{Machine, MachineError, MachineSystem};
 use fuste_std_output::Stdout;
 
@@ -29,3 +30,5 @@ impl<const MEMORY_SIZE: usize> MachineSystem<MEMORY_SIZE> for StdOutputSystem<ME
 		Ok(ControlFlow::Continue(()))
 	}
 }
+
+impl<const MEMORY_SIZE: usize> WriteSystemDispatcher<MEMORY_SIZE> for StdOutputSystem<MEMORY_SIZE> {}

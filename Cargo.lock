@@ -180,8 +180,12 @@ dependencies = [
  "anyhow",
  "clap",
  "clap-markdown-ext",
+ "fuste-ecall-dispatcher",
+ "fuste-exit-system",
+ "fuste-interrupt-handler",
  "fuste-riscv-core",
  "fuste-riscv-elf",
+ "fuste-std-output-system",
  "thiserror 1.0.69",
  "tokio",
 ]
@@ -232,6 +236,7 @@ dependencies = [
 name = "fuste-exit-system"
 version = "0.0.1"
 dependencies = [
+ "fuste-ecall-dispatcher",
  "fuste-exit",
  "fuste-riscv-core",
 ]
@@ -283,6 +288,7 @@ dependencies = [
 name = "fuste-std-output-system"
 version = "0.0.1"
 dependencies = [
+ "fuste-ecall-dispatcher",
  "fuste-riscv-core",
  "fuste-std-output",
 ]

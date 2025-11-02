@@ -38,6 +38,44 @@ pub trait EbreakDispatcherOps<const MEMORY_SIZE: usize>: MachineSystem<MEMORY_SI
 	}
 }
 
+pub struct NoopEcallDispatcher<const MEMORY_SIZE: usize> {}
+
+impl<const MEMORY_SIZE: usize> MachineSystem<MEMORY_SIZE> for NoopEcallDispatcher<MEMORY_SIZE> {
+	fn tick(
+		&mut self,
+		_machine: &mut Machine<MEMORY_SIZE>,
+	) -> Result<ControlFlow<()>, MachineError> {
+		Ok(ControlFlow::Continue(()))
+	}
+}
+
+impl<const MEMORY_SIZE: usize> EcallDispatcherOps<MEMORY_SIZE>
+	for NoopEcallDispatcher<MEMORY_SIZE>
+{
+	fn set_ecall_interrupt(&mut self, _interrupt: EcallInterrupt) -> Result<(), MachineError> {
+		Ok(())
+	}
+}
+
+pub struct NoopEbreakDispatcher<const MEMORY_SIZE: usize> {}
+
+impl<const MEMORY_SIZE: usize> MachineSystem<MEMORY_SIZE> for NoopEbreakDispatcher<MEMORY_SIZE> {
+	fn tick(
+		&mut self,
+		_machine: &mut Machine<MEMORY_SIZE>,
+	) -> Result<ControlFlow<()>, MachineError> {
+		Ok(ControlFlow::Continue(()))
+	}
+}
+
+impl<const MEMORY_SIZE: usize> EbreakDispatcherOps<MEMORY_SIZE>
+	for NoopEbreakDispatcher<MEMORY_SIZE>
+{
+	fn set_ebreak_interrupt(&mut self, _interrupt: EbreakInterrupt) -> Result<(), MachineError> {
+		Ok(())
+	}
+}
+
 /// The [InterruptHandler] plugin handles interrupts ticking and inner machine then delegating to the appropriate handler.
 pub struct InterruptHandler<
 	const MEMORY_SIZE: usize,

@@ -1,10 +1,14 @@
 use clap::Parser;
+use fuste_ecall_dispatcher::{EcallDispatcher, NoopDispatcher};
+use fuste_exit_system::ExitSystem;
+use fuste_interrupt_handler::{InterruptHandler, NoopEbreakDispatcher};
 use fuste_riscv_core::{
 	instructions::{EcallInterrupt, ExecutableInstructionError, Rv32iInstruction},
 	machine::{Machine, MachineError, MachineSystem},
 	plugins::rv32i_computer::Rv32iComputer,
 };
 use fuste_riscv_elf::{Elf32Loader, ElfLoaderError};
+use fuste_std_output_system::StdOutputSystem;
 use std::ops::ControlFlow;
 use std::path::PathBuf;
 
@@ -42,6 +46,15 @@ pub struct Elf {
 	/// The name of the entrypoint symbol to load
 	#[clap(long, default_value = "_start")]
 	pub entrypoint_symbol_name: String,
+	/// Whether to support ecalls
+	#[clap(long, default_value = "true")]
+	pub ecalls: bool,
+	/// Whether to support std-output
+	#[clap(long, default_value = "true")]
+	pub std_output: bool,
+	/// Whether to log the exit status
+	#[clap(long)]
+	pub log_exit_status: bool,
 }
 
 pub struct DebugSystem {
@@ -77,6 +90,14 @@ impl MachineSystem<BOX_MEMORY_SIZE> for DebugSystem {
 }
 
 impl Elf {
+	pub fn is_debug(&self) -> bool {
+		self.log_program_counter
+			|| self.log_instructions
+			|| self.log_registers
+			|| self.log_registers_at_end
+			|| self.log_exit_status
+	}
+
 	pub async fn execute(&self) -> Result<(), ElfError> {
 		// Initialize the machine and loader
 		let loader = Elf32Loader::new(self.entrypoint_symbol_name.clone());
@@ -85,42 +106,32 @@ impl Elf {
 		// Load the ELF file into the machine
 		loader.load_elf(&mut machine, &self.path)?;
 
-		// Initialize the plugin and run the machine
-		let mut plugin = DebugSystem {
-			computer: Rv32iComputer,
-			log_program_counter: self.log_program_counter,
-			log_instructions: self.log_instructions,
-			log_registers: self.log_registers,
-		};
-
-		let mut tick = 0;
-		loop {
-			match plugin.tick(&mut machine) {
-				Ok(ControlFlow::Continue(())) => (),
-				Ok(ControlFlow::Break(())) => break,
-				Err(MachineError::InstructionError(
-					ExecutableInstructionError::EcallInterrupt(error),
-				)) => {
-					let control_flow = handle_ecall_interrupt(error, &mut machine)?;
-					match control_flow {
-						ControlFlow::Break(()) => break,
-						ControlFlow::Continue(()) => (),
-					}
-				}
-				Err(e) => return Err(ElfError::MachineError(e)),
-			}
-
-			// increment the tick (we can trim this down later, but this is a debugging environment)
-			tick += 1;
-			if let Some(ticks) = self.ticks {
-				if tick >= ticks {
-					break;
-				}
-			}
-		}
-
-		if self.log_registers_at_end {
-			println!("registers at end: {:?}", machine.registers());
+		if self.ecalls {
+			let ecall_machine = InterruptHandler::<
+				BOX_MEMORY_SIZE,
+				Rv32iComputer,
+				EcallDispatcher<
+					BOX_MEMORY_SIZE,
+					ExitSystem<BOX_MEMORY_SIZE>,
+					Option<StdOutputSystem<BOX_MEMORY_SIZE>>,
+					NoopDispatcher<BOX_MEMORY_SIZE>,
+					NoopDispatcher<BOX_MEMORY_SIZE>,
+				>,
+				NoopEbreakDispatcher<BOX_MEMORY_SIZE>,
+			> {
+				inner: Rv32iComputer,
+				ecall_dispatcher: EcallDispatcher {
+					exit_dispatcher: ExitSystem::new(),
+					write_dispatcher: if self.std_output {
+						Some(StdOutputSystem::<BOX_MEMORY_SIZE>)
+					} else {
+						None
+					},
+					write_channel_dispatcher: NoopDispatcher {},
+					read_channel_dispatcher: NoopDispatcher {},
+				},
+				ebreak_dispatcher: NoopEbreakDispatcher {},
+			};
 		}
 
 		Ok(())

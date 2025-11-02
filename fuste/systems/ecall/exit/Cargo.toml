@@ -12,6 +12,7 @@ rust-version = { workspace = true }
 [dependencies]
 fuste-exit = { workspace = true }
 fuste-riscv-core = { workspace = true }
+fuste-ecall-dispatcher = { workspace = true }
 
 [lints]
 workspace = true

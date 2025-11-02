@@ -1,6 +1,7 @@
 #![no_std]
 
 use core::ops::ControlFlow;
+use fuste_ecall_dispatcher::ExitSystemDispatcher;
 use fuste_exit::ExitStatus;
 use fuste_riscv_core::machine::{Machine, MachineError, MachineSystem};
 
@@ -32,3 +33,5 @@ impl<const MEMORY_SIZE: usize> MachineSystem<MEMORY_SIZE> for ExitSystem<MEMORY_
 		Ok(ControlFlow::Break(()))
 	}
 }
+
+impl<const MEMORY_SIZE: usize> ExitSystemDispatcher<MEMORY_SIZE> for ExitSystem<MEMORY_SIZE> {}
