@@ -20,12 +20,15 @@ pub struct Machine<const MEMORY_SIZE: usize> {
 }
 
 /// The [MachineSystem] trait tells the machine what to do at each tick.
+///
+/// Note that we could turn this into a full on ECS with generic components and systems.
+/// But, for simplicity and optimization, we've kept this simple.
 pub trait MachineSystem<const MEMORY_SIZE: usize> {
 	fn tick(&mut self, machine: &mut Machine<MEMORY_SIZE>)
 		-> Result<ControlFlow<()>, MachineError>;
 }
 
-/// For anything that implements [MachinSystem], Option<T: MachineSystem<MEMORY_SIZE>> is a valid machine system.
+/// For anything that implements [MachineSystem], Option<T: MachineSystem<MEMORY_SIZE>> is a valid machine system.
 impl<const MEMORY_SIZE: usize, T: MachineSystem<MEMORY_SIZE>> MachineSystem<MEMORY_SIZE>
 	for Option<T>
 {

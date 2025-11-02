@@ -1,5 +1,5 @@
 [package]
-name = "fuste-ecall-dispatcher"
+name = "fuste-exit-system"
 version = { workspace = true }
 edition = "2021"
 license = { workspace = true }
@@ -10,8 +10,7 @@ publish = { workspace = true }
 rust-version = { workspace = true }
 
 [dependencies]
-fuste-ecall = { workspace = true }
-fuste-interrupt-handler = { workspace = true }
+fuste-exit = { workspace = true }
 fuste-riscv-core = { workspace = true }
 
 [lints]

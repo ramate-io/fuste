@@ -25,6 +25,8 @@ members = [
   "fuste/env/systems/write/std-output",
   "fuste/systems/write/std-output",
 
+  "fuste/systems/ecall/exit"
+
 ]
 
 [workspace.package]
