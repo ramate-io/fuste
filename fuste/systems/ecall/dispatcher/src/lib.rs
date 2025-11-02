@@ -60,6 +60,9 @@ impl<
 	/// Ticks the ecall dispatcher and delegates to the appropriate dispatcher based on the ecall word.
 	///
 	/// Notice that we don't inline because this shouldn't be called all that often by the machine.
+	///
+	/// Generally speaking, dispatchers will be called sparingly while handlers will be called frequently.
+	/// Hence, handlers should be inlined and dispatchers should not be.
 	fn tick(
 		&mut self,
 		machine: &mut Machine<MEMORY_SIZE>,
