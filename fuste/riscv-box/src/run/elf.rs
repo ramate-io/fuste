@@ -12,6 +12,7 @@ use fuste_riscv_core::{
 };
 use fuste_riscv_elf::{Elf32Loader, ElfLoaderError};
 use fuste_std_output_system::StdOutputSystem;
+use fuste_tick_handler::TickHandler;
 use std::ops::ControlFlow;
 use std::path::PathBuf;
 
@@ -152,6 +153,34 @@ impl Elf {
 			|| self.log_exit_status
 	}
 
+	pub fn ticks<Computer: MachineSystem<BOX_MEMORY_SIZE>>(
+		&self,
+		computer: Computer,
+	) -> Result<TickHandler<BOX_MEMORY_SIZE, Computer>, ElfError> {
+		let tick_handler = TickHandler {
+			inner: computer,
+			current_tick: 0,
+			max_ticks: self.ticks.unwrap_or(u32::MAX),
+		};
+
+		Ok(tick_handler)
+	}
+
+	pub fn maybe_run_ticks<Computer: MachineSystem<BOX_MEMORY_SIZE>>(
+		&self,
+		machine: &mut Machine<BOX_MEMORY_SIZE>,
+		mut computer: Computer,
+	) -> Result<(), ElfError> {
+		if self.ticks.is_some() {
+			let mut tick_handler = self.ticks(computer)?;
+			machine.run(&mut tick_handler)?;
+		} else {
+			machine.run(&mut computer)?;
+		}
+
+		Ok(())
+	}
+
 	pub fn lilbug<Computer: LilBugComputer<BOX_MEMORY_SIZE>>(
 		&self,
 		computer: Computer,
@@ -166,6 +195,21 @@ impl Elf {
 		};
 
 		Ok(lilbug_system)
+	}
+
+	pub fn maybe_run_lilbug<Computer: LilBugComputer<BOX_MEMORY_SIZE>>(
+		&self,
+		machine: &mut Machine<BOX_MEMORY_SIZE>,
+		computer: Computer,
+	) -> Result<(), ElfError> {
+		if self.is_debug() {
+			let lilbug_system = self.lilbug(computer)?;
+			self.maybe_run_ticks(machine, lilbug_system)?;
+		} else {
+			self.maybe_run_ticks(machine, computer)?;
+		}
+
+		Ok(())
 	}
 
 	pub fn run_ecall_machine(
@@ -198,14 +242,9 @@ impl Elf {
 			ebreak_dispatcher: NoopEbreakDispatcher {},
 		};
 
-		let mut ecall_machine = EcallMachine { inner };
+		let ecall_machine = EcallMachine { inner };
 
-		if self.is_debug() {
-			let mut lilbug_system = self.lilbug(ecall_machine)?;
-			machine.run(&mut lilbug_system)?;
-		} else {
-			machine.run(&mut ecall_machine)?;
-		}
+		self.maybe_run_lilbug(machine, ecall_machine)?;
 
 		Ok(())
 	}
@@ -214,13 +253,24 @@ impl Elf {
 		&self,
 		machine: &mut Machine<BOX_MEMORY_SIZE>,
 	) -> Result<(), ElfError> {
-		let mut noop_ecall_machine = NoEcallMachine { inner: Rv32iComputer };
+		let noop_ecall_machine = NoEcallMachine { inner: Rv32iComputer };
 
-		if self.is_debug() {
-			let mut lilbug_system = self.lilbug(noop_ecall_machine)?;
-			machine.run(&mut lilbug_system)?;
+		self.maybe_run_lilbug(machine, noop_ecall_machine)?;
+
+		Ok(())
+	}
+
+	pub fn maybe_run_ecall_machine(
+		&self,
+		machine: &mut Machine<BOX_MEMORY_SIZE>,
+	) -> Result<(), ElfError> {
+		// Note we use inner construction because we don't want to
+		// wrap in an enum and have lots of inner matching
+		// on the branches for every tick.
+		if self.ecalls {
+			self.run_ecall_machine(machine)?;
 		} else {
-			machine.run(&mut noop_ecall_machine)?;
+			self.run_noop_ecall_machine(machine)?;
 		}
 
 		Ok(())
@@ -237,11 +287,12 @@ impl Elf {
 		// Note we use inner construction because we don't want to
 		// wrap in an enum and have lots of inner matching
 		// on the branches for every tick.
-		if self.ecalls {
-			self.run_ecall_machine(&mut machine)?;
-		} else {
-			self.run_noop_ecall_machine(&mut machine)?;
-		}
+		//
+		// The internals of this function perform the task of
+		// composition.
+		//
+		// The inner loop is monomorphized.
+		self.maybe_run_ecall_machine(&mut machine)?;
 
 		Ok(())
 	}

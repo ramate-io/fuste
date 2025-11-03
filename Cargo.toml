@@ -83,6 +83,7 @@ fuste-std-output = { path = "fuste/env/systems/write/std-output" }
 fuste-std-output-system = { path = "fuste/systems/write/std-output" }
 
 fuste-lilbug = { path = "fuste/systems/debug/lilbug" }
+fuste-tick-handler = { path = "fuste/systems/tick/handler" }
 
 [workspace.lints.clippy]
 debug_assert_with_mut_call = "deny"

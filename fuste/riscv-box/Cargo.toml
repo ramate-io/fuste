@@ -26,6 +26,7 @@ fuste-ecall-dispatcher = { workspace = true }
 fuste-exit-system = { workspace = true }
 fuste-std-output-system = { workspace = true }
 fuste-lilbug = { workspace = true }
+fuste-tick-handler = { workspace = true }
 
 [lints]
 workspace = true

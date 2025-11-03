@@ -188,6 +188,7 @@ dependencies = [
  "fuste-riscv-core",
  "fuste-riscv-elf",
  "fuste-std-output-system",
+ "fuste-tick-handler",
  "thiserror 1.0.69",
  "tokio",
 ]
