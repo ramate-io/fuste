@@ -1,3 +1,5 @@
+#![no_std]
+
 use core::fmt::{self, Write};
 use fuste_write::{write, WriteSystemId};
 pub struct Stdout;

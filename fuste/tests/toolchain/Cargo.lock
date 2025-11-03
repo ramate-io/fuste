@@ -9,6 +9,7 @@ dependencies = [
  "fuste-channel",
  "fuste-ecall",
  "fuste-exit",
+ "fuste-std-output",
  "fuste-write",
 ]
 
@@ -39,6 +40,13 @@ name = "fuste-galloc"
 version = "0.0.1"
 dependencies = [
  "fuste-alloc",
+]
+
+[[package]]
+name = "fuste-std-output"
+version = "0.0.1"
+dependencies = [
+ "fuste-write",
 ]
 
 [[package]]

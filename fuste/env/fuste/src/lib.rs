@@ -7,4 +7,5 @@ pub use fuste_write::{
 	self as writers, write, WriteError, WriteStatus, WriteStatusCode, WriteSystemId,
 };
 pub mod io;
+pub use io::{print, println};
 pub mod prelude;
