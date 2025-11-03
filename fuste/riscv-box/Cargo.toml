@@ -19,10 +19,13 @@ clap = { workspace = true }
 clap-markdown-ext = { workspace = true }
 tokio = { workspace = true }
 
+fuste-exit = { workspace = true }
+
 fuste-interrupt-handler = { workspace = true }
 fuste-ecall-dispatcher = { workspace = true }
 fuste-exit-system = { workspace = true }
 fuste-std-output-system = { workspace = true }
+fuste-lilbug = { workspace = true }
 
 [lints]
 workspace = true

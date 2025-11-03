@@ -1,9 +1,12 @@
 use clap::Parser;
 use fuste_ecall_dispatcher::{EcallDispatcher, NoopDispatcher};
+use fuste_exit::ExitStatus;
 use fuste_exit_system::ExitSystem;
 use fuste_interrupt_handler::{InterruptHandler, NoopEbreakDispatcher};
+use fuste_lilbug::LilBugComputer;
+use fuste_lilbug::LilBugSystem;
 use fuste_riscv_core::{
-	instructions::{EcallInterrupt, ExecutableInstructionError, Rv32iInstruction},
+	instructions::Rv32iInstruction,
 	machine::{Machine, MachineError, MachineSystem},
 	plugins::rv32i_computer::Rv32iComputer,
 };
@@ -11,6 +14,57 @@ use fuste_riscv_elf::{Elf32Loader, ElfLoaderError};
 use fuste_std_output_system::StdOutputSystem;
 use std::ops::ControlFlow;
 use std::path::PathBuf;
+
+pub struct EcallMachine {
+	pub inner: InterruptHandler<
+		BOX_MEMORY_SIZE,
+		Rv32iComputer,
+		EcallDispatcher<
+			BOX_MEMORY_SIZE,
+			ExitSystem<BOX_MEMORY_SIZE>,
+			Option<StdOutputSystem<BOX_MEMORY_SIZE>>,
+			NoopDispatcher<BOX_MEMORY_SIZE>,
+			NoopDispatcher<BOX_MEMORY_SIZE>,
+		>,
+		NoopEbreakDispatcher<BOX_MEMORY_SIZE>,
+	>,
+}
+
+impl MachineSystem<BOX_MEMORY_SIZE> for EcallMachine {
+	#[inline(always)]
+	fn tick(
+		&mut self,
+		machine: &mut Machine<BOX_MEMORY_SIZE>,
+	) -> Result<ControlFlow<()>, MachineError> {
+		self.inner.tick(machine)
+	}
+}
+
+impl LilBugComputer<BOX_MEMORY_SIZE> for EcallMachine {
+	fn exit_status(&self) -> ExitStatus {
+		self.inner.ecall_dispatcher.exit_dispatcher.exit_status()
+	}
+}
+
+pub struct NoEcallMachine {
+	pub inner: Rv32iComputer,
+}
+
+impl MachineSystem<BOX_MEMORY_SIZE> for NoEcallMachine {
+	#[inline(always)]
+	fn tick(
+		&mut self,
+		machine: &mut Machine<BOX_MEMORY_SIZE>,
+	) -> Result<ControlFlow<()>, MachineError> {
+		self.inner.tick(machine)
+	}
+}
+
+impl LilBugComputer<BOX_MEMORY_SIZE> for NoEcallMachine {
+	fn exit_status(&self) -> ExitStatus {
+		ExitStatus::Unsupported
+	}
+}
 
 const BOX_MEMORY_SIZE: usize = 1024 * 1024 * 2; // 1MB
 
@@ -98,6 +152,80 @@ impl Elf {
 			|| self.log_exit_status
 	}
 
+	pub fn lilbug<Computer: LilBugComputer<BOX_MEMORY_SIZE>>(
+		&self,
+		computer: Computer,
+	) -> Result<LilBugSystem<BOX_MEMORY_SIZE, Computer>, ElfError> {
+		let lilbug_system = LilBugSystem {
+			computer,
+			log_program_counter: self.log_program_counter,
+			log_instructions: self.log_instructions,
+			log_registers: self.log_registers,
+			log_registers_at_end: self.log_registers_at_end,
+			log_exit_status: self.log_exit_status,
+		};
+
+		Ok(lilbug_system)
+	}
+
+	pub fn run_ecall_machine(
+		&self,
+		machine: &mut Machine<BOX_MEMORY_SIZE>,
+	) -> Result<(), ElfError> {
+		let inner = InterruptHandler::<
+			BOX_MEMORY_SIZE,
+			Rv32iComputer,
+			EcallDispatcher<
+				BOX_MEMORY_SIZE,
+				ExitSystem<BOX_MEMORY_SIZE>,
+				Option<StdOutputSystem<BOX_MEMORY_SIZE>>,
+				NoopDispatcher<BOX_MEMORY_SIZE>,
+				NoopDispatcher<BOX_MEMORY_SIZE>,
+			>,
+			NoopEbreakDispatcher<BOX_MEMORY_SIZE>,
+		> {
+			inner: Rv32iComputer,
+			ecall_dispatcher: EcallDispatcher {
+				exit_dispatcher: ExitSystem::new(),
+				write_dispatcher: if self.std_output {
+					Some(StdOutputSystem::<BOX_MEMORY_SIZE>)
+				} else {
+					None
+				},
+				write_channel_dispatcher: NoopDispatcher {},
+				read_channel_dispatcher: NoopDispatcher {},
+			},
+			ebreak_dispatcher: NoopEbreakDispatcher {},
+		};
+
+		let mut ecall_machine = EcallMachine { inner };
+
+		if self.is_debug() {
+			let mut lilbug_system = self.lilbug(ecall_machine)?;
+			machine.run(&mut lilbug_system)?;
+		} else {
+			machine.run(&mut ecall_machine)?;
+		}
+
+		Ok(())
+	}
+
+	pub fn run_noop_ecall_machine(
+		&self,
+		machine: &mut Machine<BOX_MEMORY_SIZE>,
+	) -> Result<(), ElfError> {
+		let mut noop_ecall_machine = NoEcallMachine { inner: Rv32iComputer };
+
+		if self.is_debug() {
+			let mut lilbug_system = self.lilbug(noop_ecall_machine)?;
+			machine.run(&mut lilbug_system)?;
+		} else {
+			machine.run(&mut noop_ecall_machine)?;
+		}
+
+		Ok(())
+	}
+
 	pub async fn execute(&self) -> Result<(), ElfError> {
 		// Initialize the machine and loader
 		let loader = Elf32Loader::new(self.entrypoint_symbol_name.clone());
@@ -106,83 +234,15 @@ impl Elf {
 		// Load the ELF file into the machine
 		loader.load_elf(&mut machine, &self.path)?;
 
+		// Note we use inner construction because we don't want to
+		// wrap in an enum and have lots of inner matching
+		// on the branches for every tick.
 		if self.ecalls {
-			let ecall_machine = InterruptHandler::<
-				BOX_MEMORY_SIZE,
-				Rv32iComputer,
-				EcallDispatcher<
-					BOX_MEMORY_SIZE,
-					ExitSystem<BOX_MEMORY_SIZE>,
-					Option<StdOutputSystem<BOX_MEMORY_SIZE>>,
-					NoopDispatcher<BOX_MEMORY_SIZE>,
-					NoopDispatcher<BOX_MEMORY_SIZE>,
-				>,
-				NoopEbreakDispatcher<BOX_MEMORY_SIZE>,
-			> {
-				inner: Rv32iComputer,
-				ecall_dispatcher: EcallDispatcher {
-					exit_dispatcher: ExitSystem::new(),
-					write_dispatcher: if self.std_output {
-						Some(StdOutputSystem::<BOX_MEMORY_SIZE>)
-					} else {
-						None
-					},
-					write_channel_dispatcher: NoopDispatcher {},
-					read_channel_dispatcher: NoopDispatcher {},
-				},
-				ebreak_dispatcher: NoopEbreakDispatcher {},
-			};
+			self.run_ecall_machine(&mut machine)?;
+		} else {
+			self.run_noop_ecall_machine(&mut machine)?;
 		}
 
 		Ok(())
-	}
-}
-
-pub fn handle_ecall_interrupt(
-	error: EcallInterrupt,
-	machine: &mut Machine<BOX_MEMORY_SIZE>,
-) -> Result<ControlFlow<()>, ElfError> {
-	let syscall_number = machine.csrs().registers().get(17);
-	if syscall_number == 93 {
-		let syscall_status_address = machine.csrs().registers().get(10);
-		let syscall_status = machine
-			.memory()
-			.read_word(syscall_status_address)
-			.map_err(MachineError::MemoryError)?;
-		println!("Program exited with status: {}", syscall_status);
-		if syscall_status == 0 {
-			Ok(ControlFlow::Break(()))
-		} else {
-			Err(ElfError::MachineError(MachineError::InstructionError(
-				ExecutableInstructionError::EcallInterrupt(error),
-			)))
-		}
-	} else if syscall_number == 64 {
-		let write_fd = machine.csrs().registers().get(10);
-		let write_buffer_address = machine.csrs().registers().get(11);
-		let write_buffer_length = machine.csrs().registers().get(12);
-		let write_buffer = machine
-			.memory()
-			.read_bytes(write_buffer_address, write_buffer_length)
-			.map_err(MachineError::MemoryError)?;
-
-		if write_fd == 1 {
-			// print the write buffer to stdout
-			print!("{}", String::from_utf8_lossy(write_buffer));
-			// write 0 to the result register a3
-			machine.csrs_mut().registers_mut().set(13, 0);
-			machine.csrs_mut().registers_mut().program_counter_mut().increment();
-			machine.commit_csrs();
-		} else {
-			return Err(ElfError::MachineError(MachineError::InstructionError(
-				ExecutableInstructionError::EcallInterrupt(error),
-			)));
-		}
-
-		Ok(ControlFlow::Continue(()))
-	} else {
-		Err(ElfError::MachineError(MachineError::InstructionError(
-			ExecutableInstructionError::EcallInterrupt(error),
-		)))
 	}
 }

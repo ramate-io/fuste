@@ -22,6 +22,7 @@ pub enum ExitStatus {
 	Success = 0,
 	Error = 1,
 	Terminated = 2,
+	Unsupported = 3,
 }
 
 impl ExitStatus {
@@ -34,6 +35,7 @@ impl ExitStatus {
 			0 => Ok(ExitStatus::Success),
 			1 => Ok(ExitStatus::Error),
 			2 => Ok(ExitStatus::Terminated),
+			3 => Ok(ExitStatus::Unsupported),
 			_ => Err(ExitError::InvalidExitStatus(value)),
 		}
 	}
