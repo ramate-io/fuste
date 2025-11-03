@@ -180,8 +180,15 @@ dependencies = [
  "anyhow",
  "clap",
  "clap-markdown-ext",
+ "fuste-ecall-dispatcher",
+ "fuste-exit",
+ "fuste-exit-system",
+ "fuste-interrupt-handler",
+ "fuste-lilbug",
  "fuste-riscv-core",
  "fuste-riscv-elf",
+ "fuste-std-output-system",
+ "fuste-tick-handler",
  "thiserror 1.0.69",
  "tokio",
 ]
@@ -193,6 +200,7 @@ dependencies = [
  "fuste-channel",
  "fuste-ecall",
  "fuste-exit",
+ "fuste-std-output",
  "fuste-write",
 ]
 
@@ -212,6 +220,15 @@ name = "fuste-ecall"
 version = "0.0.1"
 
 [[package]]
+name = "fuste-ecall-dispatcher"
+version = "0.0.1"
+dependencies = [
+ "fuste-ecall",
+ "fuste-interrupt-handler",
+ "fuste-riscv-core",
+]
+
+[[package]]
 name = "fuste-exit"
 version = "0.0.1"
 dependencies = [
@@ -219,10 +236,35 @@ dependencies = [
 ]
 
 [[package]]
+name = "fuste-exit-system"
+version = "0.0.1"
+dependencies = [
+ "fuste-ecall-dispatcher",
+ "fuste-exit",
+ "fuste-riscv-core",
+]
+
+[[package]]
 name = "fuste-galloc"
 version = "0.0.1"
 dependencies = [
  "fuste-alloc",
+]
+
+[[package]]
+name = "fuste-interrupt-handler"
+version = "0.0.1"
+dependencies = [
+ "fuste-riscv-core",
+]
+
+[[package]]
+name = "fuste-lilbug"
+version = "0.0.1"
+dependencies = [
+ "fuste-exit",
+ "fuste-exit-system",
+ "fuste-riscv-core",
 ]
 
 [[package]]
@@ -236,6 +278,29 @@ dependencies = [
  "fuste-riscv-core",
  "goblin",
  "thiserror 1.0.69",
+]
+
+[[package]]
+name = "fuste-std-output"
+version = "0.0.1"
+dependencies = [
+ "fuste-write",
+]
+
+[[package]]
+name = "fuste-std-output-system"
+version = "0.0.1"
+dependencies = [
+ "fuste-ecall-dispatcher",
+ "fuste-riscv-core",
+ "fuste-std-output",
+]
+
+[[package]]
+name = "fuste-tick-handler"
+version = "0.0.1"
+dependencies = [
+ "fuste-riscv-core",
 ]
 
 [[package]]

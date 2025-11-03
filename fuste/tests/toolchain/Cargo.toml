@@ -14,7 +14,8 @@ members = [
   "env/channel",
   "env/fuste",
   "env/alloc",
-  "env/galloc"
+  "env/galloc",
+  "env/systems/write/std-output"
 
 ]
 
@@ -36,6 +37,7 @@ fuste-channel = { path = "env/channel" }
 fuste-alloc = { path = "env/alloc" }
 fuste-galloc = { path = "env/galloc" }
 fuste = { path = "env/fuste" }
+fuste-std-output = { path =  "env/systems/write/std-output" }
 
 [workspace.lints.clippy]
 debug_assert_with_mut_call = "deny"

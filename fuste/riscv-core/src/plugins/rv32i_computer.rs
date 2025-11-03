@@ -1,8 +1,9 @@
 use crate::instructions::Rv32iInstruction;
 use crate::machine::Machine;
 use crate::machine::MachineError;
-use crate::machine::MachinePlugin;
+use crate::machine::MachineSystem;
 use core::fmt::Write;
+use core::ops::ControlFlow;
 
 /// A macro which takes a list of [WordInsructions] and returns a [u32; n] array of words.
 #[macro_export]
@@ -18,8 +19,16 @@ macro_rules! program {
 /// Updates of the program counter are internal to [Instruction]s.
 pub struct Rv32iComputer;
 
-impl<const MEMORY_SIZE: usize> MachinePlugin<MEMORY_SIZE> for Rv32iComputer {
-	fn tick(&mut self, machine: &mut Machine<MEMORY_SIZE>) -> Result<(), MachineError> {
+impl<const MEMORY_SIZE: usize> MachineSystem<MEMORY_SIZE> for Rv32iComputer {
+	/// Ticks the computer and executes the instruction at the program counter.
+	///
+	/// We inline this because it a small function and we can save some cycles by not jumping and allocating a stack frame.
+	/// The stack frame for this function would be allocated once at the start of the interpreter loop.
+	#[inline(always)]
+	fn tick(
+		&mut self,
+		machine: &mut Machine<MEMORY_SIZE>,
+	) -> Result<ControlFlow<()>, MachineError> {
 		// get the next instruction
 		let program_counter = machine.registers().program_counter();
 		let instruction =
@@ -32,7 +41,7 @@ impl<const MEMORY_SIZE: usize> MachinePlugin<MEMORY_SIZE> for Rv32iComputer {
 		Rv32iInstruction::load_and_execute(program_counter, instruction, machine)
 			.map_err(MachineError::InstructionError)?;
 
-		Ok(())
+		Ok(ControlFlow::Continue(()))
 	}
 }
 
@@ -103,7 +112,8 @@ mod tests {
 		// The program should run for about 16 iterations (3, 5, 7, ..., 33)
 		for _ in 0..100 {
 			match computer.tick(&mut machine) {
-				Ok(()) => (),
+				Ok(ControlFlow::Continue(())) => (),
+				Ok(ControlFlow::Break(())) => break,
 				Err(MachineError::InstructionError(
 					ExecutableInstructionError::EbreakInterrupt(_e),
 				)) => {

@@ -7,6 +7,7 @@ use core::error::Error;
 use core::fmt::{self, Display};
 pub use registers::Registers;
 pub mod csrs;
+use core::ops::ControlFlow;
 pub use csrs::Csrs;
 
 /// The machine is the memory layout against which the plugins operate.
@@ -18,9 +19,29 @@ pub struct Machine<const MEMORY_SIZE: usize> {
 	log: RingBuffer<4096>,
 }
 
-/// The [MachinePlugin] trait tells the machine what to do at each tick.
-pub trait MachinePlugin<const MEMORY_SIZE: usize> {
-	fn tick(&mut self, machine: &mut Machine<MEMORY_SIZE>) -> Result<(), MachineError>;
+/// The [MachineSystem] trait tells the machine what to do at each tick.
+///
+/// Note that we could turn this into a full on ECS with generic components and systems.
+/// But, for simplicity and optimization, we've kept this simple.
+pub trait MachineSystem<const MEMORY_SIZE: usize> {
+	fn tick(&mut self, machine: &mut Machine<MEMORY_SIZE>)
+		-> Result<ControlFlow<()>, MachineError>;
+}
+
+/// For anything that implements [MachineSystem], Option<T: MachineSystem<MEMORY_SIZE>> is a valid machine system.
+impl<const MEMORY_SIZE: usize, T: MachineSystem<MEMORY_SIZE>> MachineSystem<MEMORY_SIZE>
+	for Option<T>
+{
+	#[inline(always)]
+	fn tick(
+		&mut self,
+		machine: &mut Machine<MEMORY_SIZE>,
+	) -> Result<ControlFlow<()>, MachineError> {
+		match self {
+			Some(system) => system.tick(machine),
+			None => Ok(ControlFlow::Continue(())),
+		}
+	}
 }
 
 impl<const MEMORY_SIZE: usize> Machine<MEMORY_SIZE> {
@@ -91,13 +112,18 @@ impl<const MEMORY_SIZE: usize> Machine<MEMORY_SIZE> {
 	}
 
 	/// Runs the machine with the given plugin.
-	pub fn run<P: MachinePlugin<MEMORY_SIZE>>(
+	pub fn run<P: MachineSystem<MEMORY_SIZE>>(
 		&mut self,
 		plugin: &mut P,
 	) -> Result<(), MachineError> {
 		loop {
-			plugin.tick(self)?;
+			match plugin.tick(self)? {
+				ControlFlow::Break(()) => break,
+				ControlFlow::Continue(()) => (),
+			}
 		}
+
+		Ok(())
 	}
 
 	#[cfg(debug_assertions)]
@@ -117,7 +143,7 @@ impl<const MEMORY_SIZE: usize> Machine<MEMORY_SIZE> {
 pub enum MachineError {
 	MemoryError(memory::MemoryError),
 	InstructionError(ExecutableInstructionError),
-	PluginError(&'static str),
+	SystemError(&'static str),
 }
 
 impl Display for MachineError {
@@ -125,7 +151,7 @@ impl Display for MachineError {
 		match self {
 			MachineError::MemoryError(e) => write!(f, "MemoryError: {}", e),
 			MachineError::InstructionError(e) => write!(f, "InstructionError: {}", e),
-			MachineError::PluginError(e) => write!(f, "PluginError: {}", e),
+			MachineError::SystemError(e) => write!(f, "SystemError: {}", e),
 		}
 	}
 }

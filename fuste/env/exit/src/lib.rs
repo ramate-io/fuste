@@ -22,6 +22,7 @@ pub enum ExitStatus {
 	Success = 0,
 	Error = 1,
 	Terminated = 2,
+	Unsupported = 3,
 }
 
 impl ExitStatus {
@@ -34,6 +35,7 @@ impl ExitStatus {
 			0 => Ok(ExitStatus::Success),
 			1 => Ok(ExitStatus::Error),
 			2 => Ok(ExitStatus::Terminated),
+			3 => Ok(ExitStatus::Unsupported),
 			_ => Err(ExitError::InvalidExitStatus(value)),
 		}
 	}
@@ -75,7 +77,8 @@ pub mod tests {
 		assert_eq!(ExitStatus::try_from_u32(0), Ok(ExitStatus::Success));
 		assert_eq!(ExitStatus::try_from_u32(1), Ok(ExitStatus::Error));
 		assert_eq!(ExitStatus::try_from_u32(2), Ok(ExitStatus::Terminated));
-		assert_eq!(ExitStatus::try_from_u32(3), Err(ExitError::InvalidExitStatus(3)));
+		assert_eq!(ExitStatus::try_from_u32(3), Ok(ExitStatus::Unsupported));
+		assert_eq!(ExitStatus::try_from_u32(4), Err(ExitError::InvalidExitStatus(4)));
 	}
 
 	#[test]
@@ -83,5 +86,6 @@ pub mod tests {
 		assert_eq!(ExitStatus::Success.to_u32(), 0);
 		assert_eq!(ExitStatus::Error.to_u32(), 1);
 		assert_eq!(ExitStatus::Terminated.to_u32(), 2);
+		assert_eq!(ExitStatus::Unsupported.to_u32(), 3);
 	}
 }

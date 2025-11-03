@@ -8,6 +8,7 @@ members = [
   "fuste/riscv-elf",
   "fuste/riscv-box",
 
+  # general environment
   "fuste/env/ecall",
   "fuste/env/exit",
   "fuste/env/write",
@@ -15,6 +16,18 @@ members = [
   "fuste/env/alloc",
   "fuste/env/galloc",
   "fuste/env/fuste",
+
+  # specific systems
+  "fuste/systems/tick/handler",
+  "fuste/systems/interrupt/handler",
+  "fuste/systems/ecall/dispatcher",
+
+  "fuste/env/systems/write/std-output",
+  "fuste/systems/write/std-output",
+
+  "fuste/systems/ecall/exit",
+
+  "fuste/systems/debug/lilbug"
 
 ]
 
@@ -59,6 +72,18 @@ fuste-write = { path = "fuste/env/write" }
 fuste-channel = { path = "fuste/env/channel" }
 fuste-alloc = { path = "fuste/env/alloc" }
 fuste = { path = "fuste/env/fuste" }
+
+# specific systems
+fuste-interrupt-handler = { path = "fuste/systems/interrupt/handler" }
+fuste-ecall-dispatcher = { path = "fuste/systems/ecall/dispatcher" }
+
+fuste-exit-system = { path = "fuste/systems/ecall/exit" }
+
+fuste-std-output = { path = "fuste/env/systems/write/std-output" }
+fuste-std-output-system = { path = "fuste/systems/write/std-output" }
+
+fuste-lilbug = { path = "fuste/systems/debug/lilbug" }
+fuste-tick-handler = { path = "fuste/systems/tick/handler" }
 
 [workspace.lints.clippy]
 debug_assert_with_mut_call = "deny"

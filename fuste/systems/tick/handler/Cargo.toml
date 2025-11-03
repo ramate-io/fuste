@@ -1,5 +1,5 @@
 [package]
-name = "fuste"
+name = "fuste-tick-handler"
 version = { workspace = true }
 edition = "2021"
 license = { workspace = true }
@@ -10,11 +10,7 @@ publish = { workspace = true }
 rust-version = { workspace = true }
 
 [dependencies]
-fuste-ecall = { workspace = true }
-fuste-exit = { workspace = true }
-fuste-write = { workspace = true }
-fuste-channel = { workspace = true }
-fuste-std-output = { workspace = true }
+fuste-riscv-core = { workspace = true }
 
 [lints]
 workspace = true
