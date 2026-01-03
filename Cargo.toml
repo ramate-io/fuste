@@ -27,7 +27,9 @@ members = [
 
   "fuste/systems/ecall/exit",
 
-  "fuste/systems/debug/lilbug"
+  "fuste/systems/debug/lilbug",
+
+  "fuste/env/systems/channel/transaction"
 
 ]
 
@@ -84,6 +86,8 @@ fuste-std-output-system = { path = "fuste/systems/write/std-output" }
 
 fuste-lilbug = { path = "fuste/systems/debug/lilbug" }
 fuste-tick-handler = { path = "fuste/systems/tick/handler" }
+
+fuste-transaction = { path = "fuste/env/systems/channel/transaction" }
 
 [workspace.lints.clippy]
 debug_assert_with_mut_call = "deny"
