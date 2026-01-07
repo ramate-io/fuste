@@ -281,7 +281,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "fuste-sfrequest"
+name = "fuste-serial-channel"
 version = "0.0.1"
 dependencies = [
  "fuste-channel",

@@ -121,6 +121,18 @@ impl ChannelStatus {
 		})
 	}
 
+	pub fn size(&self) -> u32 {
+		self.size
+	}
+
+	pub fn code(&self) -> &ChannelStatusCode {
+		&self.code
+	}
+
+	pub fn system_status(&self) -> &ChannelSystemStatus {
+		&self.system_status
+	}
+
 	pub fn is_success(&self) -> bool {
 		self.code.is_success()
 	}

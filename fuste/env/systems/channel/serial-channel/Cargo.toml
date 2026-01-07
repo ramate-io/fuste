@@ -1,5 +1,5 @@
 [package]
-name = "fuste-sfrequest"
+name = "fuste-serial-channel"
 version = { workspace = true }
 edition = "2021"
 license = { workspace = true }

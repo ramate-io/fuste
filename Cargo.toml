@@ -29,7 +29,7 @@ members = [
 
   "fuste/systems/debug/lilbug",
 
-  "fuste/env/systems/channel/transaction"
+  "fuste/env/systems/channel/serial-channel"
 
 ]
 
