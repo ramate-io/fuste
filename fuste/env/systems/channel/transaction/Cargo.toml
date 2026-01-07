@@ -1,5 +1,5 @@
 [package]
-name = "fuste-transaction"
+name = "fuste-sfrequest"
 version = { workspace = true }
 edition = "2021"
 license = { workspace = true }

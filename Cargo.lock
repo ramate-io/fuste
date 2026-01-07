@@ -281,6 +281,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "fuste-sfrequest"
+version = "0.0.1"
+dependencies = [
+ "fuste-channel",
+]
+
+[[package]]
 name = "fuste-std-output"
 version = "0.0.1"
 dependencies = [
@@ -301,13 +308,6 @@ name = "fuste-tick-handler"
 version = "0.0.1"
 dependencies = [
  "fuste-riscv-core",
-]
-
-[[package]]
-name = "fuste-transaction"
-version = "0.0.1"
-dependencies = [
- "fuste-channel",
 ]
 
 [[package]]
