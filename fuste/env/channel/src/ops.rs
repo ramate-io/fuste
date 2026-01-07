@@ -4,16 +4,16 @@ use super::{check, open, ChannelError, ChannelStatus, ChannelSystemId};
 pub fn block_on_channel(
 	system_id: ChannelSystemId,
 	read_buffer: &[u8],
-	write_buffer: &mut [u8],
+	read_write_buffer: &mut [u8],
 ) -> Result<ChannelStatus, ChannelError> {
-	let status = open(system_id.clone(), read_buffer, write_buffer)?;
+	let status = open(system_id.clone(), read_buffer, read_write_buffer)?;
 
 	// Success means completion
 	if status.is_success() {
 		Ok(status.clone())
 	} else {
 		loop {
-			let status = check(system_id.clone(), read_buffer, write_buffer)?;
+			let status = check(system_id.clone(), read_buffer, read_write_buffer)?;
 			if status.is_success() {
 				return Ok(status);
 			}
@@ -25,18 +25,18 @@ pub fn block_on_channel(
 pub fn block_on_channel_request<'r, 'w>(
 	system_id: ChannelSystemId,
 	read_buffer: &'r [u8],
-	write_buffer: &'w mut [u8],
+	read_write_buffer: &'w mut [u8],
 ) -> Result<&'w mut [u8], ChannelError> {
-	let status = block_on_channel(system_id.clone(), read_buffer, write_buffer)?;
+	let status = block_on_channel(system_id.clone(), read_buffer, read_write_buffer)?;
 	let written_len = status.size as usize;
 
 	// SAFETY: the system guarantees that it wrote at most `buffer.len()` bytes
 	// TODO: we can push this up higher and use a typesafe pattern to indicate the channgel status is safe.
-	if written_len > write_buffer.len() {
+	if written_len > read_write_buffer.len() {
 		return Err(ChannelError::BufferTooSmall(status));
 	}
 
-	Ok(&mut write_buffer[..status.size as usize])
+	Ok(&mut read_write_buffer[..status.size as usize])
 }
 
 /// Blocks on a channel an runs a callback on the slice of the buffer
@@ -44,11 +44,11 @@ pub fn block_on_channel_request<'r, 'w>(
 pub fn block_on_channel_stream_request<'r, 'w>(
 	system_id: ChannelSystemId,
 	read_buffer: &'r [u8],
-	write_buffer: &'w mut [u8],
+	read_write_buffer: &'w mut [u8],
 	callback: impl Fn(&mut [u8]) -> Result<(), ChannelError>,
 ) -> Result<(), ChannelError> {
-	let max_buffer_len = write_buffer.len();
-	let mut status = open(system_id.clone(), read_buffer, write_buffer)?;
+	let max_buffer_len = read_write_buffer.len();
+	let mut status = open(system_id.clone(), read_buffer, read_write_buffer)?;
 	let mut written_len = status.size as usize;
 
 	loop {
@@ -59,7 +59,7 @@ pub fn block_on_channel_stream_request<'r, 'w>(
 		}
 
 		if !status.is_holding() {
-			callback(&mut write_buffer[..written_len])?;
+			callback(&mut read_write_buffer[..written_len])?;
 		}
 
 		// Success should always mean a meaningless write buffer.
@@ -69,7 +69,7 @@ pub fn block_on_channel_stream_request<'r, 'w>(
 		}
 
 		// The check tells the system to turn over the next operation
-		status = check(system_id.clone(), read_buffer, write_buffer)?;
+		status = check(system_id.clone(), read_buffer, read_write_buffer)?;
 		written_len = status.size as usize;
 	}
 }
