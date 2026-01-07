@@ -22,8 +22,8 @@ impl Display for EcallError {
 pub enum Ecall {
 	Exit = 93,
 	Write = 64,
-	WriteChannel = 33,
-	ReadChannel = 34,
+	OpenChannel = 33,
+	CheckChannel = 34,
 }
 
 impl Ecall {
@@ -35,8 +35,8 @@ impl Ecall {
 		match value {
 			93 => Ok(Ecall::Exit),
 			64 => Ok(Ecall::Write),
-			33 => Ok(Ecall::WriteChannel),
-			34 => Ok(Ecall::ReadChannel),
+			33 => Ok(Ecall::OpenChannel),
+			34 => Ok(Ecall::CheckChannel),
 			_ => Err(EcallError::InvalidEcall(value)),
 		}
 	}
@@ -72,8 +72,8 @@ pub mod tests {
 	fn test_ecall_try_from_u32() {
 		assert_eq!(Ecall::try_from_u32(93), Ok(Ecall::Exit));
 		assert_eq!(Ecall::try_from_u32(64), Ok(Ecall::Write));
-		assert_eq!(Ecall::try_from_u32(33), Ok(Ecall::WriteChannel));
-		assert_eq!(Ecall::try_from_u32(34), Ok(Ecall::ReadChannel));
+		assert_eq!(Ecall::try_from_u32(33), Ok(Ecall::OpenChannel));
+		assert_eq!(Ecall::try_from_u32(34), Ok(Ecall::CheckChannel));
 		assert_eq!(Ecall::try_from_u32(35), Err(EcallError::InvalidEcall(35)));
 	}
 
@@ -81,8 +81,8 @@ pub mod tests {
 	fn test_ecall_to_u32() {
 		assert_eq!(Ecall::Exit.to_u32(), 93);
 		assert_eq!(Ecall::Write.to_u32(), 64);
-		assert_eq!(Ecall::WriteChannel.to_u32(), 33);
-		assert_eq!(Ecall::ReadChannel.to_u32(), 34);
+		assert_eq!(Ecall::OpenChannel.to_u32(), 33);
+		assert_eq!(Ecall::CheckChannel.to_u32(), 34);
 	}
 
 	#[test]

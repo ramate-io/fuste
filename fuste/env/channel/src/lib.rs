@@ -180,15 +180,16 @@ impl Display for ChannelError {
 #[repr(u32)]
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ChannelOp {
-	Write = Ecall::WriteChannel as u32,
-	Read = Ecall::ReadChannel as u32,
+	Open = Ecall::OpenChannel as u32,
+	Check = Ecall::CheckChannel as u32,
 }
 
 #[inline(never)]
 pub fn channel_op(
 	system_id: ChannelSystemId,
 	op: ChannelOp,
-	_buffer: &mut [u8],
+	_read_buffer: &[u8],
+	_read_write_buffer: &mut [u8],
 ) -> Result<ChannelStatus, ChannelError> {
 	let _ecall = op as u32;
 	let _system_id = system_id.to_u32();
@@ -204,9 +205,11 @@ pub fn channel_op(
 				"ecall",
 				in("a7") _ecall,                // syscall number for channel operation
 				in("a0") _system_id,            // the channel system id
-				in("a1") _buffer.as_ptr(),      // pointer to buffer
-				in("a2") _buffer.len(),         // length
-				in("a3") _status_ignored,       // if this isn't reset, the system must have ignored the call
+				in("a1") _read_buffer.as_ptr(),      // pointer to buffer
+				in("a2") _read_buffer.len(),         // length
+				in("a3") _read_write_buffer.as_ptr(), // pointer to write buffer
+				in("a4") _read_write_buffer.len(), // pointer to write buffer
+				in("a5") _status_ignored,       // if this isn't reset, the system must have ignored the call
 				lateout("a3") _status,          // return value (bytes written or -errno)
 				lateout("a4") _size,            // the size of the buffer written
 				lateout("a5") _system_status,   // the system status of the operation
@@ -224,11 +227,19 @@ pub fn channel_op(
 }
 
 /// Writes to a channel and returns the immediate status of the operation.
-pub fn write(system_id: ChannelSystemId, buffer: &mut [u8]) -> Result<ChannelStatus, ChannelError> {
-	channel_op(system_id, ChannelOp::Write, buffer)
+pub fn open(
+	system_id: ChannelSystemId,
+	read_buffer: &[u8],
+	write_buffer: &mut [u8],
+) -> Result<ChannelStatus, ChannelError> {
+	channel_op(system_id, ChannelOp::Open, read_buffer, write_buffer)
 }
 
-/// Reads from a channel providing the immediate status of the operation.
-pub fn read(system_id: ChannelSystemId, buffer: &mut [u8]) -> Result<ChannelStatus, ChannelError> {
-	channel_op(system_id, ChannelOp::Read, buffer)
+/// Checks a channel providing the immediate status of the operation.
+pub fn check(
+	system_id: ChannelSystemId,
+	read_buffer: &[u8],
+	write_buffer: &mut [u8],
+) -> Result<ChannelStatus, ChannelError> {
+	channel_op(system_id, ChannelOp::Check, read_buffer, write_buffer)
 }
