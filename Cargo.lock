@@ -311,6 +311,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "fuste-transaction"
+version = "0.0.1"
+dependencies = [
+ "fuste-serial-channel",
+]
+
+[[package]]
 name = "fuste-write"
 version = "0.0.1"
 dependencies = [

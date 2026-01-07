@@ -3,13 +3,11 @@
 use fuste_channel::{ops::block_on_channel, ChannelError, ChannelSystemId};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct SerialChannelId(u32);
-
-#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum SerialChannelError {
 	CouldNotSerialize(u32),
 	SerializedBufferTooSmall(u32),
 	SerializedBufferMismatch((u32, u32)),
+	TypeMismatch((u32, u32)),
 	CouldNotDeserialize(u32),
 	ChannelError(ChannelError),
 }

@@ -29,7 +29,8 @@ members = [
 
   "fuste/systems/debug/lilbug",
 
-  "fuste/env/systems/channel/serial-channel"
+  "fuste/env/systems/channel/serial-channel",
+  "fuste/env/systems/channel/transaction"
 
 ]
 
@@ -86,6 +87,8 @@ fuste-std-output-system = { path = "fuste/systems/write/std-output" }
 
 fuste-lilbug = { path = "fuste/systems/debug/lilbug" }
 fuste-tick-handler = { path = "fuste/systems/tick/handler" }
+
+fuste-serial-channel = { path = "fuste/env/systems/channel/serial-channel" }
 
 fuste-transaction = { path = "fuste/env/systems/channel/transaction" }
 
