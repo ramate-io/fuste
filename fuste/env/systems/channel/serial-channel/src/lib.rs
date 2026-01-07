@@ -15,11 +15,14 @@ pub enum SerialChannelError {
 }
 
 /// Serial types must be able to serialize themselves into a buffer of a known size.
-pub trait Serialize<const N: usize> {
-	fn try_to_bytes(&self) -> Result<(usize, [u8; N]), SerialChannelError>;
+pub trait Serialize {
+	fn try_to_bytes<const N: usize>(&self) -> Result<(usize, [u8; N]), SerialChannelError>;
 
-	fn try_write_to_buffer(&self, buffer: &mut [u8]) -> Result<u32, SerialChannelError> {
-		let (len, bytes) = self.try_to_bytes()?;
+	fn try_write_to_buffer<const N: usize>(
+		&self,
+		buffer: &mut [u8; N],
+	) -> Result<u32, SerialChannelError> {
+		let (len, bytes) = self.try_to_bytes::<N>()?;
 
 		// Somehow the writer reported a larger buffer than the actual bytes associated with the type.
 		if len > bytes.len() {
@@ -41,7 +44,7 @@ pub trait Serialize<const N: usize> {
 		Ok(len as u32)
 	}
 
-	fn allocate_buffer() -> [u8; N] {
+	fn allocate_buffer<const N: usize>() -> [u8; N] {
 		[0; N]
 	}
 }
@@ -51,20 +54,15 @@ pub trait Deserialize: Sized {
 }
 
 /// A marker trait for types that can be serialized and deserialized.
-pub trait SerialType<const N: usize>: Serialize<N> + Deserialize {}
+pub trait SerialType: Serialize + Deserialize {}
 
-impl<const N: usize, T> SerialType<N> for T where T: Serialize<N> + Deserialize {}
+impl<T> SerialType for T where T: Serialize + Deserialize {}
 
-pub fn serial_channel_request<
-	const N: usize,
-	const M: usize,
-	R: SerialType<N>,
-	W: SerialType<M>,
->(
+pub fn serial_channel_request<const N: usize, const M: usize, R: SerialType, W: SerialType>(
 	system_id: ChannelSystemId,
 	request: &R,
 ) -> Result<W, SerialChannelError> {
-	let (len, bytes) = request.try_to_bytes()?;
+	let (len, bytes) = request.try_to_bytes::<N>()?;
 	// use the short buffer to minimize memory reads by the system
 	let short_read_buffer = &bytes[..len];
 
