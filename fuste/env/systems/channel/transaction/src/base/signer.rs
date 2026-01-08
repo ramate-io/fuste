@@ -4,7 +4,7 @@ use fuste_serial_channel::{Deserialize, SerialChannelError, Serialize};
 ///
 /// NOTE: this is not optimized to minimize, allocations.
 /// You could have a strictly borrow-based version of this.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct BaseSigner<const N: usize, const P: usize> {
 	address_bytes: [u8; N],
 	public_key_bytes: [u8; P],
