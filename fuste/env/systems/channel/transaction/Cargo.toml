@@ -10,7 +10,7 @@ publish = { workspace = true }
 rust-version = { workspace = true }
 
 [dependencies]
-# fuste-channel = { workspace = true }
+fuste-channel = { workspace = true }
 fuste-serial-channel = { workspace = true }
 
 [lints]
