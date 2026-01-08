@@ -4,8 +4,8 @@ pub trait TransactionDataResponse<Signer, Id, Request: TransactionDataRequest<Si
 	TransactionScheme
 {
 	/// Returns the signers for the transaction up to a maximum of N signers.
-	fn signers<const N: usize>() -> [Option<Signer>; N];
+	fn signers(&self) -> &[Option<Signer>];
 
 	/// Returns the id for the transaction.
-	fn id() -> Id;
+	fn id(&self) -> &Id;
 }

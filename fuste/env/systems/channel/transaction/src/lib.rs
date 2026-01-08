@@ -12,27 +12,25 @@ use request::TransactionDataRequest;
 use response::TransactionDataResponse;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct TransactionSchemeId((u32, u32));
+pub struct TransactionSchemeId([u8; Self::ID_LENGTH]);
 
 impl TransactionSchemeId {
-	pub fn to_bytes(&self) -> [u8; 8] {
-		let (first, second) = self.0;
-		let mut bytes = [0; 8];
-		bytes[..4].copy_from_slice(&first.to_le_bytes());
-		bytes[4..].copy_from_slice(&second.to_le_bytes());
-		bytes
+	const ID_LENGTH: usize = 32;
+
+	pub fn to_bytes(&self) -> [u8; Self::ID_LENGTH] {
+		self.0
 	}
 
 	pub fn from_bytes(bytes: &[u8]) -> Result<Self, SerialChannelError> {
-		if bytes.len() != 8 {
-			return Err(SerialChannelError::SerializedBufferTooSmall(8));
+		if bytes.len() != 32 {
+			return Err(SerialChannelError::SerializedBufferTooSmall(32));
 		}
-		let first = u32::from_le_bytes([bytes[0], bytes[1], bytes[2], bytes[3]]);
-		let second = u32::from_le_bytes([bytes[4], bytes[5], bytes[6], bytes[7]]);
-		Ok(Self((first, second)))
+		let mut id = [0; 32];
+		id.copy_from_slice(bytes);
+		Ok(Self(id))
 	}
 
-	pub fn into_inner(self) -> (u32, u32) {
+	pub fn into_inner(self) -> [u8; Self::ID_LENGTH] {
 		self.0
 	}
 }
@@ -48,6 +46,8 @@ pub struct TransactionData<R: TransactionScheme> {
 }
 
 impl<R: TransactionScheme> TransactionData<R> {
+	const CHANNEL_SYSTEM_ID: ChannelSystemId = ChannelSystemId::constant(0xad03);
+
 	pub fn new(data: R) -> Self {
 		Self { scheme_id: R::scheme_id(), data }
 	}
@@ -103,14 +103,13 @@ pub fn transaction_data<
 	Request: TransactionDataRequest<Signer, Id, Response>,
 	Response: TransactionDataResponse<Signer, Id, Request>,
 >(
-	system_id: ChannelSystemId,
 	request: Request,
 ) -> Result<Response, SerialChannelError> {
 	let transaction_request_data = TransactionData::new(request);
 
 	let response =
 		serial_channel_request::<N, M, TransactionData<Request>, TransactionData<Response>>(
-			system_id,
+			TransactionData::<Request>::CHANNEL_SYSTEM_ID,
 			&transaction_request_data,
 		)?;
 

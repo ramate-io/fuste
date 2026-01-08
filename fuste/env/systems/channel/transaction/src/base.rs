@@ -1,27 +1,78 @@
 pub mod response;
 pub mod signer;
 
-use crate::{TransactionScheme, TransactionSchemeId};
+use crate::transaction_data;
+use crate::{
+	request::TransactionDataRequest, response::TransactionDataResponse, TransactionScheme,
+	TransactionSchemeId,
+};
+use core::marker::PhantomData;
 use fuste_serial_channel::{Deserialize, SerialChannelError, Serialize};
+use response::{BaseTransaction, Id};
+use signer::BaseSigner;
 
 /// The base transaction scheme that should be installed with any transaction-based system.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Base<const N: usize, const P: usize>;
+pub struct Base<Signer, Id, Response: TransactionDataResponse<Signer, Id, Self>> {
+	__signer_marker: PhantomData<Signer>,
+	__id_marker: PhantomData<Id>,
+	__response_marker: PhantomData<Response>,
+}
 
-impl<const N: usize, const P: usize> TransactionScheme for Base<N, P> {
-	fn scheme_id() -> TransactionSchemeId {
-		TransactionSchemeId((N as u32, P as u32))
+impl<Signer, Id, Response: TransactionDataResponse<Signer, Id, Self>> Base<Signer, Id, Response> {
+	pub fn new() -> Self {
+		Self {
+			__signer_marker: PhantomData,
+			__id_marker: PhantomData,
+			__response_marker: PhantomData,
+		}
 	}
 }
 
-impl<const N: usize, const P: usize> Serialize for Base<N, P> {
+impl<Signer, Id, Response: TransactionDataResponse<Signer, Id, Self>> TransactionScheme
+	for Base<Signer, Id, Response>
+{
+	fn scheme_id() -> TransactionSchemeId {
+		Response::scheme_id()
+	}
+}
+
+impl<Signer, Id, Response: TransactionDataResponse<Signer, Id, Self>> Serialize
+	for Base<Signer, Id, Response>
+{
 	fn try_to_bytes<const M: usize>(&self) -> Result<(usize, [u8; M]), SerialChannelError> {
 		Ok((0, [0; M]))
 	}
 }
 
-impl<const N: usize, const P: usize> Deserialize for Base<N, P> {
+impl<Signer, Id, Response: TransactionDataResponse<Signer, Id, Self>> Deserialize
+	for Base<Signer, Id, Response>
+{
 	fn try_from_bytes(_bytes: &[u8]) -> Result<Self, SerialChannelError> {
-		Ok(Base)
+		Ok(Base::new())
+	}
+}
+
+impl<Signer, Id, Response: TransactionDataResponse<Signer, Id, Self>>
+	TransactionDataRequest<Signer, Id, Response> for Base<Signer, Id, Response>
+{
+}
+
+impl<const N: usize, const P: usize, const K: usize, const I: usize>
+	Base<BaseSigner<N, P>, Id<I>, BaseTransaction<N, P, K, I>>
+{
+	pub fn base() -> Self {
+		Base::new()
+	}
+
+	pub fn get() -> Result<BaseTransaction<N, P, K, I>, SerialChannelError> {
+		transaction_data::<
+			{ TransactionSchemeId::ID_LENGTH },
+			N,
+			BaseSigner<N, P>,
+			Id<I>,
+			Self,
+			BaseTransaction<N, P, K, I>,
+		>(Self::base())
 	}
 }
