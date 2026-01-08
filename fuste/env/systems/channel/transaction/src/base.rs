@@ -76,3 +76,19 @@ impl<const N: usize, const P: usize, const K: usize, const I: usize>
 		>(Self::base())
 	}
 }
+
+pub fn get_base_transaction<const N: usize, const P: usize, const K: usize, const I: usize>(
+) -> Result<BaseTransaction<N, P, K, I>, SerialChannelError> {
+	Base::<BaseSigner<N, P>, Id<I>, BaseTransaction<N, P, K, I>>::get()
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn test_base_get_compiles() {
+		let _base = Base::<BaseSigner<32, 32>, Id<32>, BaseTransaction<32, 32, 32, 32>>::get();
+		let _base = get_base_transaction::<32, 32, 32, 32>();
+	}
+}
