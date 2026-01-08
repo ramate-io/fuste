@@ -7,7 +7,7 @@ pub enum SerialChannelError {
 	CouldNotSerialize(u32),
 	SerializedBufferTooSmall(u32),
 	SerializedBufferMismatch((u32, u32)),
-	TypeMismatch((u32, u32)),
+	SchemeMismatch((u32, u32), (u32, u32)),
 	CouldNotDeserialize(u32),
 	ChannelError(ChannelError),
 }
