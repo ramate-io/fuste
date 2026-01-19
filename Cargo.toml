@@ -30,7 +30,8 @@ members = [
   "fuste/systems/debug/lilbug",
 
   "fuste/env/systems/channel/serial-channel",
-  "fuste/env/systems/channel/transaction"
+  "fuste/env/systems/channel/transaction",
+  "fuste/systems/channel/dlt/std-transaction",
 
 ]
 
