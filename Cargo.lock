@@ -310,6 +310,7 @@ dependencies = [
  "fuste-ecall-dispatcher",
  "fuste-riscv-core",
  "fuste-std-output",
+ "fuste-transaction",
 ]
 
 [[package]]

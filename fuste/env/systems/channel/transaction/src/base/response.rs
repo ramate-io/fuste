@@ -15,6 +15,12 @@ pub struct BaseTransaction<const N: usize, const P: usize, const K: usize, const
 }
 
 impl<const N: usize, const P: usize, const K: usize, const I: usize> BaseTransaction<N, P, K, I> {
+	pub fn new(signers: [Option<BaseSigner<N, P>>; K], id: Id<I>) -> Self {
+		Self { signers, id }
+	}
+}
+
+impl<const N: usize, const P: usize, const K: usize, const I: usize> BaseTransaction<N, P, K, I> {
 	const DEFAULT_SIGNER: Option<BaseSigner<N, P>> = None;
 }
 

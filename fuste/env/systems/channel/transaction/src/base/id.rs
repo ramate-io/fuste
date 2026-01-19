@@ -8,6 +8,10 @@ impl<const I: usize> Id<I> {
 		Self(bytes)
 	}
 
+	pub const fn const_new() -> Self {
+		Self([0; I])
+	}
+
 	pub fn to_le_bytes(&self) -> [u8; I] {
 		self.0
 	}

@@ -4,6 +4,10 @@ use fuste_serial_channel::{Deserialize, SerialChannelError, Serialize};
 pub struct SystemBufferAddress(u32);
 
 impl SystemBufferAddress {
+	pub fn new(address: u32) -> Self {
+		Self(address)
+	}
+
 	pub const BYTES_LENGTH: usize = 4;
 
 	/// Canonically, the system_buffer_address 0 will refer
