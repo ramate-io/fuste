@@ -12,6 +12,7 @@ use fuste_serial_channel::{Deserialize, SerialChannelError, Serialize};
 use id::Id;
 use response::BaseTransaction;
 use signer::BaseSigner;
+use signer::SystemBufferAddress;
 
 /// The base transaction scheme that should be installed with any transaction-based system.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -75,6 +76,12 @@ impl<const N: usize, const P: usize, const K: usize, const I: usize>
 
 	pub fn get_with_wsize<const WSIZE: usize>(
 	) -> Result<BaseTransaction<N, P, K, I>, SerialChannelError> {
+		if WSIZE < I + K * (N + P + SystemBufferAddress::BYTES_LENGTH) {
+			return Err(SerialChannelError::SerializedBufferTooSmall(
+				(I + K * (N + P + SystemBufferAddress::BYTES_LENGTH)) as u32,
+			));
+		}
+
 		// TODO: make this static somehow without using experimental features.
 		transaction_data::<
 			{ TransactionSchemeId::ID_LENGTH },
@@ -88,18 +95,11 @@ impl<const N: usize, const P: usize, const K: usize, const I: usize>
 
 	/// Gets the base transaction with a canonically small write buffer size.
 	pub fn get_small() -> Result<BaseTransaction<N, P, K, I>, SerialChannelError> {
-		transaction_data::<
-			{ TransactionSchemeId::ID_LENGTH },
-			{ 1024 * 1024 },
-			BaseSigner<N, P>,
-			Id<I>,
-			Self,
-			BaseTransaction<N, P, K, I>,
-		>(Self::base())
+		Self::get_with_wsize::<{ 1024 * 32 }>()
 	}
 }
 
-pub fn get_base_transaction<
+pub fn transaction_with_wsize<
 	const WSIZE: usize,
 	const N: usize,
 	const P: usize,
@@ -107,6 +107,11 @@ pub fn get_base_transaction<
 	const I: usize,
 >() -> Result<BaseTransaction<N, P, K, I>, SerialChannelError> {
 	Base::<BaseSigner<N, P>, Id<I>, BaseTransaction<N, P, K, I>>::get_with_wsize::<WSIZE>()
+}
+
+pub fn transaction_small<const N: usize, const P: usize, const K: usize, const I: usize>(
+) -> Result<BaseTransaction<N, P, K, I>, SerialChannelError> {
+	Base::<BaseSigner<N, P>, Id<I>, BaseTransaction<N, P, K, I>>::get_small()
 }
 
 #[cfg(test)]
@@ -119,6 +124,6 @@ mod tests {
 			Base::<BaseSigner<32, 32>, Id<32>, BaseTransaction<32, 32, 32, 32>>::get_with_wsize::<
 				{ 1024 * 1024 },
 			>();
-		let _base = get_base_transaction::<{ 1024 * 1024 }, 32, 32, 32, 32>();
+		let _base = transaction_with_wsize::<{ 1024 * 1024 }, 32, 32, 32, 32>();
 	}
 }
