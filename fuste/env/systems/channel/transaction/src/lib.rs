@@ -35,6 +35,29 @@ impl TransactionSchemeId {
 	}
 }
 
+impl Serialize for TransactionSchemeId {
+	fn try_write_to_buffer(&self, buffer: &mut [u8]) -> Result<usize, SerialChannelError> {
+		if buffer.len() < self.0.len() {
+			return Err(SerialChannelError::SerializedBufferTooSmall(self.0.len() as u32));
+		}
+
+		buffer[..self.0.len()].copy_from_slice(&self.0);
+		Ok(self.0.len())
+	}
+}
+
+impl Deserialize for TransactionSchemeId {
+	fn try_from_bytes_with_remaining_buffer(
+		buffer: &[u8],
+	) -> Result<(&[u8], Self), SerialChannelError> {
+		if buffer.len() != Self::ID_LENGTH {
+			return Err(SerialChannelError::SerializedBufferTooSmall(Self::ID_LENGTH as u32));
+		}
+		let scheme_id = Self(buffer.try_into().unwrap());
+		Ok((&buffer[Self::ID_LENGTH..], scheme_id))
+	}
+}
+
 pub trait TransactionScheme: SerialType {
 	fn scheme_id() -> TransactionSchemeId;
 }
@@ -54,44 +77,22 @@ impl<R: TransactionScheme> TransactionData<R> {
 }
 
 impl<R: TransactionScheme> Serialize for TransactionData<R> {
-	fn try_to_bytes<const N: usize>(&self) -> Result<(usize, [u8; N]), SerialChannelError> {
-		let scheme_id_bytes = self.scheme_id.to_bytes();
-		let (data_len, data_bytes) = self.data.try_to_bytes::<N>()?;
-
-		let mut bytes = [0; N];
-
-		if scheme_id_bytes.len() + scheme_id_bytes.len() + data_len > N {
-			return Err(SerialChannelError::SerializedBufferTooSmall(
-				(scheme_id_bytes.len() + scheme_id_bytes.len() + data_len) as u32,
-			));
-		}
-
-		// Copy the scheme id and request bytes into the buffer.
-		bytes[..scheme_id_bytes.len()].copy_from_slice(&scheme_id_bytes);
-		bytes[scheme_id_bytes.len()..scheme_id_bytes.len() + data_len].copy_from_slice(&data_bytes);
-
-		Ok((scheme_id_bytes.len() + data_len, bytes))
+	fn try_write_to_buffer(&self, buffer: &mut [u8]) -> Result<usize, SerialChannelError> {
+		let scheme_id_len = self.scheme_id.try_write_to_buffer(buffer)?;
+		let data_len = self.data.try_write_to_buffer(&mut buffer[scheme_id_len..])?;
+		Ok(scheme_id_len + data_len)
 	}
 }
 
 impl<R: TransactionScheme> Deserialize for TransactionData<R> {
-	fn try_from_bytes(bytes: &[u8]) -> Result<Self, SerialChannelError> {
-		// First 4 bytes should be the scheme id.
-		if bytes.len() < 4 {
-			return Err(SerialChannelError::SerializedBufferTooSmall(4));
-		}
+	fn try_from_bytes_with_remaining_buffer(
+		bytes: &[u8],
+	) -> Result<(&[u8], Self), SerialChannelError> {
+		let (remaining_buffer, scheme_id) =
+			TransactionSchemeId::try_from_bytes_with_remaining_buffer(bytes)?;
+		let (remaining_buffer, data) = R::try_from_bytes_with_remaining_buffer(remaining_buffer)?;
 
-		let scheme_id = TransactionSchemeId::from_bytes(&bytes[..4])?;
-		let data = R::try_from_bytes(&bytes[4..])?;
-
-		if scheme_id != R::scheme_id() {
-			return Err(SerialChannelError::SchemeMismatch(
-				scheme_id.into_inner(),
-				R::scheme_id().into_inner(),
-			));
-		}
-
-		Ok(Self { scheme_id, data })
+		Ok((remaining_buffer, Self { scheme_id, data }))
 	}
 }
 

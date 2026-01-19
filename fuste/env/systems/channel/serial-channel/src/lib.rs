@@ -14,41 +14,24 @@ pub enum SerialChannelError {
 
 /// Serial types must be able to serialize themselves into a buffer of a known size.
 pub trait Serialize {
-	fn try_to_bytes<const N: usize>(&self) -> Result<(usize, [u8; N]), SerialChannelError>;
-
-	fn try_write_to_buffer<const N: usize>(
-		&self,
-		buffer: &mut [u8; N],
-	) -> Result<u32, SerialChannelError> {
-		let (len, bytes) = self.try_to_bytes::<N>()?;
-
-		// Somehow the writer reported a larger buffer than the actual bytes associated with the type.
-		if len > bytes.len() {
-			return Err(SerialChannelError::SerializedBufferMismatch((
-				len as u32,
-				bytes.len() as u32,
-			)));
-		}
-
-		// The buffer returned is larger than the available buffer.
-		if len > buffer.len() {
-			return Err(SerialChannelError::SerializedBufferTooSmall(bytes.len() as u32));
-		}
-
-		// Copy the bytes into the buffer.
-		buffer[..len].copy_from_slice(&bytes[..len]);
-
-		// Return the number of bytes written.
-		Ok(len as u32)
+	fn try_to_bytes<const N: usize>(&self) -> Result<(usize, [u8; N]), SerialChannelError> {
+		let mut buffer = [0; N];
+		let len = self.try_write_to_buffer(&mut buffer)?;
+		Ok((len, buffer))
 	}
 
-	fn allocate_buffer<const N: usize>() -> [u8; N] {
-		[0; N]
-	}
+	fn try_write_to_buffer(&self, buffer: &mut [u8]) -> Result<usize, SerialChannelError>;
 }
 
 pub trait Deserialize: Sized {
-	fn try_from_bytes(bytes: &[u8]) -> Result<Self, SerialChannelError>;
+	fn try_from_bytes(bytes: &[u8]) -> Result<Self, SerialChannelError> {
+		let (_remaining_buffer, value) = Self::try_from_bytes_with_remaining_buffer(bytes)?;
+		Ok(value)
+	}
+
+	fn try_from_bytes_with_remaining_buffer(
+		buffer: &[u8],
+	) -> Result<(&[u8], Self), SerialChannelError>;
 }
 
 /// A marker trait for types that can be serialized and deserialized.

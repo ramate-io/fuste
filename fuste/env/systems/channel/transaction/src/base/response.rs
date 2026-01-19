@@ -1,4 +1,8 @@
-use crate::base::{id::Id, signer::BaseSigner, Base};
+use crate::base::{
+	id::Id,
+	signer::{BaseSigner, SystemBufferAddress},
+	Base,
+};
 
 use crate::{response::TransactionDataResponse, TransactionScheme, TransactionSchemeId};
 use fuste_serial_channel::{Deserialize, SerialChannelError, Serialize};
@@ -36,32 +40,47 @@ impl<const N: usize, const P: usize, const K: usize, const I: usize> Transaction
 impl<const N: usize, const P: usize, const K: usize, const I: usize> Serialize
 	for BaseTransaction<N, P, K, I>
 {
-	fn try_to_bytes<const M: usize>(&self) -> Result<(usize, [u8; M]), SerialChannelError> {
-		Ok((0, [0; M]))
+	fn try_write_to_buffer(&self, buffer: &mut [u8]) -> Result<usize, SerialChannelError> {
+		let mut written_len = self.id.try_write_to_buffer(buffer)?;
+		for signer in self.signers.iter() {
+			if let Some(signer) = signer {
+				written_len += signer.try_write_to_buffer(&mut buffer[written_len..])?;
+			} else {
+				written_len += SystemBufferAddress::BYTES_LENGTH;
+			}
+		}
+		Ok(I + K * (N + P + SystemBufferAddress::BYTES_LENGTH))
 	}
 }
 
 impl<const N: usize, const P: usize, const K: usize, const I: usize> Deserialize
 	for BaseTransaction<N, P, K, I>
 {
-	fn try_from_bytes(bytes: &[u8]) -> Result<Self, SerialChannelError> {
-		// the first I bytes should be the id
-		if bytes.len() < I {
-			return Err(SerialChannelError::SerializedBufferTooSmall(I as u32));
-		}
-		let id = Id::copy_from_slice(&bytes[..I]);
+	fn try_from_bytes_with_remaining_buffer(
+		buffer: &[u8],
+	) -> Result<(&[u8], Self), SerialChannelError> {
+		let (remaining_buffer, id) = Id::try_from_bytes_with_remaining_buffer(buffer)?;
 
 		let mut signers = [Self::DEFAULT_SIGNER; K];
 
 		// Get the signers until the end of the bytes or the signers array is full.
 		let mut i = 0;
-		while let Some(signer) = bytes.get(I + i * (N + P)..I + i * (N + P) + (N + P)) {
-			signers[i] =
-				BaseSigner::try_from_bytes(signer).map(Some).unwrap_or(Self::DEFAULT_SIGNER);
+		while let Some(signer) = remaining_buffer.get(
+			I + i * (N + P + SystemBufferAddress::BYTES_LENGTH)
+				..I + i * (N + P + SystemBufferAddress::BYTES_LENGTH)
+					+ (N + P + SystemBufferAddress::BYTES_LENGTH),
+		) {
+			if let Ok((_remaining_buffer, signer)) =
+				BaseSigner::try_from_bytes_with_remaining_buffer(signer)
+			{
+				signers[i] = Some(signer);
+			} else {
+				signers[i] = None;
+			}
 			i += 1;
 		}
 
-		Ok(BaseTransaction { signers, id })
+		Ok((remaining_buffer, BaseTransaction { signers, id }))
 	}
 }
 

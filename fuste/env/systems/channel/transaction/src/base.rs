@@ -42,16 +42,18 @@ impl<Signer, Id, Response: TransactionDataResponse<Signer, Id, Self>> Transactio
 impl<Signer, Id, Response: TransactionDataResponse<Signer, Id, Self>> Serialize
 	for Base<Signer, Id, Response>
 {
-	fn try_to_bytes<const M: usize>(&self) -> Result<(usize, [u8; M]), SerialChannelError> {
-		Ok((0, [0; M]))
+	fn try_write_to_buffer(&self, _buffer: &mut [u8]) -> Result<usize, SerialChannelError> {
+		Ok(0)
 	}
 }
 
 impl<Signer, Id, Response: TransactionDataResponse<Signer, Id, Self>> Deserialize
 	for Base<Signer, Id, Response>
 {
-	fn try_from_bytes(_bytes: &[u8]) -> Result<Self, SerialChannelError> {
-		Ok(Base::new())
+	fn try_from_bytes_with_remaining_buffer(
+		buffer: &[u8],
+	) -> Result<(&[u8], Self), SerialChannelError> {
+		Ok((buffer, Base::new()))
 	}
 }
 
