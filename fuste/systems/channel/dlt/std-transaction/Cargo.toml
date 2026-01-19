@@ -14,6 +14,8 @@ fuste-riscv-core = { workspace = true }
 fuste-std-output = { workspace = true }
 fuste-ecall-dispatcher = { workspace = true }
 fuste-transaction = { workspace = true }
+thiserror = { workspace = true }
+serde = { workspace = true }
 
 [lints]
 workspace = true

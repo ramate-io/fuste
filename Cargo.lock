@@ -311,6 +311,8 @@ dependencies = [
  "fuste-riscv-core",
  "fuste-std-output",
  "fuste-transaction",
+ "serde",
+ "thiserror 1.0.69",
 ]
 
 [[package]]

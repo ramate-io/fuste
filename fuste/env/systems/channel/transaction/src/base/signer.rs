@@ -1,3 +1,5 @@
+pub mod index;
+
 use fuste_serial_channel::{Deserialize, SerialChannelError, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -78,6 +80,14 @@ impl<const N: usize, const P: usize> BaseSigner<N, P> {
 	pub fn with_public_key_bytes(mut self, public_key_bytes: [u8; P]) -> Self {
 		self.public_key_bytes = public_key_bytes;
 		self
+	}
+
+	pub fn address_bytes(&self) -> &[u8; N] {
+		&self.address_bytes
+	}
+
+	pub fn public_key_bytes(&self) -> &[u8; P] {
+		&self.public_key_bytes
 	}
 }
 

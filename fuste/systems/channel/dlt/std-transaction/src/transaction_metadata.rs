@@ -7,6 +7,7 @@ use fuste_transaction::base::{
 	response::BaseTransaction,
 	signer::{BaseSigner, SystemBufferAddress},
 };
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct UserSignerRequest<const N: usize, const P: usize> {
@@ -174,6 +175,7 @@ impl<const MEMORY_SIZE: usize, const N: usize, const P: usize, const K: usize, c
 	CheckChannelSystemDispatcher<MEMORY_SIZE> for TransactionMetadataSystem<MEMORY_SIZE, N, P, K, I>
 {
 }
+
 impl<const MEMORY_SIZE: usize, const N: usize, const P: usize, const K: usize, const I: usize>
 	OpenChannelSystemDispatcher<MEMORY_SIZE> for TransactionMetadataSystem<MEMORY_SIZE, N, P, K, I>
 {
