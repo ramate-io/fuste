@@ -62,6 +62,10 @@ impl<Signer, Id, Response: TransactionDataResponse<Signer, Id, Self>>
 {
 }
 
+pub struct Assert<const OK: bool>;
+pub trait IsTrue {}
+impl IsTrue for Assert<true> {}
+
 impl<const N: usize, const P: usize, const K: usize, const I: usize>
 	Base<BaseSigner<N, P>, Id<I>, BaseTransaction<N, P, K, I>>
 {
@@ -69,10 +73,24 @@ impl<const N: usize, const P: usize, const K: usize, const I: usize>
 		Base::new()
 	}
 
-	pub fn get() -> Result<BaseTransaction<N, P, K, I>, SerialChannelError> {
+	pub fn get_with_wsize<const WSIZE: usize>(
+	) -> Result<BaseTransaction<N, P, K, I>, SerialChannelError> {
+		// TODO: make this static somehow without using experimental features.
 		transaction_data::<
 			{ TransactionSchemeId::ID_LENGTH },
-			N,
+			WSIZE,
+			BaseSigner<N, P>,
+			Id<I>,
+			Self,
+			BaseTransaction<N, P, K, I>,
+		>(Self::base())
+	}
+
+	/// Gets the base transaction with a canonically small write buffer size.
+	pub fn get_small() -> Result<BaseTransaction<N, P, K, I>, SerialChannelError> {
+		transaction_data::<
+			{ TransactionSchemeId::ID_LENGTH },
+			{ 1024 * 1024 },
 			BaseSigner<N, P>,
 			Id<I>,
 			Self,
@@ -81,9 +99,14 @@ impl<const N: usize, const P: usize, const K: usize, const I: usize>
 	}
 }
 
-pub fn get_base_transaction<const N: usize, const P: usize, const K: usize, const I: usize>(
-) -> Result<BaseTransaction<N, P, K, I>, SerialChannelError> {
-	Base::<BaseSigner<N, P>, Id<I>, BaseTransaction<N, P, K, I>>::get()
+pub fn get_base_transaction<
+	const WSIZE: usize,
+	const N: usize,
+	const P: usize,
+	const K: usize,
+	const I: usize,
+>() -> Result<BaseTransaction<N, P, K, I>, SerialChannelError> {
+	Base::<BaseSigner<N, P>, Id<I>, BaseTransaction<N, P, K, I>>::get_with_wsize::<WSIZE>()
 }
 
 #[cfg(test)]
@@ -92,7 +115,10 @@ mod tests {
 
 	#[test]
 	fn test_base_get_compiles() {
-		let _base = Base::<BaseSigner<32, 32>, Id<32>, BaseTransaction<32, 32, 32, 32>>::get();
-		let _base = get_base_transaction::<32, 32, 32, 32>();
+		let _base =
+			Base::<BaseSigner<32, 32>, Id<32>, BaseTransaction<32, 32, 32, 32>>::get_with_wsize::<
+				{ 1024 * 1024 },
+			>();
+		let _base = get_base_transaction::<{ 1024 * 1024 }, 32, 32, 32, 32>();
 	}
 }

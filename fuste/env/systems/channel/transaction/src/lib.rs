@@ -97,8 +97,8 @@ impl<R: TransactionScheme> Deserialize for TransactionData<R> {
 }
 
 pub fn transaction_data<
-	const N: usize,
-	const M: usize,
+	const RSIZE: usize,
+	const WSIZE: usize,
 	Signer,
 	Id,
 	Request: TransactionDataRequest<Signer, Id, Response>,
@@ -108,11 +108,12 @@ pub fn transaction_data<
 ) -> Result<Response, SerialChannelError> {
 	let transaction_request_data = TransactionData::new(request);
 
-	let response =
-		serial_channel_request::<N, M, TransactionData<Request>, TransactionData<Response>>(
-			TransactionData::<Request>::CHANNEL_SYSTEM_ID,
-			&transaction_request_data,
-		)?;
+	let response = serial_channel_request::<
+		RSIZE,
+		WSIZE,
+		TransactionData<Request>,
+		TransactionData<Response>,
+	>(TransactionData::<Request>::CHANNEL_SYSTEM_ID, &transaction_request_data)?;
 
 	Ok(response.data)
 }

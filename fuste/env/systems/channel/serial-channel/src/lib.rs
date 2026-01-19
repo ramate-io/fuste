@@ -39,15 +39,20 @@ pub trait SerialType: Serialize + Deserialize {}
 
 impl<T> SerialType for T where T: Serialize + Deserialize {}
 
-pub fn serial_channel_request<const N: usize, const M: usize, R: SerialType, W: SerialType>(
+pub fn serial_channel_request<
+	const RSIZE: usize,
+	const WSIZE: usize,
+	R: SerialType,
+	W: SerialType,
+>(
 	system_id: ChannelSystemId,
 	request: &R,
 ) -> Result<W, SerialChannelError> {
-	let (len, bytes) = request.try_to_bytes::<N>()?;
+	let (len, bytes) = request.try_to_bytes::<RSIZE>()?;
 	// use the short buffer to minimize memory reads by the system
 	let short_read_buffer = &bytes[..len];
 
-	let mut read_write_buffer = [0; M];
+	let mut read_write_buffer = [0; WSIZE];
 
 	let status = block_on_channel(system_id.clone(), short_read_buffer, &mut read_write_buffer)
 		.map_err(SerialChannelError::ChannelError)?;
