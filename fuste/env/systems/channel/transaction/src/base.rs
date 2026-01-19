@@ -1,3 +1,4 @@
+pub mod id;
 pub mod response;
 pub mod signer;
 
@@ -8,7 +9,8 @@ use crate::{
 };
 use core::marker::PhantomData;
 use fuste_serial_channel::{Deserialize, SerialChannelError, Serialize};
-use response::{BaseTransaction, Id};
+use id::Id;
+use response::BaseTransaction;
 use signer::BaseSigner;
 
 /// The base transaction scheme that should be installed with any transaction-based system.

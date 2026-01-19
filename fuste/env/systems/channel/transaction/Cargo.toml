@@ -13,5 +13,9 @@ rust-version = { workspace = true }
 fuste-channel = { workspace = true }
 fuste-serial-channel = { workspace = true }
 
+[features]
+system = []
+default = ["system"]
+
 [lints]
 workspace = true

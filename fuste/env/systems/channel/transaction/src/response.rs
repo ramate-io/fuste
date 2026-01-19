@@ -1,5 +1,6 @@
 use crate::{request::TransactionDataRequest, TransactionScheme};
 
+/// A transaction data response must be able to provide the signers and id for the transaction.
 pub trait TransactionDataResponse<Signer, Id, Request: TransactionDataRequest<Signer, Id, Self>>:
 	TransactionScheme
 {

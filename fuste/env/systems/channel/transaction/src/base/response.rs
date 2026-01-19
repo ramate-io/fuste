@@ -1,22 +1,7 @@
-use crate::base::{signer::BaseSigner, Base};
+use crate::base::{id::Id, signer::BaseSigner, Base};
 
 use crate::{response::TransactionDataResponse, TransactionScheme, TransactionSchemeId};
 use fuste_serial_channel::{Deserialize, SerialChannelError, Serialize};
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Id<const I: usize>([u8; I]);
-
-impl<const I: usize> Id<I> {
-	pub fn new(bytes: [u8; I]) -> Self {
-		Self(bytes)
-	}
-
-	pub fn copy_from_slice(slice: &[u8]) -> Self {
-		let mut bytes = [0; I];
-		bytes.copy_from_slice(slice);
-		Self(bytes)
-	}
-}
 
 /// The base transaction scheme that should be installed with any transaction-based system.
 #[derive(Debug, Clone, PartialEq, Eq)]
