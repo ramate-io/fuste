@@ -184,6 +184,9 @@ impl<
 	}
 }
 
+/// A typed signer store is a deserialized signer store meant to be used by the frontend.
+/// The backend should almost never use [TypedSignerStore], because it would not have access to
+/// the type [T].
 #[derive(Debug, Clone)]
 pub struct TypedSignerStore<
 	const ADDRESS_BYTES: usize,
