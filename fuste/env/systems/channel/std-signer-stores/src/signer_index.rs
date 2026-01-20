@@ -52,23 +52,24 @@ impl<const N: usize, const P: usize, const K: usize> Deserialize
 	fn try_from_bytes_with_remaining_buffer(
 		buffer: &[u8],
 	) -> Result<(&[u8], Self), SerialChannelError> {
-		if buffer.len() < K * (N + P) {
-			return Err(SerialChannelError::SerializedBufferTooSmall((K * (N + P)) as u32));
-		}
-
 		let mut signers = [Self::DEFAULT_SIGNER; K];
-		for i in 0..K {
+
+		// Support buffer casting s.t. a smaller buffer can still be used to deserialize into a signer index of gthe size.
+		// In particular, this makes communication on the channel more flexible without heap allocations.
+		let mut i = 0;
+		while let Some(bytes) = buffer.get(i * (N + P)..i * (N + P) + N + P) {
 			let (_remaining_buffer, signer) =
-				TransactionSigner::<N, P>::try_from_bytes_with_remaining_buffer(
-					&buffer[i * (N + P)..i * (N + P) + N + P],
-				)?;
+				TransactionSigner::<N, P>::try_from_bytes_with_remaining_buffer(bytes)?;
 
 			if signer == TransactionSigner::<N, P>::DEFAULT_SIGNER {
 				signers[i] = None;
 			} else {
 				signers[i] = Some(signer);
 			}
+
+			i += 1;
 		}
+
 		Ok((&buffer[K * (N + P)..], Self { signers }))
 	}
 }
