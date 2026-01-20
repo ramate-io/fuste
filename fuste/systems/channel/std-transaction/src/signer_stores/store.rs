@@ -1,12 +1,13 @@
 use super::{
-	HartIndex, SignerBackendIndex, SignerStoreBackend, SignerStoreBackendError, SignerStoreError,
-	UserSignerIndex,
+	HartIndex, SignerBackendAddress, SignerBackendIndex, SignerStoreBackend,
+	SignerStoreBackendError, SignerStoreError, UserSignerIndex,
 };
 use fuste_channel::{
 	systems::ChannelSystem, ChannelError, ChannelStatus, ChannelStatusCode, ChannelSystemStatus,
 };
 use fuste_serial_channel::Deserialize;
 use fuste_std_signer_stores::signer_store::{Op, SignerStore};
+use std::collections::BTreeSet;
 
 pub struct SignerStorage<
 	const ADDRESS_BYTES: usize,
@@ -18,6 +19,7 @@ pub struct SignerStorage<
 > {
 	backend: S,
 	hart_index: HartIndex,
+	authenticated_signers: BTreeSet<SignerBackendAddress>,
 }
 
 impl<
@@ -30,7 +32,22 @@ impl<
 	> SignerStorage<ADDRESS_BYTES, PUBLIC_KEY_BYTES, SIGNER_COUNT, TYPE_NAME_BYTES, VALUE_BYTES, S>
 {
 	pub fn new(backend: S, hart_index: HartIndex) -> Self {
-		Self { backend, hart_index }
+		Self { backend, hart_index, authenticated_signers: BTreeSet::new() }
+	}
+
+	pub fn is_signer_authenticated(&self, signer_address: SignerBackendAddress) -> bool {
+		self.authenticated_signers.contains(&signer_address)
+	}
+
+	pub fn is_signer_index_authenticated(&self, signer_index: UserSignerIndex) -> bool {
+		let mut all_signers_authenticated = true;
+		for signer in signer_index.iter_signers() {
+			if !self.authenticated_signers.contains(&signer) {
+				all_signers_authenticated = false;
+				break;
+			}
+		}
+		all_signers_authenticated
 	}
 
 	/// Writes bytes to the signer store backend.

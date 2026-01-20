@@ -1,11 +1,6 @@
-pub mod load;
 pub mod store;
 
-use fuste_channel::{
-	systems::ChannelSystem, ChannelError, ChannelStatus, ChannelStatusCode, ChannelSystemStatus,
-};
 use fuste_std_signer_stores::signer_index::TransactionSignerIndex;
-use fuste_std_signer_stores::signer_store::SignerStore;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeSet;
 
@@ -57,6 +52,10 @@ impl SignerBackendIndex {
 		}
 		Self { signers }
 	}
+
+	pub fn iter_signers(&self) -> impl Iterator<Item = &SignerBackendAddress> {
+		self.signers.iter()
+	}
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -64,6 +63,12 @@ pub struct HartIndex(pub SignerBackendIndex);
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct UserSignerIndex(pub SignerBackendIndex);
+
+impl UserSignerIndex {
+	pub fn iter_signers(&self) -> impl Iterator<Item = &SignerBackendAddress> {
+		self.0.iter_signers()
+	}
+}
 
 #[derive(thiserror::Error, Debug)]
 pub enum SignerStoreBackendError {
