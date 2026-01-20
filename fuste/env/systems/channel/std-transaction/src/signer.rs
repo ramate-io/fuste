@@ -1,5 +1,6 @@
-use crate::TransactionData;
-use fuste_serial_channel::{Deserialize, SerialChannelError, Serialize};
+use crate::{TransactionData, TransactionScheme};
+use fuste_channel::ChannelSystemId;
+use fuste_serial_channel::{serial_channel_request, Deserialize, SerialChannelError, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct AddressBytes<const N: usize>([u8; N]);
@@ -128,4 +129,60 @@ impl<const A: usize, const P: usize> Deserialize for TransactionSigner<A, P> {
 	}
 }
 
+#[derive(Debug, Clone)]
+pub struct TransactionSignerAtIdex {
+	index: u32,
+}
+
+impl TransactionScheme for TransactionSignerAtIdex {
+	const CHANNEL_SYSTEM_ID: ChannelSystemId = ChannelSystemId::constant(0x516d);
+}
+
+impl Deserialize for TransactionSignerAtIdex {
+	fn try_from_bytes_with_remaining_buffer(
+		buffer: &[u8],
+	) -> Result<(&[u8], Self), SerialChannelError> {
+		if buffer.len() < 4 {
+			return Err(SerialChannelError::SerializedBufferTooSmall(4));
+		}
+		let index = u32::from_le_bytes(buffer[..4].try_into().unwrap());
+		Ok((&buffer[4..], Self { index }))
+	}
+}
+
+impl Serialize for TransactionSignerAtIdex {
+	fn try_write_to_buffer(&self, buffer: &mut [u8]) -> Result<usize, SerialChannelError> {
+		if buffer.len() < 4 {
+			return Err(SerialChannelError::SerializedBufferTooSmall(4));
+		}
+
+		let inner_buffer = &mut buffer[..4];
+		inner_buffer.copy_from_slice(&self.index.to_le_bytes());
+
+		Ok(4)
+	}
+}
+
 impl<const A: usize, const P: usize> TransactionData for TransactionSigner<A, P> {}
+
+pub fn signer_at_index_with_sizes<
+	const RSIZE: usize,
+	const WSIZE: usize,
+	const A: usize,
+	const P: usize,
+>(
+	index: u32,
+) -> Result<TransactionSigner<A, P>, SerialChannelError> {
+	let signers =
+		serial_channel_request::<RSIZE, WSIZE, TransactionSignerAtIdex, TransactionSigner<A, P>>(
+			TransactionSignerAtIdex::CHANNEL_SYSTEM_ID,
+			&TransactionSignerAtIdex { index },
+		)?;
+	Ok(signers)
+}
+
+pub fn signer_at_index<const A: usize, const P: usize>(
+	index: u32,
+) -> Result<TransactionSigner<A, P>, SerialChannelError> {
+	signer_at_index_with_sizes::<1024, 1024, A, P>(index)
+}

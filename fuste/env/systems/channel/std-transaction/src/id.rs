@@ -1,6 +1,6 @@
 use crate::{TransactionData, TransactionScheme};
 use fuste_channel::ChannelSystemId;
-use fuste_serial_channel::{Deserialize, SerialChannelError, Serialize};
+use fuste_serial_channel::{serial_channel_request, Deserialize, SerialChannelError, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TransactionId<const N: usize>([u8; N]);
@@ -34,3 +34,17 @@ impl<const N: usize> TransactionScheme for TransactionId<N> {
 }
 
 impl<const N: usize> TransactionData for TransactionId<N> {}
+
+pub fn transaction_id_with_sizes<const RSIZE: usize, const WSIZE: usize, const N: usize>(
+) -> Result<TransactionId<N>, SerialChannelError> {
+	let request = TransactionId::<N>::request();
+
+	serial_channel_request::<RSIZE, WSIZE, TransactionId<N>, TransactionId<N>>(
+		TransactionId::<N>::CHANNEL_SYSTEM_ID,
+		&request,
+	)
+}
+
+pub fn transaction_id<const N: usize>() -> Result<TransactionId<N>, SerialChannelError> {
+	transaction_id_with_sizes::<1024, 1024, N>()
+}
