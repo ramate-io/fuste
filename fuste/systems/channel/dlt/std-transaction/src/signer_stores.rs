@@ -1,5 +1,8 @@
 pub mod base_signer;
 
+use fuste_channel::{
+	systems::ChannelSystem, ChannelError, ChannelStatus, ChannelStatusCode, ChannelSystemStatus,
+};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeSet;
 
@@ -75,22 +78,63 @@ impl<const N: usize, const P: usize, S: SignerStoreBackend> SignerStore<N, P, S>
 		Self { backend, hart_index }
 	}
 
-	pub fn write(
+	/// Writes bytes to the signer store backend.
+	pub fn write_bytes_to_backend(
 		&self,
-		user_signer_index: UserSignerIndex,
+		user_signer_index: impl Into<UserSignerIndex>,
 		value_bytes: &[u8],
 	) -> Result<(), SignerStoreError> {
 		self.backend
-			.write(&self.hart_index, &user_signer_index, value_bytes)
+			.write(&self.hart_index, &user_signer_index.into(), value_bytes)
 			.map_err(SignerStoreError::BackendError)
 	}
 
-	pub fn read(
+	/// Reads bytes from the signer store backend.
+	pub fn read_bytes_from_backend(
+		&self,
+		user_signer_index: impl Into<UserSignerIndex>,
+	) -> Result<Option<Vec<u8>>, SignerStoreError> {
+		self.backend
+			.read(&self.hart_index, &user_signer_index.into())
+			.map_err(SignerStoreError::BackendError)
+	}
+
+	/// Reads bytes from the signer store backend into the given buffer.
+	pub fn read_bytes_from_backend_into(
 		&self,
 		user_signer_index: UserSignerIndex,
-	) -> Result<Option<Vec<u8>>, SignerStoreError> {
+		buffer: &mut [u8],
+	) -> Result<(), SignerStoreError> {
 		self.backend
 			.read(&self.hart_index, &user_signer_index)
 			.map_err(SignerStoreError::BackendError)
+			.and_then(|value| {
+				if let Some(value) = value {
+					buffer.copy_from_slice(&value);
+					Ok(())
+				} else {
+					Err(SignerStoreError::BackendError(SignerStoreBackendError::ReadError(
+						"No value found".to_string(),
+					)))
+				}
+			})
+	}
+}
+
+impl<const N: usize, const P: usize, S: SignerStoreBackend> ChannelSystem for SignerStore<N, P, S> {
+	fn handle_open(
+		&self,
+		read_buffer: &[u8],
+		write_buffer: &mut [u8],
+	) -> Result<ChannelStatus, ChannelError> {
+		Ok(ChannelStatus::new(0, ChannelStatusCode::Success, ChannelSystemStatus::new(0)))
+	}
+
+	fn handle_check(
+		&self,
+		read_buffer: &[u8],
+		write_buffer: &mut [u8],
+	) -> Result<ChannelStatus, ChannelError> {
+		Ok(ChannelStatus::new(0, ChannelStatusCode::Success, ChannelSystemStatus::new(0)))
 	}
 }

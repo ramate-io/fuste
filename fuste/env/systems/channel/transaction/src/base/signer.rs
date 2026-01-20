@@ -1,5 +1,3 @@
-pub mod index;
-
 use fuste_serial_channel::{Deserialize, SerialChannelError, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

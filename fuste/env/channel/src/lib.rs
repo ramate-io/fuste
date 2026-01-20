@@ -2,6 +2,7 @@
 #![allow(unexpected_cfgs)]
 
 pub mod ops;
+pub mod systems;
 use core::fmt::{self, Display};
 use fuste_ecall::Ecall;
 

@@ -96,6 +96,16 @@ impl<R: TransactionScheme> Deserialize for TransactionData<R> {
 	}
 }
 
+/// Gets the transaction data for the given request and response.
+///
+/// # Arguments
+///
+/// * `request` - The request to get the transaction data for.
+/// * `response` - The response to get the transaction data for.
+///
+/// # Returns
+///
+/// The transaction data for the given request and response.
 pub fn transaction_data<
 	const RSIZE: usize,
 	const WSIZE: usize,

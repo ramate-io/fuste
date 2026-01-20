@@ -288,6 +288,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "fuste-signer-stores"
+version = "0.0.1"
+dependencies = [
+ "fuste-channel",
+ "fuste-serial-channel",
+ "fuste-transaction",
+]
+
+[[package]]
 name = "fuste-std-output"
 version = "0.0.1"
 dependencies = [
@@ -307,6 +316,7 @@ dependencies = [
 name = "fuste-std-transaction"
 version = "0.0.1"
 dependencies = [
+ "fuste-channel",
  "fuste-ecall-dispatcher",
  "fuste-riscv-core",
  "fuste-std-output",

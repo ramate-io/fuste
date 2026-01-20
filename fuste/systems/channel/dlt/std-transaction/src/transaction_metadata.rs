@@ -7,7 +7,6 @@ use fuste_transaction::base::{
 	response::BaseTransaction,
 	signer::{BaseSigner, SystemBufferAddress},
 };
-use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct UserSignerRequest<const N: usize, const P: usize> {
@@ -59,7 +58,6 @@ impl<const N: usize, const P: usize> UserSignerRequest<N, P> {
 }
 
 pub struct TransactionMetadataSystemBuilder<
-	const MEMORY_SIZE: usize,
 	const N: usize,
 	const P: usize,
 	const K: usize,
@@ -70,16 +68,16 @@ pub struct TransactionMetadataSystemBuilder<
 	user_signers: Vec<Option<([u8; N], [u8; P])>>,
 }
 
-impl<const MEMORY_SIZE: usize, const N: usize, const P: usize, const K: usize, const I: usize>
-	Default for TransactionMetadataSystemBuilder<MEMORY_SIZE, N, P, K, I>
+impl<const N: usize, const P: usize, const K: usize, const I: usize> Default
+	for TransactionMetadataSystemBuilder<N, P, K, I>
 {
 	fn default() -> Self {
 		Self { id: Self::DEFAULT_ID, hart: Self::DEFAULT_HART, user_signers: Vec::new() }
 	}
 }
 
-impl<const MEMORY_SIZE: usize, const N: usize, const P: usize, const K: usize, const I: usize>
-	TransactionMetadataSystemBuilder<MEMORY_SIZE, N, P, K, I>
+impl<const N: usize, const P: usize, const K: usize, const I: usize>
+	TransactionMetadataSystemBuilder<N, P, K, I>
 {
 	const DEFAULT_SIGNER: Option<BaseSigner<N, P>> = None;
 	const DEFAULT_ID: Id<I> = Id::const_new();
@@ -105,7 +103,7 @@ impl<const MEMORY_SIZE: usize, const N: usize, const P: usize, const K: usize, c
 		self
 	}
 
-	pub fn build(self) -> TransactionMetadataSystem<MEMORY_SIZE, N, P, K, I> {
+	pub fn build(self) -> TransactionMetadataSystem<N, P, K, I> {
 		let mut signers_buf: [Option<BaseSigner<N, P>>; K] = [Self::DEFAULT_SIGNER; K];
 
 		let hart_signer = BaseSigner::new(self.hart.0, self.hart.1, SystemBufferAddress::HART_SELF);
@@ -125,18 +123,13 @@ impl<const MEMORY_SIZE: usize, const N: usize, const P: usize, const K: usize, c
 	}
 }
 
-pub struct TransactionMetadataSystem<
-	const MEMORY_SIZE: usize,
-	const N: usize,
-	const P: usize,
-	const K: usize,
-	const I: usize,
-> {
+pub struct TransactionMetadataSystem<const N: usize, const P: usize, const K: usize, const I: usize>
+{
 	response_data: BaseTransaction<N, P, K, I>,
 }
 
-impl<const MEMORY_SIZE: usize, const N: usize, const P: usize, const K: usize, const I: usize>
-	TransactionMetadataSystem<MEMORY_SIZE, N, P, K, I>
+impl<const N: usize, const P: usize, const K: usize, const I: usize>
+	TransactionMetadataSystem<N, P, K, I>
 {
 	pub fn response_data(&self) -> &BaseTransaction<N, P, K, I> {
 		&self.response_data
@@ -144,7 +137,7 @@ impl<const MEMORY_SIZE: usize, const N: usize, const P: usize, const K: usize, c
 }
 
 impl<const MEMORY_SIZE: usize, const N: usize, const P: usize, const K: usize, const I: usize>
-	MachineSystem<MEMORY_SIZE> for TransactionMetadataSystem<MEMORY_SIZE, N, P, K, I>
+	MachineSystem<MEMORY_SIZE> for TransactionMetadataSystem<N, P, K, I>
 {
 	fn tick(
 		&mut self,
@@ -172,11 +165,11 @@ impl<const MEMORY_SIZE: usize, const N: usize, const P: usize, const K: usize, c
 }
 
 impl<const MEMORY_SIZE: usize, const N: usize, const P: usize, const K: usize, const I: usize>
-	CheckChannelSystemDispatcher<MEMORY_SIZE> for TransactionMetadataSystem<MEMORY_SIZE, N, P, K, I>
+	CheckChannelSystemDispatcher<MEMORY_SIZE> for TransactionMetadataSystem<N, P, K, I>
 {
 }
 
 impl<const MEMORY_SIZE: usize, const N: usize, const P: usize, const K: usize, const I: usize>
-	OpenChannelSystemDispatcher<MEMORY_SIZE> for TransactionMetadataSystem<MEMORY_SIZE, N, P, K, I>
+	OpenChannelSystemDispatcher<MEMORY_SIZE> for TransactionMetadataSystem<N, P, K, I>
 {
 }

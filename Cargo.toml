@@ -31,6 +31,7 @@ members = [
 
   "fuste/env/systems/channel/serial-channel",
   "fuste/env/systems/channel/transaction",
+  "fuste/env/systems/channel/signer-stores",
   "fuste/systems/channel/dlt/std-transaction",
 
 ]
