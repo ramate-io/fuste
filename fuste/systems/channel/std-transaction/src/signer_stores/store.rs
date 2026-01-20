@@ -1,7 +1,5 @@
-use super::{
-	HartIndex, SignerBackendAddress, SignerBackendIndex, SignerStoreBackend,
-	SignerStoreBackendError, SignerStoreError, UserSignerIndex,
-};
+use crate::containers::{HartIndex, SignerBackendAddress, SignerBackendIndex, UserSignerIndex};
+use crate::signer_stores::{SignerStoreBackend, SignerStoreBackendError, SignerStoreError};
 use fuste_channel::{
 	systems::ChannelSystem, ChannelError, ChannelStatus, ChannelStatusCode, ChannelSystemStatus,
 };
