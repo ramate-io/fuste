@@ -325,6 +325,8 @@ name = "fuste-std-transaction-system"
 version = "0.0.1"
 dependencies = [
  "fuste-channel",
+ "fuste-serial-channel",
+ "fuste-std-signer-stores",
  "serde",
  "thiserror 1.0.69",
 ]

@@ -34,6 +34,20 @@ impl<
 		Self { signer_index, type_bytes, bytes }
 	}
 
+	pub fn signer_index(
+		&self,
+	) -> &TransactionSignerIndex<ADDRESS_BYTES, PUBLIC_KEY_BYTES, SIGNER_COUNT> {
+		&self.signer_index
+	}
+
+	pub fn type_bytes(&self) -> &[u8; TYPE_NAME_BYTES] {
+		&self.type_bytes
+	}
+
+	pub fn bytes(&self) -> &[u8; VALUE_BYTES] {
+		&self.bytes
+	}
+
 	/// Stores the raw signer store to the channel.
 	pub fn store<const RSIZE: usize>(
 		&self,

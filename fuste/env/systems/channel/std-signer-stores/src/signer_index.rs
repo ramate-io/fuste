@@ -20,6 +20,10 @@ impl<const N: usize, const P: usize, const K: usize> TransactionSignerIndex<N, P
 	pub fn new(signers: [Option<TransactionSigner<N, P>>; K]) -> Self {
 		Self { signers }
 	}
+
+	pub fn signers(&self) -> &[Option<TransactionSigner<N, P>>] {
+		&self.signers
+	}
 }
 
 impl<const N: usize, const P: usize, const K: usize> Serialize for TransactionSignerIndex<N, P, K> {

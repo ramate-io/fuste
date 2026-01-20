@@ -10,6 +10,10 @@ impl<const N: usize> AddressBytes<N> {
 	pub fn new(bytes: [u8; N]) -> Self {
 		Self(bytes)
 	}
+
+	pub fn as_bytes(&self) -> &[u8] {
+		&self.0
+	}
 }
 
 impl<const N: usize> Serialize for AddressBytes<N> {
@@ -46,6 +50,10 @@ impl<const N: usize> PublicKeyBytes<N> {
 
 	pub fn new(bytes: [u8; N]) -> Self {
 		Self(bytes)
+	}
+
+	pub fn as_bytes(&self) -> &[u8] {
+		&self.0
 	}
 }
 
@@ -89,6 +97,14 @@ impl<const A: usize, const P: usize> TransactionSigner<A, P> {
 
 	pub fn new(address_bytes: AddressBytes<A>, private_key_bytes: PublicKeyBytes<P>) -> Self {
 		Self { address_bytes, private_key_bytes }
+	}
+
+	pub fn address(&self) -> &AddressBytes<A> {
+		&self.address_bytes
+	}
+
+	pub fn private_key(&self) -> &PublicKeyBytes<P> {
+		&self.private_key_bytes
 	}
 }
 

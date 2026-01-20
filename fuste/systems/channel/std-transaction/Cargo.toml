@@ -17,7 +17,8 @@ rust-version = { workspace = true }
 thiserror = { workspace = true }
 serde = { workspace = true }
 fuste-channel = { workspace = true }
-# fuste-serial-channel = { workspace = true }
+fuste-serial-channel = { workspace = true }
+fuste-std-signer-stores = { workspace = true }
 
 [lints]
 workspace = true

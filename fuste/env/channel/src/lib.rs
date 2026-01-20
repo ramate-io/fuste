@@ -173,6 +173,7 @@ pub enum ChannelError {
 	Failure(ChannelStatus),
 	Ignored(ChannelStatus),
 	InvalidStatusCode(i32),
+	Internal,
 	NotImplemented,
 }
 
@@ -185,6 +186,7 @@ impl Display for ChannelError {
 			ChannelError::Ignored(status) => write!(f, "Ignored: {}", status),
 			ChannelError::InvalidStatusCode(code) => write!(f, "Invalid status code: {}", code),
 			ChannelError::NotImplemented => write!(f, "Not implemented"),
+			ChannelError::Internal => write!(f, "Internal error"),
 			ChannelError::BufferTooSmall(status) => write!(f, "Buffer too small: {}", status),
 		}
 	}
