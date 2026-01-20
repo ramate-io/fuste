@@ -18,13 +18,18 @@ pub struct SignerStore<
 	bytes: [u8; VALUE_BYTES],
 }
 
-impl<const N: usize, const P: usize, const K: usize, const T: usize, const B: usize>
-	SignerStore<N, P, K, T, B>
+impl<
+		const ADDRESS_BYTES: usize,
+		const PUBLIC_KEY_BYTES: usize,
+		const SIGNER_COUNT: usize,
+		const TYPE_NAME_BYTES: usize,
+		const VALUE_BYTES: usize,
+	> SignerStore<ADDRESS_BYTES, PUBLIC_KEY_BYTES, SIGNER_COUNT, TYPE_NAME_BYTES, VALUE_BYTES>
 {
 	pub fn new(
 		signer_index: TransactionSignerIndex<ADDRESS_BYTES, PUBLIC_KEY_BYTES, SIGNER_COUNT>,
 		type_bytes: [u8; TYPE_NAME_BYTES],
-		bytes: [u8; B],
+		bytes: [u8; VALUE_BYTES],
 	) -> Self {
 		Self { signer_index, type_bytes, bytes }
 	}
@@ -39,87 +44,129 @@ impl<const N: usize, const P: usize, const K: usize, const T: usize, const B: us
 	}
 }
 
-impl<const N: usize, const P: usize, const K: usize, const T: usize, const B: usize> Serialize
-	for SignerStore<N, P, K, T, B>
+impl<
+		const ADDRESS_BYTES: usize,
+		const PUBLIC_KEY_BYTES: usize,
+		const SIGNER_COUNT: usize,
+		const TYPE_NAME_BYTES: usize,
+		const VALUE_BYTES: usize,
+	> Serialize
+	for SignerStore<ADDRESS_BYTES, PUBLIC_KEY_BYTES, SIGNER_COUNT, TYPE_NAME_BYTES, VALUE_BYTES>
 {
 	fn try_write_to_buffer(&self, buffer: &mut [u8]) -> Result<usize, SerialChannelError> {
-		if buffer.len() < K * (N + P) + T + B {
-			return Err(SerialChannelError::SerializedBufferTooSmall((T + B) as u32));
+		if buffer.len()
+			< SIGNER_COUNT * (ADDRESS_BYTES + PUBLIC_KEY_BYTES) + TYPE_NAME_BYTES + VALUE_BYTES
+		{
+			return Err(SerialChannelError::SerializedBufferTooSmall(
+				(TYPE_NAME_BYTES + VALUE_BYTES) as u32,
+			));
 		}
 
 		let mut written_len = self.signer_index.try_write_to_buffer(buffer)?;
-		buffer[written_len..written_len + T].copy_from_slice(&self.type_bytes);
-		written_len += T;
-		buffer[written_len..written_len + B].copy_from_slice(&self.bytes);
-		Ok(written_len + B)
+		buffer[written_len..written_len + TYPE_NAME_BYTES].copy_from_slice(&self.type_bytes);
+		written_len += TYPE_NAME_BYTES;
+		buffer[written_len..written_len + VALUE_BYTES].copy_from_slice(&self.bytes);
+		Ok(written_len + VALUE_BYTES)
 	}
 }
 
-impl<const N: usize, const P: usize, const K: usize, const T: usize, const B: usize> Deserialize
-	for SignerStore<N, P, K, T, B>
+impl<
+		const ADDRESS_BYTES: usize,
+		const PUBLIC_KEY_BYTES: usize,
+		const SIGNER_COUNT: usize,
+		const TYPE_NAME_BYTES: usize,
+		const VALUE_BYTES: usize,
+	> Deserialize
+	for SignerStore<ADDRESS_BYTES, PUBLIC_KEY_BYTES, SIGNER_COUNT, TYPE_NAME_BYTES, VALUE_BYTES>
 {
 	fn try_from_bytes_with_remaining_buffer(
 		buffer: &[u8],
 	) -> Result<(&[u8], Self), SerialChannelError> {
-		let (remaining_buffer, signer_index) =
-			TransactionSignerIndex::<N, P, K>::try_from_bytes_with_remaining_buffer(buffer)?;
+		let (remaining_buffer, signer_index) = TransactionSignerIndex::<
+			ADDRESS_BYTES,
+			PUBLIC_KEY_BYTES,
+			SIGNER_COUNT,
+		>::try_from_bytes_with_remaining_buffer(buffer)?;
 
-		let mut type_bytes = [0; T];
-		type_bytes.copy_from_slice(&remaining_buffer[..T]);
-		let remaining_buffer = &remaining_buffer[T..];
+		let mut type_bytes = [0; TYPE_NAME_BYTES];
+		type_bytes.copy_from_slice(&remaining_buffer[..TYPE_NAME_BYTES]);
+		let remaining_buffer = &remaining_buffer[TYPE_NAME_BYTES..];
 
-		let mut bytes = [0; B];
-		bytes.copy_from_slice(&remaining_buffer[..B]);
-		let remaining_buffer = &remaining_buffer[B..];
+		let mut bytes = [0; VALUE_BYTES];
+		bytes.copy_from_slice(&remaining_buffer[..VALUE_BYTES]);
+		let remaining_buffer = &remaining_buffer[VALUE_BYTES..];
 
 		Ok((remaining_buffer, Self { signer_index, type_bytes, bytes }))
 	}
 }
 
 #[derive(Debug, Clone)]
-pub struct TypedSignerStore<const N: usize, const P: usize, const K: usize, T: SerialType> {
-	signer_index: TransactionSignerIndex<N, P, K>,
+pub struct TypedSignerStore<
+	const ADDRESS_BYTES: usize,
+	const PUBLIC_KEY_BYTES: usize,
+	const SIGNER_COUNT: usize,
+	T: SerialType,
+> {
+	signer_index: TransactionSignerIndex<ADDRESS_BYTES, PUBLIC_KEY_BYTES, SIGNER_COUNT>,
 	value: T,
 }
 
-impl<const N: usize, const P: usize, const K: usize, T: SerialType> TypedSignerStore<N, P, K, T> {
-	pub fn new(signer_index: TransactionSignerIndex<N, P, K>, value: T) -> Self {
+impl<
+		const ADDRESS_BYTES: usize,
+		const PUBLIC_KEY_BYTES: usize,
+		const SIGNER_COUNT: usize,
+		T: SerialType,
+	> TypedSignerStore<ADDRESS_BYTES, PUBLIC_KEY_BYTES, SIGNER_COUNT, T>
+{
+	pub fn new(
+		signer_index: TransactionSignerIndex<ADDRESS_BYTES, PUBLIC_KEY_BYTES, SIGNER_COUNT>,
+		value: T,
+	) -> Self {
 		Self { signer_index, value }
 	}
 
-	pub fn store<const TSIZE: usize, const B: usize, const RSIZE: usize>(
+	pub fn store<const TYPE_NAME_BYTES: usize, const VALUE_BYTES: usize, const RSIZE: usize>(
 		&self,
 		system_id: ChannelSystemId,
 	) -> Result<(), SerialChannelError> {
-		let signer_store = SignerStore::<N, P, K, TSIZE, B>::try_from(self)?;
+		let signer_store = SignerStore::<
+			ADDRESS_BYTES,
+			PUBLIC_KEY_BYTES,
+			SIGNER_COUNT,
+			TYPE_NAME_BYTES,
+			VALUE_BYTES,
+		>::try_from(self)?;
 		signer_store.store::<RSIZE>(system_id)?;
 		Ok(())
 	}
 }
 
 impl<
-		const N: usize,
-		const P: usize,
-		const K: usize,
-		const TSIZE: usize,
-		const B: usize,
+		const ADDRESS_BYTES: usize,
+		const PUBLIC_KEY_BYTES: usize,
+		const SIGNER_COUNT: usize,
+		const TYPE_NAME_BYTES: usize,
+		const VALUE_BYTES: usize,
 		T: SerialType,
-	> TryFrom<&TypedSignerStore<N, P, K, T>> for SignerStore<N, P, K, TSIZE, B>
+	> TryFrom<&TypedSignerStore<ADDRESS_BYTES, PUBLIC_KEY_BYTES, SIGNER_COUNT, T>>
+	for SignerStore<ADDRESS_BYTES, PUBLIC_KEY_BYTES, SIGNER_COUNT, TYPE_NAME_BYTES, VALUE_BYTES>
 {
 	type Error = SerialChannelError;
 
-	fn try_from(value: &TypedSignerStore<N, P, K, T>) -> Result<Self, Self::Error> {
+	fn try_from(
+		value: &TypedSignerStore<ADDRESS_BYTES, PUBLIC_KEY_BYTES, SIGNER_COUNT, T>,
+	) -> Result<Self, Self::Error> {
 		let name = type_name::<T>();
 		let name_bytes = name.as_bytes();
 
-		if name_bytes.len() > TSIZE {
+		if name_bytes.len() > TYPE_NAME_BYTES {
 			return Err(SerialChannelError::SerializedBufferTooSmall(name_bytes.len() as u32));
 		}
 
-		let mut type_bytes = [0u8; TSIZE];
+		let mut type_bytes = [0u8; TYPE_NAME_BYTES];
 		type_bytes[..name_bytes.len()].copy_from_slice(name_bytes);
 
-		let mut value_bytes = [0; B];
+		let mut value_bytes = [0; VALUE_BYTES];
 		value.value.try_write_to_buffer(&mut value_bytes)?;
 
 		Ok(Self { signer_index: value.signer_index.clone(), type_bytes, bytes: value_bytes })
