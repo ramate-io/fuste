@@ -73,7 +73,27 @@ impl<const ADDRESS_BYTES: usize, const PUBLIC_KEY_BYTES: usize, const SIGNER_COU
 impl<const ADDRESS_BYTES: usize, const PUBLIC_KEY_BYTES: usize, const SIGNER_COUNT: usize>
 	SignerStoreSystem<ADDRESS_BYTES, PUBLIC_KEY_BYTES, SIGNER_COUNT>
 {
+	/// Store with default sizes: RSIZE=32768 (32KB), TYPE_NAME_BYTES=128, VALUE_BYTES=16384 (16KB)
 	pub fn store<T: SerialType>(
+		&self,
+		signer_index: impl SignerIndex<ADDRESS_BYTES, PUBLIC_KEY_BYTES, SIGNER_COUNT>,
+		data: T,
+	) -> Result<(), SerialChannelError> {
+		self.store_with_sizes::<
+			T,
+			{ 1024 * 32 }, // RSIZE: 32KB
+			128,          // TYPE_NAME_BYTES
+			{ 1024 * 16 }, // VALUE_BYTES: 16KB
+		>(signer_index, data)
+	}
+
+	/// Store with custom sizes
+	pub fn store_with_sizes<
+		T: SerialType,
+		const RSIZE: usize,
+		const TYPE_NAME_BYTES: usize,
+		const VALUE_BYTES: usize,
+	>(
 		&self,
 		signer_index: impl SignerIndex<ADDRESS_BYTES, PUBLIC_KEY_BYTES, SIGNER_COUNT>,
 		data: T,
@@ -86,12 +106,56 @@ impl<const ADDRESS_BYTES: usize, const PUBLIC_KEY_BYTES: usize, const SIGNER_COU
 			.try_into()
 			.map_err(|_| SerialChannelError::SerializedBufferTooSmall(0))?;
 		store_with_sizes::<
-			{ 1024 * 32 },
+			RSIZE,
 			ADDRESS_BYTES,
 			PUBLIC_KEY_BYTES,
 			SIGNER_COUNT,
-			128,
-			{ 128 * 32 },
+			TYPE_NAME_BYTES,
+			VALUE_BYTES,
+			T,
+		>(self.channel_system_id.clone(), transaction_signer_index, data)
+	}
+
+	/// Load with default sizes: RSIZE=32768 (32KB), TYPE_NAME_BYTES=128, VALUE_BYTES=16384 (16KB)
+	pub fn load<T: SerialType>(
+		&self,
+		signer_index: impl SignerIndex<ADDRESS_BYTES, PUBLIC_KEY_BYTES, SIGNER_COUNT>,
+		data: T,
+	) -> Result<T, SerialChannelError> {
+		self.load_with_sizes::<
+			T,
+			{ 1024 * 32 }, // RSIZE: 32KB
+			128,          // TYPE_NAME_BYTES
+			{ 1024 * 16 }, // VALUE_BYTES: 16KB
+		>(signer_index, data)
+	}
+
+	/// Load with custom sizes
+	pub fn load_with_sizes<
+		T: SerialType,
+		const RSIZE: usize,
+		const TYPE_NAME_BYTES: usize,
+		const VALUE_BYTES: usize,
+	>(
+		&self,
+		signer_index: impl SignerIndex<ADDRESS_BYTES, PUBLIC_KEY_BYTES, SIGNER_COUNT>,
+		data: T,
+	) -> Result<T, SerialChannelError> {
+		let transaction_signer_index: TransactionSignerIndex<
+			ADDRESS_BYTES,
+			PUBLIC_KEY_BYTES,
+			SIGNER_COUNT,
+		> = signer_index
+			.try_into()
+			.map_err(|_| SerialChannelError::SerializedBufferTooSmall(0))?;
+		load_with_sizes::<
+			RSIZE,
+			0, // WSIZE: unused but required by function signature
+			ADDRESS_BYTES,
+			PUBLIC_KEY_BYTES,
+			SIGNER_COUNT,
+			TYPE_NAME_BYTES,
+			VALUE_BYTES,
 			T,
 		>(self.channel_system_id.clone(), transaction_signer_index, data)
 	}
