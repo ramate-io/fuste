@@ -10,13 +10,14 @@ publish = { workspace = true }
 rust-version = { workspace = true }
 
 [dependencies]
-fuste-riscv-core = { workspace = true }
-fuste-std-output = { workspace = true }
-fuste-ecall-dispatcher = { workspace = true }
-fuste-transaction = { workspace = true }
+# fuste-riscv-core = { workspace = true }
+# fuste-std-output = { workspace = true }
+# fuste-ecall-dispatcher = { workspace = true }
+# fuste-transaction = { workspace = true }
 thiserror = { workspace = true }
 serde = { workspace = true }
 fuste-channel = { workspace = true }
+# fuste-serial-channel = { workspace = true }
 
 [lints]
 workspace = true

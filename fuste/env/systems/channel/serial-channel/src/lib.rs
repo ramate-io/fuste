@@ -60,3 +60,36 @@ pub fn serial_channel_request<
 
 	Ok(W::try_from_bytes(&read_write_buffer[..written_len])?)
 }
+
+pub struct Empty;
+
+impl Serialize for Empty {
+	fn try_write_to_buffer(&self, _buffer: &mut [u8]) -> Result<usize, SerialChannelError> {
+		Ok(0)
+	}
+}
+
+impl Deserialize for Empty {
+	fn try_from_bytes_with_remaining_buffer(
+		buffer: &[u8],
+	) -> Result<(&[u8], Self), SerialChannelError> {
+		Ok((buffer, Self))
+	}
+}
+
+pub struct Bytes<const N: usize>(pub [u8; N]);
+
+impl<const N: usize> Serialize for Bytes<N> {
+	fn try_write_to_buffer(&self, buffer: &mut [u8]) -> Result<usize, SerialChannelError> {
+		buffer.copy_from_slice(&self.0);
+		Ok(self.0.len())
+	}
+}
+
+impl<const N: usize> Deserialize for Bytes<N> {
+	fn try_from_bytes_with_remaining_buffer(
+		buffer: &[u8],
+	) -> Result<(&[u8], Self), SerialChannelError> {
+		Ok((buffer, Self(buffer.try_into().unwrap())))
+	}
+}

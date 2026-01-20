@@ -1,5 +1,3 @@
-pub mod base_signer;
-
 use fuste_channel::{
 	systems::ChannelSystem, ChannelError, ChannelStatus, ChannelStatusCode, ChannelSystemStatus,
 };

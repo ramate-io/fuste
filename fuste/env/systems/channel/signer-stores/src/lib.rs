@@ -1,47 +1,71 @@
-pub mod base;
+#![no_std]
+pub mod signer_index;
+pub mod signer_load;
+pub mod signer_store;
 
-use core::marker::PhantomData;
 use fuste_channel::ChannelSystemId;
-use fuste_serial_channel::{Deserialize, SerialChannelError, SerialType, Serialize};
+use fuste_serial_channel::SerialChannelError;
+use fuste_serial_channel::SerialType;
+use signer_index::{SignerIndex, TransactionSignerIndex};
+use signer_load::TypedSignerLoad;
+use signer_store::TypedSignerStore;
 
-/// A marker trait for types that can be stored in a signer store.
-pub trait StoreSignerIndex<S>: SerialType {
-	fn index_signers(&self) -> &[Option<S>];
+pub fn store_with_sizes<
+	const RSIZE: usize,
+	const N: usize,
+	const P: usize,
+	const K: usize,
+	const TSIZE: usize,
+	const B: usize,
+	T: SerialType,
+>(
+	system_id: ChannelSystemId,
+	signer_index: TransactionSignerIndex<N, P, K>,
+	data: T,
+) -> Result<(), SerialChannelError> {
+	let typed_signer_store = TypedSignerStore::<N, P, K, T>::new(signer_index, data);
+	typed_signer_store.store::<TSIZE, B, RSIZE>(system_id)
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct SignerStore<const N: usize, S, I: StoreSignerIndex<S>> {
-	__signer_marker: PhantomData<S>,
-	pub index: I,
-	pub data_bytes: [u8; N],
+pub fn load_with_sizes<
+	const RSIZE: usize,
+	const WSIZE: usize,
+	const N: usize,
+	const P: usize,
+	const K: usize,
+	const TSIZE: usize,
+	const B: usize,
+	T: SerialType,
+>(
+	system_id: ChannelSystemId,
+	signer_index: TransactionSignerIndex<N, P, K>,
+	data: T,
+) -> Result<T, SerialChannelError> {
+	let typed_signer_load = TypedSignerLoad::<N, P, K, T>::new(signer_index, data);
+	let value = typed_signer_load.load::<TSIZE, B, RSIZE>(system_id)?;
+	Ok(value)
 }
 
-impl<const N: usize, S, I: StoreSignerIndex<S>> SignerStore<N, S, I> {
-	pub const CHANNEL_SYSTEM_ID: ChannelSystemId = ChannelSystemId::constant(0xad03);
+pub struct SignerStoreSystem<const N: usize, const P: usize, const K: usize> {
+	channel_system_id: ChannelSystemId,
+}
 
-	pub fn new(index: I, data_bytes: [u8; N]) -> Self {
-		Self { index, data_bytes, __signer_marker: PhantomData }
+impl<const N: usize, const P: usize, const K: usize> Default for SignerStoreSystem<N, P, K> {
+	fn default() -> Self {
+		Self { channel_system_id: ChannelSystemId::new(0x516d) }
 	}
 }
 
-impl<const N: usize, S, I: StoreSignerIndex<S>> Serialize for SignerStore<N, S, I> {
-	fn try_write_to_buffer(&self, buffer: &mut [u8]) -> Result<usize, SerialChannelError> {
-		let mut written_len = self.index.try_write_to_buffer(buffer)?;
-		buffer[written_len..written_len + N].copy_from_slice(&self.data_bytes);
-		written_len += N;
-		Ok(written_len)
-	}
-}
-
-impl<const N: usize, S, I: StoreSignerIndex<S>> Deserialize for SignerStore<N, S, I> {
-	fn try_from_bytes_with_remaining_buffer(
-		buffer: &[u8],
-	) -> Result<(&[u8], Self), SerialChannelError> {
-		let (remaining_buffer, index) = I::try_from_bytes_with_remaining_buffer(buffer)?;
-
-		let mut data_bytes = [0; N];
-		data_bytes.copy_from_slice(&remaining_buffer[..N]);
-
-		Ok((remaining_buffer, Self { index, data_bytes, __signer_marker: PhantomData }))
+impl<const N: usize, const P: usize, const K: usize> SignerStoreSystem<N, P, K> {
+	pub fn store<T: SerialType>(
+		&self,
+		signer_index: impl SignerIndex<N, P, K>,
+		data: T,
+	) -> Result<(), SerialChannelError> {
+		store_with_sizes::<{ 1024 * 32 }, N, P, K, { 32 * 32 }, B, T>(
+			self.channel_system_id,
+			signer_index,
+			data,
+		)
 	}
 }

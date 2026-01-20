@@ -317,10 +317,6 @@ name = "fuste-std-transaction"
 version = "0.0.1"
 dependencies = [
  "fuste-channel",
- "fuste-ecall-dispatcher",
- "fuste-riscv-core",
- "fuste-std-output",
- "fuste-transaction",
  "serde",
  "thiserror 1.0.69",
 ]
