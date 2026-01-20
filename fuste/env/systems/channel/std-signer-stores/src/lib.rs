@@ -12,60 +12,87 @@ use signer_store::TypedSignerStore;
 
 pub fn store_with_sizes<
 	const RSIZE: usize,
-	const N: usize,
-	const P: usize,
-	const K: usize,
-	const TSIZE: usize,
-	const B: usize,
+	const ADDRESS_BYTES: usize,
+	const PUBLIC_KEY_BYTES: usize,
+	const SIGNER_COUNT: usize,
+	const TYPE_NAME_BYTES: usize,
+	const VALUE_BYTES: usize,
 	T: SerialType,
 >(
 	system_id: ChannelSystemId,
-	signer_index: TransactionSignerIndex<N, P, K>,
+	signer_index: TransactionSignerIndex<ADDRESS_BYTES, PUBLIC_KEY_BYTES, SIGNER_COUNT>,
 	data: T,
 ) -> Result<(), SerialChannelError> {
-	let typed_signer_store = TypedSignerStore::<N, P, K, T>::new(signer_index, data);
-	typed_signer_store.store::<TSIZE, B, RSIZE>(system_id)
+	let typed_signer_store =
+		TypedSignerStore::<ADDRESS_BYTES, PUBLIC_KEY_BYTES, SIGNER_COUNT, T>::new(
+			signer_index,
+			data,
+		);
+	typed_signer_store.store::<TYPE_NAME_BYTES, VALUE_BYTES, RSIZE>(system_id)
 }
 
 pub fn load_with_sizes<
 	const RSIZE: usize,
 	const WSIZE: usize,
-	const N: usize,
-	const P: usize,
-	const K: usize,
-	const TSIZE: usize,
-	const B: usize,
+	const ADDRESS_BYTES: usize,
+	const PUBLIC_KEY_BYTES: usize,
+	const SIGNER_COUNT: usize,
+	const TYPE_NAME_BYTES: usize,
+	const VALUE_BYTES: usize,
 	T: SerialType,
 >(
 	system_id: ChannelSystemId,
-	signer_index: TransactionSignerIndex<N, P, K>,
+	signer_index: TransactionSignerIndex<ADDRESS_BYTES, PUBLIC_KEY_BYTES, SIGNER_COUNT>,
 	data: T,
 ) -> Result<T, SerialChannelError> {
-	let typed_signer_load = TypedSignerLoad::<N, P, K, T>::new(signer_index, data);
-	let value = typed_signer_load.load::<TSIZE, B, RSIZE>(system_id)?;
+	let typed_signer_load =
+		TypedSignerLoad::<ADDRESS_BYTES, PUBLIC_KEY_BYTES, SIGNER_COUNT, T>::new(
+			signer_index,
+			data,
+		);
+	let value = typed_signer_load.load::<TYPE_NAME_BYTES, VALUE_BYTES, RSIZE>(system_id)?;
 	Ok(value)
 }
 
-pub struct SignerStoreSystem<const N: usize, const P: usize, const K: usize> {
+pub struct SignerStoreSystem<
+	const ADDRESS_BYTES: usize,
+	const PUBLIC_KEY_BYTES: usize,
+	const SIGNER_COUNT: usize,
+> {
 	channel_system_id: ChannelSystemId,
 }
 
-impl<const N: usize, const P: usize, const K: usize> Default for SignerStoreSystem<N, P, K> {
+impl<const ADDRESS_BYTES: usize, const PUBLIC_KEY_BYTES: usize, const SIGNER_COUNT: usize> Default
+	for SignerStoreSystem<ADDRESS_BYTES, PUBLIC_KEY_BYTES, SIGNER_COUNT>
+{
 	fn default() -> Self {
 		Self { channel_system_id: ChannelSystemId::new(0x516d) }
 	}
 }
 
-impl<const N: usize, const P: usize, const K: usize> SignerStoreSystem<N, P, K> {
+impl<const ADDRESS_BYTES: usize, const PUBLIC_KEY_BYTES: usize, const SIGNER_COUNT: usize>
+	SignerStoreSystem<ADDRESS_BYTES, PUBLIC_KEY_BYTES, SIGNER_COUNT>
+{
 	pub fn store<T: SerialType>(
 		&self,
-		signer_index: impl SignerIndex<N, P, K>,
+		signer_index: impl SignerIndex<ADDRESS_BYTES, PUBLIC_KEY_BYTES, SIGNER_COUNT>,
 		data: T,
 	) -> Result<(), SerialChannelError> {
-		store_with_sizes::<{ 1024 * 32 }, N, P, K, { 32 * 32 }, B, T>(
-			self.channel_system_id,
-			signer_index.try_into(),
-			data,
-		)
+		let transaction_signer_index: TransactionSignerIndex<
+			ADDRESS_BYTES,
+			PUBLIC_KEY_BYTES,
+			SIGNER_COUNT,
+		> = signer_index
+			.try_into()
+			.map_err(|_| SerialChannelError::SerializedBufferTooSmall(0))?;
+		store_with_sizes::<
+			{ 1024 * 32 },
+			ADDRESS_BYTES,
+			PUBLIC_KEY_BYTES,
+			SIGNER_COUNT,
+			128,
+			{ 128 * 32 },
+			T,
+		>(self.channel_system_id.clone(), transaction_signer_index, data)
 	}
 }
