@@ -40,6 +40,10 @@ impl SignerBackendCache {
 	pub fn at_index(&self, index: usize) -> Option<&SignerBackendAddress> {
 		self.signers.iter().nth(index)
 	}
+
+	pub fn contains(&self, address: &SignerBackendAddress) -> bool {
+		self.signers.contains(address)
+	}
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]

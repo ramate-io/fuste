@@ -1,13 +1,15 @@
-use crate::containers::{HartIndex, SignerBackendAddress, SignerBackendIndex, UserSignerIndex};
+use crate::containers::{
+	HartIndex, SignerBackendAddress, SignerBackendCache, SignerBackendIndex, UserSignerIndex,
+};
 use crate::signer_stores::{SignerStoreBackend, SignerStoreBackendError, SignerStoreError};
 use fuste_channel::{
 	systems::ChannelSystem, ChannelError, ChannelStatus, ChannelStatusCode, ChannelSystemStatus,
 };
 use fuste_serial_channel::Deserialize;
 use fuste_std_signer_stores::signer_store::{Op, SignerStore};
-use std::collections::BTreeSet;
 
 pub struct SignerStorage<
+	'a,
 	const ADDRESS_BYTES: usize,
 	const PUBLIC_KEY_BYTES: usize,
 	const SIGNER_COUNT: usize,
@@ -15,22 +17,28 @@ pub struct SignerStorage<
 	const VALUE_BYTES: usize,
 	S: SignerStoreBackend,
 > {
-	backend: S,
-	hart_index: HartIndex,
-	authenticated_signers: BTreeSet<SignerBackendAddress>,
+	backend: &'a S,
+	hart_index: &'a HartIndex,
+	authenticated_signers: &'a SignerBackendCache,
 }
 
 impl<
+		'a,
 		const ADDRESS_BYTES: usize,
 		const PUBLIC_KEY_BYTES: usize,
 		const SIGNER_COUNT: usize,
 		const TYPE_NAME_BYTES: usize,
 		const VALUE_BYTES: usize,
 		S: SignerStoreBackend,
-	> SignerStorage<ADDRESS_BYTES, PUBLIC_KEY_BYTES, SIGNER_COUNT, TYPE_NAME_BYTES, VALUE_BYTES, S>
+	>
+	SignerStorage<'a, ADDRESS_BYTES, PUBLIC_KEY_BYTES, SIGNER_COUNT, TYPE_NAME_BYTES, VALUE_BYTES, S>
 {
-	pub fn new(backend: S, hart_index: HartIndex) -> Self {
-		Self { backend, hart_index, authenticated_signers: BTreeSet::new() }
+	pub fn new(
+		backend: &'a S,
+		hart_index: &'a HartIndex,
+		authenticated_signers: &'a SignerBackendCache,
+	) -> Self {
+		Self { backend, hart_index, authenticated_signers }
 	}
 
 	pub fn is_signer_authenticated(&self, signer_address: SignerBackendAddress) -> bool {
@@ -95,6 +103,7 @@ impl<
 }
 
 impl<
+		'a,
 		const ADDRESS_BYTES: usize,
 		const PUBLIC_KEY_BYTES: usize,
 		const SIGNER_COUNT: usize,
@@ -102,7 +111,15 @@ impl<
 		const VALUE_BYTES: usize,
 		S: SignerStoreBackend,
 	> ChannelSystem
-	for SignerStorage<ADDRESS_BYTES, PUBLIC_KEY_BYTES, SIGNER_COUNT, TYPE_NAME_BYTES, VALUE_BYTES, S>
+	for SignerStorage<
+		'a,
+		ADDRESS_BYTES,
+		PUBLIC_KEY_BYTES,
+		SIGNER_COUNT,
+		TYPE_NAME_BYTES,
+		VALUE_BYTES,
+		S,
+	>
 {
 	fn handle_open(
 		&self,
