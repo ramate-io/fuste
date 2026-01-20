@@ -2,9 +2,8 @@ use crate::containers::{
 	HartIndex, SignerBackendAddress, SignerBackendCache, SignerBackendIndex, UserSignerIndex,
 };
 use crate::signer_stores::{SignerStoreBackend, SignerStoreBackendError, SignerStoreError};
-use fuste_channel::{
-	systems::ChannelSystem, ChannelError, ChannelStatus, ChannelStatusCode, ChannelSystemStatus,
-};
+use crate::ChannelSubsystem;
+use fuste_channel::{ChannelError, ChannelStatus, ChannelStatusCode, ChannelSystemStatus};
 use fuste_serial_channel::Deserialize;
 use fuste_std_signer_stores::signer_store::{Op, SignerStore};
 
@@ -110,7 +109,7 @@ impl<
 		const TYPE_NAME_BYTES: usize,
 		const VALUE_BYTES: usize,
 		S: SignerStoreBackend,
-	> ChannelSystem
+	> ChannelSubsystem
 	for SignerStorage<
 		'a,
 		ADDRESS_BYTES,
@@ -121,8 +120,8 @@ impl<
 		S,
 	>
 {
-	fn handle_open(
-		&self,
+	fn handle_subsystem_open(
+		&mut self,
 		read_buffer: &[u8],
 		read_write_buffer: &mut [u8],
 	) -> Result<ChannelStatus, ChannelError> {
@@ -173,8 +172,8 @@ impl<
 		Ok(ChannelStatus::new(0, ChannelStatusCode::Success, ChannelSystemStatus::new(0)))
 	}
 
-	fn handle_check(
-		&self,
+	fn handle_subsystem_check(
+		&mut self,
 		read_buffer: &[u8],
 		write_buffer: &mut [u8],
 	) -> Result<ChannelStatus, ChannelError> {

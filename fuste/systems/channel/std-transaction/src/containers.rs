@@ -11,6 +11,16 @@ impl From<&[u8]> for SignerBackendAddress {
 	}
 }
 
+impl<const N: usize> From<SignerBackendAddress> for [u8; N] {
+	fn from(signer: SignerBackendAddress) -> Self {
+		let mut out = [0u8; N];
+		let src: &[u8] = signer.0.as_ref();
+		let len = core::cmp::min(N, src.len());
+		out[..len].copy_from_slice(&src[..len]);
+		out
+	}
+}
+
 impl SignerBackendAddress {
 	pub fn new(address_bytes: Vec<u8>) -> Self {
 		Self(address_bytes)
@@ -51,6 +61,12 @@ pub struct SignerBackendIndex {
 	signers: SignerBackendCache,
 }
 
+impl Default for SignerBackendIndex {
+	fn default() -> Self {
+		Self { signers: SignerBackendCache::default() }
+	}
+}
+
 impl SignerBackendIndex {
 	pub fn new(signers: BTreeSet<SignerBackendAddress>) -> Self {
 		Self { signers: SignerBackendCache::new(signers) }
@@ -87,6 +103,12 @@ impl SignerBackendIndex {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct HartIndex(pub SignerBackendIndex);
+
+impl Default for HartIndex {
+	fn default() -> Self {
+		Self(SignerBackendIndex::default())
+	}
+}
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct UserSignerIndex(pub SignerBackendIndex);

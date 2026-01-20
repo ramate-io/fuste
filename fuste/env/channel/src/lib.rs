@@ -2,7 +2,6 @@
 #![allow(unexpected_cfgs)]
 
 pub mod ops;
-pub mod systems;
 use core::fmt::{self, Display};
 use fuste_ecall::Ecall;
 
@@ -57,6 +56,10 @@ impl ChannelStatusCode {
 		self as i32
 	}
 
+	pub fn to_u32(self) -> u32 {
+		self as u32
+	}
+
 	pub fn try_from_i32(value: i32) -> Result<Self, ChannelError> {
 		match value {
 			-4 => Ok(ChannelStatusCode::SystemError),
@@ -99,6 +102,10 @@ impl ChannelSystemStatus {
 
 	pub fn to_i32(self) -> i32 {
 		self.0
+	}
+
+	pub fn to_u32(self) -> u32 {
+		self.0 as u32
 	}
 }
 
@@ -157,6 +164,10 @@ impl ChannelStatus {
 			ChannelStatusCode::Ignored => Err(ChannelError::Ignored(self)),
 		}
 	}
+
+	pub fn invalid_system() -> Self {
+		Self::new(0, ChannelStatusCode::InvalidSystem, ChannelSystemStatus::new(0))
+	}
 }
 
 impl Display for ChannelStatus {
@@ -189,6 +200,12 @@ impl Display for ChannelError {
 			ChannelError::Internal => write!(f, "Internal error"),
 			ChannelError::BufferTooSmall(status) => write!(f, "Buffer too small: {}", status),
 		}
+	}
+}
+
+impl ChannelError {
+	pub fn invalid_system() -> Self {
+		ChannelError::InvalidSystem(ChannelStatus::invalid_system())
 	}
 }
 
@@ -225,9 +242,9 @@ pub fn channel_op(
 				in("a3") _read_write_buffer.as_ptr(), // pointer to write buffer
 				in("a4") _read_write_buffer.len(), // pointer to write buffer
 				in("a5") _status_ignored,       // if this isn't reset, the system must have ignored the call
-				lateout("a3") _status,          // return value (bytes written or -errno)
+				lateout("a5") _status,          // return value (bytes written or -errno)
 				lateout("a4") _size,            // the size of the buffer written
-				lateout("a5") _system_status,   // the system status of the operation
+				lateout("a6") _system_status,   // the system status of the operation
 			);
 		}
 
