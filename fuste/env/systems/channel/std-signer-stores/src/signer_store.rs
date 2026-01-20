@@ -5,6 +5,12 @@ use fuste_serial_channel::{
 	serial_channel_request, Bytes, Deserialize, Empty, SerialChannelError, SerialType, Serialize,
 };
 
+/// Result of executing a SignerStore operation.
+pub enum ExecuteResult<const VALUE_BYTES: usize> {
+	Store(()),
+	Load(Bytes<VALUE_BYTES>),
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(transparent)]
 pub struct Op(u8);
@@ -77,28 +83,25 @@ impl<
 		&self.bytes
 	}
 
-	/// Stores the raw signer store to the channel.
-	/// When Op::Load is not set (i.e., Op::Store), use Empty with WSIZE 0 to prevent over-allocating.
-	pub fn store<const RSIZE: usize>(
+	/// Execute the operation based on the Op field.
+	///
+	/// - When `Op::STORE` is set: stores to the channel using Empty with WSIZE 0
+	/// - When `Op::LOAD` is set: loads from the channel using Bytes with WSIZE VALUE_BYTES
+	pub fn execute<const RSIZE: usize>(
 		&self,
 		system_id: ChannelSystemId,
-	) -> Result<(), SerialChannelError> {
-		// When Op::Load is not set (Op::Store), use Empty with WSIZE 0
-		serial_channel_request::<RSIZE, 0, Self, Empty>(system_id, self)?;
-		Ok(())
-	}
-
-	/// Loads the raw signer store from the channel.
-	/// When Op::Load is set, use Bytes with WSIZE VALUE_BYTES.
-	pub fn load<const RSIZE: usize>(
-		&self,
-		system_id: ChannelSystemId,
-	) -> Result<Bytes<VALUE_BYTES>, SerialChannelError> {
-		// When Op::Load is set, use Bytes with WSIZE VALUE_BYTES
-		let bytes = serial_channel_request::<RSIZE, VALUE_BYTES, Self, Bytes<VALUE_BYTES>>(
-			system_id, self,
-		)?;
-		Ok(bytes)
+	) -> Result<ExecuteResult<VALUE_BYTES>, SerialChannelError> {
+		if self.op.contains(Op::LOAD) {
+			// When Op::LOAD is set, use Bytes with WSIZE VALUE_BYTES
+			let bytes = serial_channel_request::<RSIZE, VALUE_BYTES, Self, Bytes<VALUE_BYTES>>(
+				system_id, self,
+			)?;
+			Ok(ExecuteResult::Load(bytes))
+		} else {
+			// When Op::LOAD is not set (Op::STORE), use Empty with WSIZE 0
+			serial_channel_request::<RSIZE, 0, Self, Empty>(system_id, self)?;
+			Ok(ExecuteResult::Store(()))
+		}
 	}
 }
 
@@ -202,10 +205,15 @@ impl<
 		Self { signer_index, value }
 	}
 
+	/// Store the value to the channel.
+	///
+	/// Constructs a SignerStore with Op::STORE and executes the operation.
+	/// The value is serialized and stored along with the signer index and type information.
 	pub fn store<const TYPE_NAME_BYTES: usize, const VALUE_BYTES: usize, const RSIZE: usize>(
 		&self,
 		system_id: ChannelSystemId,
 	) -> Result<(), SerialChannelError> {
+		// Construct SignerStore with Op::STORE
 		let signer_store = SignerStore::<
 			ADDRESS_BYTES,
 			PUBLIC_KEY_BYTES,
@@ -213,15 +221,26 @@ impl<
 			TYPE_NAME_BYTES,
 			VALUE_BYTES,
 		>::try_from(self)?;
-		signer_store.store::<RSIZE>(system_id)?;
-		Ok(())
+
+		// Execute with Op::STORE (uses Empty with WSIZE 0)
+		match signer_store.execute::<RSIZE>(system_id)? {
+			ExecuteResult::Store(()) => Ok(()),
+			ExecuteResult::Load(_) => {
+				// This shouldn't happen when Op::STORE is set
+				Err(SerialChannelError::SerializedBufferTooSmall(0))
+			}
+		}
 	}
 
+	/// Load the value from the channel.
+	///
+	/// Constructs a SignerStore with Op::LOAD and executes the operation.
+	/// The value is deserialized from the response buffer.
 	pub fn load<const TYPE_NAME_BYTES: usize, const VALUE_BYTES: usize, const RSIZE: usize>(
 		&self,
 		system_id: ChannelSystemId,
 	) -> Result<T, SerialChannelError> {
-		// Create a SignerStore with Op::Load and zero bytes
+		// Prepare type name bytes
 		let name = type_name::<T>();
 		let name_bytes = name.as_bytes();
 
@@ -232,6 +251,7 @@ impl<
 		let mut type_bytes = [0u8; TYPE_NAME_BYTES];
 		type_bytes[..name_bytes.len()].copy_from_slice(name_bytes);
 
+		// Construct SignerStore with Op::LOAD and zero bytes
 		let signer_store =
 			SignerStore::<
 				ADDRESS_BYTES,
@@ -241,7 +261,16 @@ impl<
 				VALUE_BYTES,
 			>::new(self.signer_index.clone(), type_bytes, [0; VALUE_BYTES], Op::LOAD);
 
-		let bytes = signer_store.load::<RSIZE>(system_id)?;
+		// Execute with Op::LOAD (uses Bytes with WSIZE VALUE_BYTES)
+		let bytes = match signer_store.execute::<RSIZE>(system_id)? {
+			ExecuteResult::Load(bytes) => bytes,
+			ExecuteResult::Store(_) => {
+				// This shouldn't happen when Op::LOAD is set
+				return Err(SerialChannelError::SerializedBufferTooSmall(0));
+			}
+		};
+
+		// Deserialize from the write buffer
 		let (_remaining_buffer, value) = T::try_from_bytes_with_remaining_buffer(&bytes.0)?;
 		Ok(value)
 	}
