@@ -1,6 +1,6 @@
 use fuste_channel::ChannelSystemId;
 use fuste_serial_channel::{Deserialize, SerialChannelError, Serialize};
-use fuste_transaction::signer::TransactionSigner;
+use fuste_std_transaction::signer::TransactionSigner;
 
 /// Anything that's a signer index must be able to be converted to and from a transaction signer index.
 pub trait SignerIndex<const N: usize, const P: usize, const K: usize>:

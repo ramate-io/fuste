@@ -1,5 +1,5 @@
 [package]
-name = "fuste-transaction"
+name = "fuste-std-signer-stores"
 version = { workspace = true }
 edition = "2021"
 license = { workspace = true }
@@ -12,6 +12,7 @@ rust-version = { workspace = true }
 [dependencies]
 fuste-channel = { workspace = true }
 fuste-serial-channel = { workspace = true }
+fuste-std-transaction = { workspace = true }
 
 [features]
 system = []

@@ -30,8 +30,8 @@ members = [
   "fuste/systems/debug/lilbug",
 
   "fuste/env/systems/channel/serial-channel",
-  "fuste/env/systems/channel/transaction",
-  "fuste/env/systems/channel/signer-stores",
+  "fuste/env/systems/channel/std-transaction",
+  "fuste/env/systems/channel/std-signer-stores",
   "fuste/systems/channel/dlt/std-transaction",
 
 ]
@@ -92,7 +92,7 @@ fuste-tick-handler = { path = "fuste/systems/tick/handler" }
 
 fuste-serial-channel = { path = "fuste/env/systems/channel/serial-channel" }
 
-fuste-transaction = { path = "fuste/env/systems/channel/transaction" }
+fuste-std-transaction = { path = "fuste/env/systems/channel/std-transaction" }
 
 [workspace.lints.clippy]
 debug_assert_with_mut_call = "deny"

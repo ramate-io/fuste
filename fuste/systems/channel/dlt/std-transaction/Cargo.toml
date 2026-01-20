@@ -1,5 +1,5 @@
 [package]
-name = "fuste-std-transaction"
+name = "fuste-std-transaction-system"
 version = { workspace = true }
 edition = "2021"
 license = { workspace = true }

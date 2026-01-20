@@ -7,23 +7,23 @@ use fuste_serial_channel::{
 
 #[derive(Debug, Clone)]
 pub struct SignerStore<
-	const N: usize,
-	const P: usize,
-	const K: usize,
-	const T: usize,
-	const B: usize,
+	const ADDRESS_BYTES: usize,
+	const PUBLIC_KEY_BYTES: usize,
+	const SIGNER_COUNT: usize,
+	const TYPE_NAME_BYTES: usize,
+	const VALUE_BYTES: usize,
 > {
-	signer_index: TransactionSignerIndex<N, P, K>,
-	type_bytes: [u8; T],
-	bytes: [u8; B],
+	signer_index: TransactionSignerIndex<ADDRESS_BYTES, PUBLIC_KEY_BYTES, SIGNER_COUNT>,
+	type_bytes: [u8; TYPE_NAME_BYTES],
+	bytes: [u8; VALUE_BYTES],
 }
 
 impl<const N: usize, const P: usize, const K: usize, const T: usize, const B: usize>
 	SignerStore<N, P, K, T, B>
 {
 	pub fn new(
-		signer_index: TransactionSignerIndex<N, P, K>,
-		type_bytes: [u8; T],
+		signer_index: TransactionSignerIndex<ADDRESS_BYTES, PUBLIC_KEY_BYTES, SIGNER_COUNT>,
+		type_bytes: [u8; TYPE_NAME_BYTES],
 		bytes: [u8; B],
 	) -> Self {
 		Self { signer_index, type_bytes, bytes }

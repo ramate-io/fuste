@@ -288,15 +288,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "fuste-signer-stores"
-version = "0.0.1"
-dependencies = [
- "fuste-channel",
- "fuste-serial-channel",
- "fuste-transaction",
-]
-
-[[package]]
 name = "fuste-std-output"
 version = "0.0.1"
 dependencies = [
@@ -313,7 +304,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "fuste-std-signer-stores"
+version = "0.0.1"
+dependencies = [
+ "fuste-channel",
+ "fuste-serial-channel",
+ "fuste-std-transaction",
+]
+
+[[package]]
 name = "fuste-std-transaction"
+version = "0.0.1"
+dependencies = [
+ "fuste-channel",
+ "fuste-serial-channel",
+]
+
+[[package]]
+name = "fuste-std-transaction-system"
 version = "0.0.1"
 dependencies = [
  "fuste-channel",
@@ -326,14 +334,6 @@ name = "fuste-tick-handler"
 version = "0.0.1"
 dependencies = [
  "fuste-riscv-core",
-]
-
-[[package]]
-name = "fuste-transaction"
-version = "0.0.1"
-dependencies = [
- "fuste-channel",
- "fuste-serial-channel",
 ]
 
 [[package]]

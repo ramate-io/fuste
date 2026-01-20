@@ -64,7 +64,7 @@ impl<const N: usize, const P: usize, const K: usize> SignerStoreSystem<N, P, K> 
 	) -> Result<(), SerialChannelError> {
 		store_with_sizes::<{ 1024 * 32 }, N, P, K, { 32 * 32 }, B, T>(
 			self.channel_system_id,
-			signer_index,
+			signer_index.try_into(),
 			data,
 		)
 	}
