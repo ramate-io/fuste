@@ -83,6 +83,10 @@ impl<
 		&self.bytes
 	}
 
+	pub fn op(&self) -> Op {
+		self.op
+	}
+
 	/// Execute the operation based on the Op field.
 	///
 	/// - When `Op::STORE` is set: stores to the channel using Empty with WSIZE 0

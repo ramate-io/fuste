@@ -5,7 +5,6 @@ use fuste_channel::{
 	systems::ChannelSystem, ChannelError, ChannelStatus, ChannelStatusCode, ChannelSystemStatus,
 };
 use fuste_std_signer_stores::signer_index::TransactionSignerIndex;
-use fuste_std_signer_stores::signer_load::SignerLoad;
 use fuste_std_signer_stores::signer_store::SignerStore;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeSet;
