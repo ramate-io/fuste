@@ -69,6 +69,13 @@ cargo run --target riscv32i-ramate-fuste-elf.json -p my-fuste-program
 
 `fubox` currently implements a debugging form of the `fuste` environment. 
 
+## Example programs
+
+- [`my-program`](/fuste/tests/toolchain/my-program/): a program for the `fuste` target without any of the `fuste` prelude
+- [`my-fuste-program`](/fuste/tests/toolchain/my-fuste-program/): a simple program using the `fuste` prelude.
+- [`my-fuste-heap-program`](/fuste/tests/toolchain/my-fuste-heap-program/): a program using the `fuste` `galloc` dynamic memory allocator. 
+- [`my-fuste-dlt-program`](/fuste/tests/toolchain/my-fuste-dlt-program/): a program using the `fuste` DLT primitives.
+
 ## Contributing
 
 | Task | Description |
