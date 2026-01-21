@@ -27,26 +27,26 @@ impl<const MEMORY_SIZE: usize, T: WriteSystemDispatcher<MEMORY_SIZE>>
 }
 
 /// Marker trait for write channel system dispatchers.
-pub trait WriteChannelSystemDispatcher<const MEMORY_SIZE: usize>:
+pub trait OpenChannelSystemDispatcher<const MEMORY_SIZE: usize>:
 	MachineSystem<MEMORY_SIZE>
 {
 }
 
 /// Implement WriteChannelSystemDispatcher for Option<T: WriteChannelSystemDispatcher<MEMORY_SIZE>>
-impl<const MEMORY_SIZE: usize, T: WriteChannelSystemDispatcher<MEMORY_SIZE>>
-	WriteChannelSystemDispatcher<MEMORY_SIZE> for Option<T>
+impl<const MEMORY_SIZE: usize, T: OpenChannelSystemDispatcher<MEMORY_SIZE>>
+	OpenChannelSystemDispatcher<MEMORY_SIZE> for Option<T>
 {
 }
 
 /// Marker trait for read channel system dispatchers.
-pub trait ReadChannelSystemDispatcher<const MEMORY_SIZE: usize>:
+pub trait CheckChannelSystemDispatcher<const MEMORY_SIZE: usize>:
 	MachineSystem<MEMORY_SIZE>
 {
 }
 
 /// Implement ReadChannelSystemDispatcher for Option<T: ReadChannelSystemDispatcher<MEMORY_SIZE>>
-impl<const MEMORY_SIZE: usize, T: ReadChannelSystemDispatcher<MEMORY_SIZE>>
-	ReadChannelSystemDispatcher<MEMORY_SIZE> for Option<T>
+impl<const MEMORY_SIZE: usize, T: CheckChannelSystemDispatcher<MEMORY_SIZE>>
+	CheckChannelSystemDispatcher<MEMORY_SIZE> for Option<T>
 {
 }
 
@@ -63,11 +63,11 @@ impl<const MEMORY_SIZE: usize> MachineSystem<MEMORY_SIZE> for NoopDispatcher<MEM
 
 impl<const MEMORY_SIZE: usize> ExitSystemDispatcher<MEMORY_SIZE> for NoopDispatcher<MEMORY_SIZE> {}
 impl<const MEMORY_SIZE: usize> WriteSystemDispatcher<MEMORY_SIZE> for NoopDispatcher<MEMORY_SIZE> {}
-impl<const MEMORY_SIZE: usize> WriteChannelSystemDispatcher<MEMORY_SIZE>
+impl<const MEMORY_SIZE: usize> OpenChannelSystemDispatcher<MEMORY_SIZE>
 	for NoopDispatcher<MEMORY_SIZE>
 {
 }
-impl<const MEMORY_SIZE: usize> ReadChannelSystemDispatcher<MEMORY_SIZE>
+impl<const MEMORY_SIZE: usize> CheckChannelSystemDispatcher<MEMORY_SIZE>
 	for NoopDispatcher<MEMORY_SIZE>
 {
 }
@@ -79,28 +79,28 @@ pub struct EcallDispatcher<
 	const MEMORY_SIZE: usize,
 	ExitDispatcher: ExitSystemDispatcher<MEMORY_SIZE>,
 	WriteDispatcher: WriteSystemDispatcher<MEMORY_SIZE>,
-	WriteChannelDispatcher: WriteChannelSystemDispatcher<MEMORY_SIZE>,
-	ReadChannelDispatcher: ReadChannelSystemDispatcher<MEMORY_SIZE>,
+	OpenChannelDispatcher: OpenChannelSystemDispatcher<MEMORY_SIZE>,
+	CheckChannelDispatcher: CheckChannelSystemDispatcher<MEMORY_SIZE>,
 > {
 	pub exit_dispatcher: ExitDispatcher,
 	pub write_dispatcher: WriteDispatcher,
-	pub write_channel_dispatcher: WriteChannelDispatcher,
-	pub read_channel_dispatcher: ReadChannelDispatcher,
+	pub open_channel_dispatcher: OpenChannelDispatcher,
+	pub check_channel_dispatcher: CheckChannelDispatcher,
 }
 
 impl<
 		const MEMORY_SIZE: usize,
 		ExitDispatcher: ExitSystemDispatcher<MEMORY_SIZE>,
 		WriteDispatcher: WriteSystemDispatcher<MEMORY_SIZE>,
-		WriteChannelDispatcher: WriteChannelSystemDispatcher<MEMORY_SIZE>,
-		ReadChannelDispatcher: ReadChannelSystemDispatcher<MEMORY_SIZE>,
+		OpenChannelDispatcher: OpenChannelSystemDispatcher<MEMORY_SIZE>,
+		CheckChannelDispatcher: CheckChannelSystemDispatcher<MEMORY_SIZE>,
 	> MachineSystem<MEMORY_SIZE>
 	for EcallDispatcher<
 		MEMORY_SIZE,
 		ExitDispatcher,
 		WriteDispatcher,
-		WriteChannelDispatcher,
-		ReadChannelDispatcher,
+		OpenChannelDispatcher,
+		CheckChannelDispatcher,
 	>
 {
 	/// Ticks the ecall dispatcher and delegates to the appropriate dispatcher based on the ecall word.
@@ -120,8 +120,8 @@ impl<
 		match ecall {
 			Ecall::Exit => self.exit_dispatcher.tick(machine),
 			Ecall::Write => self.write_dispatcher.tick(machine),
-			Ecall::WriteChannel => self.write_channel_dispatcher.tick(machine),
-			Ecall::ReadChannel => self.read_channel_dispatcher.tick(machine),
+			Ecall::OpenChannel => self.open_channel_dispatcher.tick(machine),
+			Ecall::CheckChannel => self.check_channel_dispatcher.tick(machine),
 		}
 	}
 }
@@ -130,15 +130,15 @@ impl<
 		const MEMORY_SIZE: usize,
 		ExitDispatcher: ExitSystemDispatcher<MEMORY_SIZE>,
 		WriteDispatcher: WriteSystemDispatcher<MEMORY_SIZE>,
-		WriteChannelDispatcher: WriteChannelSystemDispatcher<MEMORY_SIZE>,
-		ReadChannelDispatcher: ReadChannelSystemDispatcher<MEMORY_SIZE>,
+		OpenChannelDispatcher: OpenChannelSystemDispatcher<MEMORY_SIZE>,
+		CheckChannelDispatcher: CheckChannelSystemDispatcher<MEMORY_SIZE>,
 	> EcallDispatcherOps<MEMORY_SIZE>
 	for EcallDispatcher<
 		MEMORY_SIZE,
 		ExitDispatcher,
 		WriteDispatcher,
-		WriteChannelDispatcher,
-		ReadChannelDispatcher,
+		OpenChannelDispatcher,
+		CheckChannelDispatcher,
 	>
 {
 	#[inline(always)]

@@ -236,8 +236,8 @@ impl Elf {
 				} else {
 					None
 				},
-				write_channel_dispatcher: NoopDispatcher {},
-				read_channel_dispatcher: NoopDispatcher {},
+				open_channel_dispatcher: NoopDispatcher {},
+				check_channel_dispatcher: NoopDispatcher {},
 			},
 			ebreak_dispatcher: NoopEbreakDispatcher {},
 		};

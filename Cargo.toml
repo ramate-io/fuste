@@ -27,7 +27,13 @@ members = [
 
   "fuste/systems/ecall/exit",
 
-  "fuste/systems/debug/lilbug"
+  "fuste/systems/debug/lilbug",
+
+  "fuste/env/systems/channel/serial-channel",
+  "fuste/env/systems/channel/std-transaction",
+  "fuste/env/systems/channel/std-signer-stores",
+
+  "fuste/systems/channel/std-transaction",
 
 ]
 
@@ -84,6 +90,14 @@ fuste-std-output-system = { path = "fuste/systems/write/std-output" }
 
 fuste-lilbug = { path = "fuste/systems/debug/lilbug" }
 fuste-tick-handler = { path = "fuste/systems/tick/handler" }
+
+fuste-serial-channel = { path = "fuste/env/systems/channel/serial-channel" }
+
+fuste-std-transaction = { path = "fuste/env/systems/channel/std-transaction" }
+
+fuste-std-signer-stores = { path = "fuste/env/systems/channel/std-signer-stores" }
+
+fuste-std-transaction-system = { path = "fuste/systems/channel/std-transaction" }
 
 [workspace.lints.clippy]
 debug_assert_with_mut_call = "deny"

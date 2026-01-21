@@ -7,6 +7,7 @@ members = [
   "my-program",
   "my-fuste-program",
   "my-fuste-heap-program",
+  "my-fuste-dlt-program",
 
   "env/ecall",
   "env/exit",
@@ -15,7 +16,10 @@ members = [
   "env/fuste",
   "env/alloc",
   "env/galloc",
-  "env/systems/write/std-output"
+  "env/systems/write/std-output",
+  "env/systems/channel/serial-channel",
+  "env/systems/channel/std-signer-stores",
+  "env/systems/channel/std-transaction"
 
 ]
 
@@ -38,6 +42,10 @@ fuste-alloc = { path = "env/alloc" }
 fuste-galloc = { path = "env/galloc" }
 fuste = { path = "env/fuste" }
 fuste-std-output = { path =  "env/systems/write/std-output" }
+fuste-serial-channel = { path = "env/systems/channel/serial-channel" }
+fuste-std-signer-stores = { path = "env/systems/channel/std-signer-stores" }
+fuste-std-transaction = { path = "env/systems/channel/std-transaction" }
+
 
 [workspace.lints.clippy]
 debug_assert_with_mut_call = "deny"

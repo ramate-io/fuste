@@ -1,5 +1,5 @@
 [package]
-name = "fuste"
+name = "fuste-std-transaction-system"
 version = { workspace = true }
 edition = "2021"
 license = { workspace = true }
@@ -11,12 +11,14 @@ rust-version = { workspace = true }
 
 [dependencies]
 fuste-ecall = { workspace = true }
-fuste-exit = { workspace = true }
-fuste-write = { workspace = true }
-fuste-channel = { workspace = true }
-fuste-std-output = { workspace = true }
-fuste-serial-channel = { workspace = true }
+fuste-riscv-core = { workspace = true }
+# fuste-std-output = { workspace = true }
+fuste-ecall-dispatcher = { workspace = true }
 fuste-std-transaction = { workspace = true }
+thiserror = { workspace = true }
+serde = { workspace = true }
+fuste-channel = { workspace = true }
+fuste-serial-channel = { workspace = true }
 fuste-std-signer-stores = { workspace = true }
 
 [lints]

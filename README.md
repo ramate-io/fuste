@@ -16,6 +16,11 @@ Fuste is a programmability adapter and virtual machine stack designed for integr
 > Currently, Fuste implements only the [RV32I](https://docs.riscv.org/reference/isa/unpriv/rv32.html) ISA. Since Fuste is intended as a programmability stack and does not ultimately have general opinions about the ISA, we may choose to implement other ISAs as Fuste virtual machines in the future.
 
 ## Getting started 
+> [!TIP]
+> You can shortcut these steps by cloning this repository, `cd` into [`fuste/tests/toolchain`](/fuste/tests/toolchain/), and `nix develop`. 
+>
+> **NOTE:** Depending on your system you may still need to build `fubox` beforehand. 
+
 1. Review the programs in the [`tests/toolchain`](/fuste/tests/toolchain/) workspace before you begin writing your own. 
 2. Ensure you have built [`fubox`](/fuste/riscv-box/) and that is available on your `PATH`. 
 3. Configure a workspace with the desired [`env/fuste`](/fuste/env/fuste/) crates. 
@@ -63,6 +68,13 @@ cargo run --target riscv32i-ramate-fuste-elf.json -p my-fuste-program
 - [`fuste-galloc`](/fuste/env/galloc/) defines a global heap allocator for those interested in writing heap programs. It is not in [`fuste`](/fuste/env/fuste/) because--owing to the highly constrained targets for the virtual machine--purely stack-based programs are preferred. 
 
 `fubox` currently implements a debugging form of the `fuste` environment. 
+
+## Example programs
+
+- [`my-program`](/fuste/tests/toolchain/my-program/): a program for the `fuste` target without any of the `fuste` prelude
+- [`my-fuste-program`](/fuste/tests/toolchain/my-fuste-program/): a simple program using the `fuste` prelude.
+- [`my-fuste-heap-program`](/fuste/tests/toolchain/my-fuste-heap-program/): a program using the `fuste` `galloc` dynamic memory allocator. 
+- [`my-fuste-dlt-program`](/fuste/tests/toolchain/my-fuste-dlt-program/): a program using the `fuste` DLT primitives.
 
 ## Contributing
 
