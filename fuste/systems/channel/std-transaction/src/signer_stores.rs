@@ -35,3 +35,27 @@ pub enum SignerStoreError {
 	#[error("Failure in signer store backend: {0}")]
 	BackendError(#[from] SignerStoreBackendError),
 }
+
+#[derive(Default, Debug, Clone)]
+pub struct NoopSignerStoreBackend;
+
+impl SignerStoreBackend for NoopSignerStoreBackend {
+	fn write(
+		&self,
+		_hart_index: &HartIndex,
+		_user_signer_index: &UserSignerIndex,
+		_type_bytes: &[u8],
+		_value_bytes: &[u8],
+	) -> Result<(), SignerStoreBackendError> {
+		Ok(())
+	}
+
+	fn read(
+		&self,
+		_hart_index: &HartIndex,
+		_user_signer_index: &UserSignerIndex,
+		_type_bytes: &[u8],
+	) -> Result<Option<Vec<u8>>, SignerStoreBackendError> {
+		Ok(None)
+	}
+}

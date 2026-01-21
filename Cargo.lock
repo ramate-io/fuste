@@ -200,7 +200,10 @@ dependencies = [
  "fuste-channel",
  "fuste-ecall",
  "fuste-exit",
+ "fuste-serial-channel",
  "fuste-std-output",
+ "fuste-std-signer-stores",
+ "fuste-std-transaction",
  "fuste-write",
 ]
 

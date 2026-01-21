@@ -77,6 +77,7 @@ impl Deserialize for Empty {
 	}
 }
 
+/// A standard bytes type that can be serialized and deserialized.
 pub struct Bytes<const N: usize>(pub [u8; N]);
 
 impl<const N: usize> Serialize for Bytes<N> {

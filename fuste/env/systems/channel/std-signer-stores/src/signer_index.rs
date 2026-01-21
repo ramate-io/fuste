@@ -4,7 +4,7 @@ use fuste_std_transaction::signer::TransactionSigner;
 
 /// Anything that's a signer index must be able to be converted to and from a transaction signer index.
 pub trait SignerIndex<const N: usize, const P: usize, const K: usize>:
-	TryFrom<TransactionSignerIndex<N, P, K>> + TryInto<TransactionSignerIndex<N, P, K>>
+	TryInto<TransactionSignerIndex<N, P, K>>
 {
 	const CHANNEL_SYSTEM_ID: ChannelSystemId;
 }
@@ -97,4 +97,10 @@ impl<const N: usize, const P: usize, const L: usize, const K: usize>
 		}
 		Ok(Self { signers })
 	}
+}
+
+impl<const N: usize, const P: usize, const K: usize, const L: usize> SignerIndex<N, P, K>
+	for [TransactionSigner<N, P>; L]
+{
+	const CHANNEL_SYSTEM_ID: ChannelSystemId = ChannelSystemId::constant(0x516d);
 }

@@ -101,6 +101,12 @@ pub struct SignerStoreSystem<
 	channel_system_id: ChannelSystemId,
 }
 
+impl SignerStoreSystem<32, 32, 16> {
+	pub fn canonical() -> Self {
+		Self { channel_system_id: ChannelSystemId::new(0x516d) }
+	}
+}
+
 impl<const ADDRESS_BYTES: usize, const PUBLIC_KEY_BYTES: usize, const SIGNER_COUNT: usize> Default
 	for SignerStoreSystem<ADDRESS_BYTES, PUBLIC_KEY_BYTES, SIGNER_COUNT>
 {

@@ -1,3 +1,4 @@
+use crate::signer_stores::NoopSignerStoreBackend;
 use crate::signer_stores::{store::SignerStorage, SignerStoreBackend};
 use crate::transaction_metadata::transaction_signer_at_index::TransactionSignerAtIndexSystem;
 use crate::transaction_metadata::TransactionMetadata;
@@ -103,6 +104,7 @@ impl<
 		&mut self,
 		machine: &mut Machine<MEMORY_SIZE>,
 	) -> Result<ControlFlow<()>, MachineError> {
+		self.handle_channel_tick(machine)?;
 		Ok(ControlFlow::Continue(()))
 	}
 }
@@ -118,4 +120,28 @@ impl<
 	> OpenChannelSystemDispatcher<MEMORY_SIZE>
 	for StdTransaction<ADDRESS_BYTES, PUBLIC_KEY_BYTES, SIGNER_COUNT, TYPE_NAME_BYTES, VALUE_BYTES, S>
 {
+}
+
+impl<
+		const ADDRESS_BYTES: usize,
+		const PUBLIC_KEY_BYTES: usize,
+		const SIGNER_COUNT: usize,
+		const TYPE_NAME_BYTES: usize,
+		const VALUE_BYTES: usize,
+	> Default
+	for StdTransaction<
+		ADDRESS_BYTES,
+		PUBLIC_KEY_BYTES,
+		SIGNER_COUNT,
+		TYPE_NAME_BYTES,
+		VALUE_BYTES,
+		NoopSignerStoreBackend,
+	>
+{
+	fn default() -> Self {
+		Self {
+			transaction_metadata: TransactionMetadata::default(),
+			backend: NoopSignerStoreBackend,
+		}
+	}
 }

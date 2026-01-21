@@ -97,6 +97,8 @@ fuste-std-transaction = { path = "fuste/env/systems/channel/std-transaction" }
 
 fuste-std-signer-stores = { path = "fuste/env/systems/channel/std-signer-stores" }
 
+fuste-std-transaction-system = { path = "fuste/systems/channel/std-transaction" }
+
 [workspace.lints.clippy]
 debug_assert_with_mut_call = "deny"
 inefficient_to_string = "deny"
