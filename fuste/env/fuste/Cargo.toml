@@ -10,6 +10,7 @@ publish = { workspace = true }
 rust-version = { workspace = true }
 
 [dependencies]
+fuste-proc-macro = { workspace = true }
 fuste-ecall = { workspace = true }
 fuste-exit = { workspace = true }
 fuste-write = { workspace = true }

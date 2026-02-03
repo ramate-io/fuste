@@ -12,3 +12,4 @@ pub use fuste_write::{
 pub mod io;
 pub use io::{print, println};
 pub mod prelude;
+pub use fuste_proc_macro::main;

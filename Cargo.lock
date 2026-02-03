@@ -200,6 +200,7 @@ dependencies = [
  "fuste-channel",
  "fuste-ecall",
  "fuste-exit",
+ "fuste-proc-macro",
  "fuste-serial-channel",
  "fuste-std-output",
  "fuste-std-signer-stores",
@@ -268,6 +269,15 @@ dependencies = [
  "fuste-exit",
  "fuste-exit-system",
  "fuste-riscv-core",
+]
+
+[[package]]
+name = "fuste-proc-macro"
+version = "0.0.1"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]

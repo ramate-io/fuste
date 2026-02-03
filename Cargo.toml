@@ -16,6 +16,7 @@ members = [
   "fuste/env/alloc",
   "fuste/env/galloc",
   "fuste/env/fuste",
+  "fuste/env/fuste-proc-macro",
 
   # specific systems
   "fuste/systems/tick/handler",
@@ -78,6 +79,7 @@ fuste-write = { path = "fuste/env/write" }
 fuste-channel = { path = "fuste/env/channel" }
 fuste-alloc = { path = "fuste/env/alloc" }
 fuste = { path = "fuste/env/fuste" }
+fuste-proc-macro = { path = "fuste/env/fuste-proc-macro" }
 
 # specific systems
 fuste-interrupt-handler = { path = "fuste/systems/interrupt/handler" }
