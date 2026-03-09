@@ -282,7 +282,7 @@ impl Elf {
 		let mut machine = Machine::<BOX_MEMORY_SIZE>::new();
 
 		// Load the ELF file into the machine
-		loader.load_elf(&mut machine, &self.path)?;
+		loader.load_elf_from_path(&mut machine, &self.path)?;
 
 		// Note we use inner construction because we don't want to
 		// wrap in an enum and have lots of inner matching
