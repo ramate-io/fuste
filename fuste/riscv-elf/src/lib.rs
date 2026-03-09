@@ -35,14 +35,21 @@ impl Elf32Loader {
 		Self { entrypoint_symbol_name }
 	}
 
-	pub fn load_elf<const MEMORY_SIZE: usize>(
+	pub fn load_elf_from_path<const MEMORY_SIZE: usize>(
 		&self,
 		machine: &mut Machine<MEMORY_SIZE>,
 		path: impl AsRef<Path>,
 	) -> Result<(), ElfLoaderError> {
-		// Read the ELF file into memory
 		let buffer = fs::read(path.as_ref())?;
-		let elf = Elf::parse(buffer.as_slice())?;
+		self.load_elf(machine, &buffer)
+	}
+
+	pub fn load_elf<const MEMORY_SIZE: usize>(
+		&self,
+		machine: &mut Machine<MEMORY_SIZE>,
+		buffer: &[u8],
+	) -> Result<(), ElfLoaderError> {
+		let elf = Elf::parse(buffer)?;
 
 		// Normal symbol table
 		let mut flag_entrypoint_found = false;
