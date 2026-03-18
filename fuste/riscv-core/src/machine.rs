@@ -2,6 +2,7 @@ pub mod memory;
 pub use memory::Memory;
 pub mod registers;
 use crate::instructions::ExecutableInstructionError;
+#[cfg(debug_assertions)]
 use crate::log::RingBuffer;
 use core::error::Error;
 use core::fmt::{self, Display};
@@ -51,6 +52,7 @@ impl<const MEMORY_SIZE: usize> Machine<MEMORY_SIZE> {
 			memory: Memory::new(),
 			registers: Registers::new(),
 			csrs: Csrs::new(),
+			#[cfg(debug_assertions)]
 			log: RingBuffer::new(),
 		}
 	}

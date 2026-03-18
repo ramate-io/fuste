@@ -2,6 +2,7 @@ use crate::instructions::Rv32iInstruction;
 use crate::machine::Machine;
 use crate::machine::MachineError;
 use crate::machine::MachineSystem;
+#[cfg(debug_assertions)]
 use core::fmt::Write;
 use core::ops::ControlFlow;
 
@@ -35,7 +36,9 @@ impl<const MEMORY_SIZE: usize> MachineSystem<MEMORY_SIZE> for Rv32iComputer {
 			machine.memory().read_word(program_counter).map_err(MachineError::MemoryError)?;
 
 		// write the instruction to the machine log
+		#[cfg(debug_assertions)]
 		let log = machine.log_mut();
+		#[cfg(debug_assertions)]
 		writeln!(log, "0x{:X}: 0b{:b}", program_counter, instruction).unwrap();
 
 		Rv32iInstruction::load_and_execute(program_counter, instruction, machine)
